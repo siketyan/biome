@@ -58,19 +58,21 @@ pub(crate) fn format(
             return Ok(None);
         }
 
+        let input = session.workspace.get_file_content(GetFileContentParams {
+            project_key: doc.project_key,
+            path: path.clone(),
+        })?;
+
         let printed = session.workspace.format_file(FormatFileParams {
             project_key: doc.project_key,
             path: path.clone(),
         })?;
 
         let mut output = printed.into_code();
-        let input = session.workspace.get_file_content(GetFileContentParams {
-            project_key: doc.project_key,
-            path: path.clone(),
-        })?;
         if output.is_empty() {
             return Ok(None);
         }
+
         match path.extension() {
             Some("astro") => {
                 output = AstroFileHandler::output(input.as_str(), output.as_str());

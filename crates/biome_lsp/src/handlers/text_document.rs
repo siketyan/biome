@@ -129,8 +129,6 @@ pub(crate) async fn did_change(
 
     debug!("new document: {:?}", text);
 
-    session.insert_document(url.clone(), Document::new(doc.project_key, version, &text));
-
     session.workspace.change_file(ChangeFileParams {
         project_key: doc.project_key,
         path,
