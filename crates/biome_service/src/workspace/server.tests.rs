@@ -487,13 +487,49 @@ fn pull_diagnostics_and_actions_for_js_file() {
 #[test]
 fn format_js_with_embedded_css() {
     const FILE_PATH: &str = "/project/file.js";
-    const FILE_CONTENT: &str = r#"const Foo = styled.div`
+    const FILE_CONTENT: &str = r#"const css = css`
   display:
     flex;
   color : red ;
 `;
 
-const Bar = styled(Component)`
+const cssGlobal = css.global`
+  display:
+    flex;
+  color : red ;
+`;
+
+const cssResolve = css.resolve`
+  display:
+    flex;
+  color : red ;
+`;
+
+const Styled = styled.div`
+  display:
+    flex;
+  color : red ;
+`;
+
+const StyledComponent = styled(Component)`
+  display:
+    flex;
+  color : red ;
+`;
+
+const StyledExtend = Component.extend`
+  display:
+    flex;
+  color : red ;
+`;
+
+const StyledComponentAttrs = styled(Component).attrs({})`
+  display:
+    flex;
+  color : red ;
+`;
+
+const StyledExtendAttrs = Component.extend.attrs({})`
   display:
     flex;
   color : red ;
@@ -554,7 +590,7 @@ const Bar = styled(Component)`
 #[test]
 fn format_js_with_embedded_graphql() {
     const FILE_PATH: &str = "/project/file.js";
-    const FILE_CONTENT: &str = r#"const Foo = gql`
+    const FILE_CONTENT: &str = r#"const gqlQuery = gql`
   query PeopleCount {
   people(
        id: $peopleId){
@@ -562,7 +598,23 @@ fn format_js_with_embedded_graphql() {
        }}
 `;
 
-const Bar = graphql(`
+const graphqlQuery = graphql`
+  query PeopleCount {
+  people(
+       id: $peopleId){
+       totalCount
+       }}
+`;
+
+const graphqlExperimentalQuery = graphql.experimental`
+  query PeopleCount {
+  people(
+       id: $peopleId){
+       totalCount
+       }}
+`;
+
+const graphqlCallQuery = graphql(`
   query PeopleCount {
   people(
        id: $peopleId){
@@ -609,8 +661,8 @@ const Bar = graphql(`
         })
         .unwrap();
 
-    insta::assert_snapshot!(result.as_code(), @r"
-    const Foo = gql`
+    insta::assert_snapshot!(result.as_code(), @r#"
+    const gqlQuery = gql`
     	query PeopleCount {
     		people(id: $peopleId) {
     			totalCount
@@ -618,12 +670,28 @@ const Bar = graphql(`
     	}
     `;
 
-    const Bar = graphql(`
+    const graphqlQuery = graphql`
+    	query PeopleCount {
+    		people(id: $peopleId) {
+    			totalCount
+    		}
+    	}
+    `;
+
+    const graphqlExperimentalQuery = graphql.experimental`
+    	query PeopleCount {
+    		people(id: $peopleId) {
+    			totalCount
+    		}
+    	}
+    `;
+
+    const graphqlCallQuery = graphql(`
     	query PeopleCount {
     		people(id: $peopleId) {
     			totalCount
     		}
     	}
     `);
-    ");
+    "#);
 }

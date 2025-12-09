@@ -50,10 +50,10 @@ use biome_js_formatter::format_node;
 use biome_js_parser::JsParserOptions;
 use biome_js_semantic::{SemanticModelOptions, semantic_model};
 use biome_js_syntax::{
-    AnyJsExpression, AnyJsRoot, AnyJsTemplateElement, JsCallArgumentList, JsCallArguments,
-    JsCallExpression, JsClassDeclaration, JsClassExpression, JsFileSource, JsFunctionDeclaration,
-    JsLanguage, JsSyntaxNode, JsTemplateExpression, JsVariableDeclarator, TextRange, TextSize,
-    TokenAtOffset,
+    AnyJsExpression, AnyJsName, AnyJsRoot, AnyJsTemplateElement, JsCallArgumentList,
+    JsCallArguments, JsCallExpression, JsClassDeclaration, JsClassExpression, JsFileSource,
+    JsFunctionDeclaration, JsIdentifierExpression, JsLanguage, JsStaticMemberExpression,
+    JsSyntaxNode, JsTemplateExpression, JsVariableDeclarator, TextRange, TextSize, TokenAtOffset,
 };
 use biome_js_type_info::{GlobalsResolver, ScopeId, TypeData, TypeResolver};
 use biome_module_graph::ModuleGraph;
@@ -653,36 +653,115 @@ fn parse_template_expression(
 }
 
 fn is_styled_tag(tag: Option<&AnyJsExpression>) -> bool {
-    // css``
-    if let Some(AnyJsExpression::JsIdentifierExpression(ident)) = tag
-        && ident.name().is_ok_and(|name| name.has_name("css"))
-    {
-        return true;
-    }
+    let Some(tag) = tag else {
+        return false;
+    };
 
-    // styled.div``
-    if let Some(AnyJsExpression::JsStaticMemberExpression(expr)) = tag
-        && let Ok(AnyJsExpression::JsIdentifierExpression(ident)) = expr.object()
-        && ident.name().is_ok_and(|name| name.has_name("styled"))
-    {
-        return true;
-    }
+    match tag {
+        AnyJsExpression::JsIdentifierExpression(ident) => {
+            // css``
+            if ident.name().is_ok_and(|name| name.has_name("css")) {
+                return true;
+            }
+        }
+        AnyJsExpression::JsStaticMemberExpression(expr) => {
+            if let Ok(AnyJsExpression::JsIdentifierExpression(object)) = expr.object()
+                && let Ok(AnyJsName::JsName(member)) = expr.member()
+            {
+                // css.global``
+                // css.resolve``
+                if object.name().is_ok_and(|ident| ident.has_name("css"))
+                    && (member.to_trimmed_text() == "global"
+                        || member.to_trimmed_text() == "resolve")
+                {
+                    return true;
+                }
 
-    // styled(Component)``
-    if let Some(AnyJsExpression::JsCallExpression(expr)) = tag
-        && let Ok(AnyJsExpression::JsIdentifierExpression(ident)) = expr.callee()
-        && ident.name().is_ok_and(|name| name.has_name("styled"))
-    {
-        return true;
+                // styled.div``
+                if is_styled_identifier(&object) {
+                    return true;
+                }
+            }
+
+            // Component.extend``
+            if is_styled_extend(expr) {
+                return true;
+            }
+        }
+        AnyJsExpression::JsCallExpression(expr) => {
+            // styled(Component)``
+            if let Ok(AnyJsExpression::JsIdentifierExpression(ident)) = expr.callee()
+                && is_styled_identifier(&ident)
+            {
+                return true;
+            }
+
+            if let Ok(AnyJsExpression::JsStaticMemberExpression(expr)) = expr.callee() {
+                if let Ok(AnyJsExpression::JsStaticMemberExpression(expr)) = expr.object() {
+                    // styled.div.attrs({})``
+                    if let Ok(AnyJsExpression::JsIdentifierExpression(ident)) = expr.object()
+                        && is_styled_identifier(&ident)
+                    {
+                        return true;
+                    }
+
+                    // Component.extend.attrs({})``
+                    if is_styled_extend(&expr) {
+                        return true;
+                    }
+                }
+                // styled(Component).attrs({})``
+                else if let Ok(AnyJsExpression::JsCallExpression(expr)) = expr.object()
+                    && let Ok(AnyJsExpression::JsIdentifierExpression(ident)) = expr.callee()
+                    && is_styled_identifier(&ident)
+                {
+                    return true;
+                }
+            }
+        }
+        _ => {}
     }
 
     false
 }
 
+fn is_styled_identifier(expr: &JsIdentifierExpression) -> bool {
+    expr.name().is_ok_and(|name| name.has_name("styled"))
+}
+
+fn is_styled_extend(expr: &JsStaticMemberExpression) -> bool {
+    if let Ok(AnyJsExpression::JsIdentifierExpression(object)) = expr.object()
+        && let Ok(AnyJsName::JsName(member)) = expr.member()
+        && object
+            .name()
+            .ok()
+            .and_then(|name| name.to_trimmed_text().chars().next())
+            .is_some_and(|char| char.is_ascii_uppercase())
+        && member.to_trimmed_text() == "extend"
+    {
+        true
+    } else {
+        false
+    }
+}
+
 fn is_graphql_tag(tag: Option<&AnyJsExpression>, template: &JsTemplateExpression) -> bool {
     // gql``
+    // graphql``
     if let Some(AnyJsExpression::JsIdentifierExpression(ident)) = tag
-        && ident.name().is_ok_and(|name| name.has_name("gql"))
+        && ident
+            .name()
+            .is_ok_and(|name| name.has_name("gql") || name.has_name("graphql"))
+    {
+        return true;
+    }
+
+    // graphql.experimental``
+    if let Some(AnyJsExpression::JsStaticMemberExpression(expr)) = tag
+        && let Ok(AnyJsExpression::JsIdentifierExpression(ident)) = expr.object()
+        && let Ok(AnyJsName::JsName(member)) = expr.member()
+        && ident.name().is_ok_and(|name| name.has_name("graphql"))
+        && member.to_trimmed_text() == "experimental"
     {
         return true;
     }
