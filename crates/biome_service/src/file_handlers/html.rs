@@ -1151,6 +1151,7 @@ fn parse_matched_embed(
                             setup: candidate.has_attribute("setup"),
                             is_source: true,
                             event_handler: false,
+                            allow_statements: true,
                         });
                     }
                     // Astro <script> tags and plain HTML: no EmbeddingKind
@@ -1172,6 +1173,7 @@ fn parse_matched_embed(
                             setup: false,
                             is_source: false,
                             event_handler: false,
+                            allow_statements: false,
                         });
                     }
                     false
@@ -1183,16 +1185,26 @@ fn parse_matched_embed(
                     if let Some(efs) = embedded_file_source {
                         js_source = efs;
                     }
-                    if ctx.host_file_source.is_svelte() {
-                        js_source = js_source
-                            .with_embedding_kind(EmbeddingKind::Svelte { is_source: false });
-                    } else if ctx.host_file_source.is_vue() {
-                        js_source = js_source.with_embedding_kind(EmbeddingKind::Vue {
-                            setup: false,
-                            is_source: false,
-                            event_handler: *is_event_handler,
-                        });
+                    match ctx.host_file_source.variant() {
+                        HtmlVariant::Standard(_) => {}
+                        HtmlVariant::Astro => {
+                            js_source = js_source
+                                .with_embedding_kind(EmbeddingKind::Astro { frontmatter: false });
+                        }
+                        HtmlVariant::Vue => {
+                            js_source = js_source.with_embedding_kind(EmbeddingKind::Vue {
+                                setup: false,
+                                is_source: false,
+                                event_handler: *is_event_handler,
+                                allow_statements: false,
+                            });
+                        }
+                        HtmlVariant::Svelte => {
+                            js_source = js_source
+                                .with_embedding_kind(EmbeddingKind::Svelte { is_source: false });
+                        }
                     }
+
                     false
                 }
                 _ => false,
