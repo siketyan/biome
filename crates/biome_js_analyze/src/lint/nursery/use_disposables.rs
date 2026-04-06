@@ -72,7 +72,7 @@ declare_lint_rule! {
         language: "js",
         recommended: false,
         fix_kind: FixKind::Unsafe,
-        domains: &[RuleDomain::Project],
+        domains: &[RuleDomain::Types],
     }
 }
 
