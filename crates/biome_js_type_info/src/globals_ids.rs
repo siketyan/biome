@@ -190,7 +190,12 @@ define_global_type!(
     "instanceof Symbol"
 );
 define_global_type!(SYMBOL_ID, SYMBOL_ID_NAME, 45, "Symbol");
-define_global_type!(SYMBOL_DISPOSE_ID, SYMBOL_DISPOSE_ID_NAME, 46, "Symbol.dispose");
+define_global_type!(
+    SYMBOL_DISPOSE_ID,
+    SYMBOL_DISPOSE_ID_NAME,
+    46,
+    "Symbol.dispose"
+);
 define_global_type!(
     SYMBOL_ASYNC_DISPOSE_ID,
     SYMBOL_ASYNC_DISPOSE_ID_NAME,
@@ -204,7 +209,12 @@ define_global_type!(
     49,
     "Disposable[Symbol.dispose]"
 );
-define_global_type!(ASYNC_DISPOSABLE_ID, ASYNC_DISPOSABLE_ID_NAME, 50, "AsyncDisposable");
+define_global_type!(
+    ASYNC_DISPOSABLE_ID,
+    ASYNC_DISPOSABLE_ID_NAME,
+    50,
+    "AsyncDisposable"
+);
 define_global_type!(
     ASYNC_DISPOSABLE_ASYNC_DISPOSE_ID,
     ASYNC_DISPOSABLE_ASYNC_DISPOSE_ID_NAME,
