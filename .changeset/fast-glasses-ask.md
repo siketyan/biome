@@ -2,7 +2,7 @@
 "@biomejs/biome": patch
 ---
 
-Add a new lint rule `useDisposables` for JavaScript, which detects a disposable object assigned to a variable without `using` or `await using` syntax. Disposable objects, which implements `Disposable` or `AsyncDisposable` interface, are intended to dispose after use. Not disposing them can lead some resource or memory leak depending on the implementation.
+Add a new lint rule `useDisposables` for JavaScript, which detects disposable objects assigned to variables without `using` or `await using` syntax. Disposable objects that implement the `Disposable` or `AsyncDisposable` interface are intended to be disposed of after use. Not disposing them can lead to resource or memory leaks, depending on the implementation.
 
 **Invalid:**
 
