@@ -6,6 +6,74 @@ use biome_html_syntax::{
     HtmlSyntaxToken as SyntaxToken, *,
 };
 use biome_rowan::AstNode;
+pub fn astro_class_directive(
+    class_token: SyntaxToken,
+    value: AstroDirectiveValue,
+) -> AstroClassDirective {
+    AstroClassDirective::unwrap_cast(SyntaxNode::new_detached(
+        HtmlSyntaxKind::ASTRO_CLASS_DIRECTIVE,
+        [
+            Some(SyntaxElement::Token(class_token)),
+            Some(SyntaxElement::Node(value.into_syntax())),
+        ],
+    ))
+}
+pub fn astro_client_directive(
+    client_token: SyntaxToken,
+    value: AstroDirectiveValue,
+) -> AstroClientDirective {
+    AstroClientDirective::unwrap_cast(SyntaxNode::new_detached(
+        HtmlSyntaxKind::ASTRO_CLIENT_DIRECTIVE,
+        [
+            Some(SyntaxElement::Token(client_token)),
+            Some(SyntaxElement::Node(value.into_syntax())),
+        ],
+    ))
+}
+pub fn astro_define_directive(
+    define_token: SyntaxToken,
+    value: AstroDirectiveValue,
+) -> AstroDefineDirective {
+    AstroDefineDirective::unwrap_cast(SyntaxNode::new_detached(
+        HtmlSyntaxKind::ASTRO_DEFINE_DIRECTIVE,
+        [
+            Some(SyntaxElement::Token(define_token)),
+            Some(SyntaxElement::Node(value.into_syntax())),
+        ],
+    ))
+}
+pub fn astro_directive_value(
+    colon_token_token: SyntaxToken,
+    name: HtmlAttributeName,
+) -> AstroDirectiveValueBuilder {
+    AstroDirectiveValueBuilder {
+        colon_token_token,
+        name,
+        initializer: None,
+    }
+}
+pub struct AstroDirectiveValueBuilder {
+    colon_token_token: SyntaxToken,
+    name: HtmlAttributeName,
+    initializer: Option<HtmlAttributeInitializerClause>,
+}
+impl AstroDirectiveValueBuilder {
+    pub fn with_initializer(mut self, initializer: HtmlAttributeInitializerClause) -> Self {
+        self.initializer = Some(initializer);
+        self
+    }
+    pub fn build(self) -> AstroDirectiveValue {
+        AstroDirectiveValue::unwrap_cast(SyntaxNode::new_detached(
+            HtmlSyntaxKind::ASTRO_DIRECTIVE_VALUE,
+            [
+                Some(SyntaxElement::Token(self.colon_token_token)),
+                Some(SyntaxElement::Node(self.name.into_syntax())),
+                self.initializer
+                    .map(|token| SyntaxElement::Node(token.into_syntax())),
+            ],
+        ))
+    }
+}
 pub fn astro_embedded_content() -> AstroEmbeddedContentBuilder {
     AstroEmbeddedContentBuilder {
         content_token: None,
@@ -40,6 +108,39 @@ pub fn astro_frontmatter_element(
         ],
     ))
 }
+pub fn astro_is_directive(is_token: SyntaxToken, value: AstroDirectiveValue) -> AstroIsDirective {
+    AstroIsDirective::unwrap_cast(SyntaxNode::new_detached(
+        HtmlSyntaxKind::ASTRO_IS_DIRECTIVE,
+        [
+            Some(SyntaxElement::Token(is_token)),
+            Some(SyntaxElement::Node(value.into_syntax())),
+        ],
+    ))
+}
+pub fn astro_server_directive(
+    server_token: SyntaxToken,
+    value: AstroDirectiveValue,
+) -> AstroServerDirective {
+    AstroServerDirective::unwrap_cast(SyntaxNode::new_detached(
+        HtmlSyntaxKind::ASTRO_SERVER_DIRECTIVE,
+        [
+            Some(SyntaxElement::Token(server_token)),
+            Some(SyntaxElement::Node(value.into_syntax())),
+        ],
+    ))
+}
+pub fn astro_set_directive(
+    set_token: SyntaxToken,
+    value: AstroDirectiveValue,
+) -> AstroSetDirective {
+    AstroSetDirective::unwrap_cast(SyntaxNode::new_detached(
+        HtmlSyntaxKind::ASTRO_SET_DIRECTIVE,
+        [
+            Some(SyntaxElement::Token(set_token)),
+            Some(SyntaxElement::Node(value.into_syntax())),
+        ],
+    ))
+}
 pub fn html_attribute(name: HtmlAttributeName) -> HtmlAttributeBuilder {
     HtmlAttributeBuilder {
         name,
@@ -66,6 +167,20 @@ impl HtmlAttributeBuilder {
         ))
     }
 }
+pub fn html_attribute_double_text_expression(
+    l_double_curly_token: SyntaxToken,
+    expression: HtmlTextExpression,
+    r_double_curly_token: SyntaxToken,
+) -> HtmlAttributeDoubleTextExpression {
+    HtmlAttributeDoubleTextExpression::unwrap_cast(SyntaxNode::new_detached(
+        HtmlSyntaxKind::HTML_ATTRIBUTE_DOUBLE_TEXT_EXPRESSION,
+        [
+            Some(SyntaxElement::Token(l_double_curly_token)),
+            Some(SyntaxElement::Node(expression.into_syntax())),
+            Some(SyntaxElement::Token(r_double_curly_token)),
+        ],
+    ))
+}
 pub fn html_attribute_initializer_clause(
     eq_token: SyntaxToken,
     value: AnyHtmlAttributeInitializer,
@@ -82,6 +197,20 @@ pub fn html_attribute_name(value_token: SyntaxToken) -> HtmlAttributeName {
     HtmlAttributeName::unwrap_cast(SyntaxNode::new_detached(
         HtmlSyntaxKind::HTML_ATTRIBUTE_NAME,
         [Some(SyntaxElement::Token(value_token))],
+    ))
+}
+pub fn html_attribute_single_text_expression(
+    l_curly_token: SyntaxToken,
+    expression: HtmlTextExpression,
+    r_curly_token: SyntaxToken,
+) -> HtmlAttributeSingleTextExpression {
+    HtmlAttributeSingleTextExpression::unwrap_cast(SyntaxNode::new_detached(
+        HtmlSyntaxKind::HTML_ATTRIBUTE_SINGLE_TEXT_EXPRESSION,
+        [
+            Some(SyntaxElement::Token(l_curly_token)),
+            Some(SyntaxElement::Node(expression.into_syntax())),
+            Some(SyntaxElement::Token(r_curly_token)),
+        ],
     ))
 }
 pub fn html_cdata_section(
@@ -101,7 +230,7 @@ pub fn html_cdata_section(
 pub fn html_closing_element(
     l_angle_token: SyntaxToken,
     slash_token: SyntaxToken,
-    name: HtmlTagName,
+    name: AnyHtmlTagName,
     r_angle_token: SyntaxToken,
 ) -> HtmlClosingElement {
     HtmlClosingElement::unwrap_cast(SyntaxNode::new_detached(
@@ -112,6 +241,12 @@ pub fn html_closing_element(
             Some(SyntaxElement::Node(name.into_syntax())),
             Some(SyntaxElement::Token(r_angle_token)),
         ],
+    ))
+}
+pub fn html_component_name(value_token: SyntaxToken) -> HtmlComponentName {
+    HtmlComponentName::unwrap_cast(SyntaxNode::new_detached(
+        HtmlSyntaxKind::HTML_COMPONENT_NAME,
+        [Some(SyntaxElement::Token(value_token))],
     ))
 }
 pub fn html_content(value_token: SyntaxToken) -> HtmlContent {
@@ -216,9 +351,23 @@ pub fn html_embedded_content(value_token: SyntaxToken) -> HtmlEmbeddedContent {
         [Some(SyntaxElement::Token(value_token))],
     ))
 }
+pub fn html_member_name(
+    object: AnyHtmlComponentObjectName,
+    dot_token: SyntaxToken,
+    member: HtmlTagName,
+) -> HtmlMemberName {
+    HtmlMemberName::unwrap_cast(SyntaxNode::new_detached(
+        HtmlSyntaxKind::HTML_MEMBER_NAME,
+        [
+            Some(SyntaxElement::Node(object.into_syntax())),
+            Some(SyntaxElement::Token(dot_token)),
+            Some(SyntaxElement::Node(member.into_syntax())),
+        ],
+    ))
+}
 pub fn html_opening_element(
     l_angle_token: SyntaxToken,
-    name: HtmlTagName,
+    name: AnyHtmlTagName,
     attributes: HtmlAttributeList,
     r_angle_token: SyntaxToken,
 ) -> HtmlOpeningElement {
@@ -278,7 +427,7 @@ impl HtmlRootBuilder {
 }
 pub fn html_self_closing_element(
     l_angle_token: SyntaxToken,
-    name: HtmlTagName,
+    name: AnyHtmlTagName,
     attributes: HtmlAttributeList,
     r_angle_token: SyntaxToken,
 ) -> HtmlSelfClosingElementBuilder {
@@ -292,7 +441,7 @@ pub fn html_self_closing_element(
 }
 pub struct HtmlSelfClosingElementBuilder {
     l_angle_token: SyntaxToken,
-    name: HtmlTagName,
+    name: AnyHtmlTagName,
     attributes: HtmlAttributeList,
     r_angle_token: SyntaxToken,
     slash_token: Option<SyntaxToken>,
@@ -325,6 +474,22 @@ pub fn html_single_text_expression(
         [
             Some(SyntaxElement::Token(l_curly_token)),
             Some(SyntaxElement::Node(expression.into_syntax())),
+            Some(SyntaxElement::Token(r_curly_token)),
+        ],
+    ))
+}
+pub fn html_spread_attribute(
+    l_curly_token: SyntaxToken,
+    dotdotdot_token: SyntaxToken,
+    argument: HtmlTextExpression,
+    r_curly_token: SyntaxToken,
+) -> HtmlSpreadAttribute {
+    HtmlSpreadAttribute::unwrap_cast(SyntaxNode::new_detached(
+        HtmlSyntaxKind::HTML_SPREAD_ATTRIBUTE,
+        [
+            Some(SyntaxElement::Token(l_curly_token)),
+            Some(SyntaxElement::Token(dotdotdot_token)),
+            Some(SyntaxElement::Node(argument.into_syntax())),
             Some(SyntaxElement::Token(r_curly_token)),
         ],
     ))

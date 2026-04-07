@@ -35,8 +35,12 @@ declare_lint_rule! {
     /// </script>
     /// ```
     ///
+    /// ## Related Rules
+    ///
+    /// - [noVueOptionsApi](https://biomejs.dev/linter/rules/no-vue-options-api): Disallows the Options API format, which is incompatible with Vapor Mode
+    ///
     pub UseVueVapor {
-        version: "next",
+        version: "2.3.11",
         name: "useVueVapor",
         language: "html",
         recommended: false,
@@ -56,8 +60,8 @@ impl Rule for UseVueVapor {
         let opening = ctx.query();
 
         let name = opening.name().ok()?;
-        let name_token = name.value_token().ok()?;
-        if !name_token.text_trimmed().eq_ignore_ascii_case("script") {
+        let name_text = name.token_text_trimmed()?;
+        if !name_text.eq_ignore_ascii_case("script") {
             return None;
         }
 

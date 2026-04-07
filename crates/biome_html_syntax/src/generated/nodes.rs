@@ -20,6 +20,171 @@ use std::fmt::{Debug, Formatter};
 #[doc = r" the slots are not statically known."]
 pub(crate) const SLOT_MAP_EMPTY_VALUE: u8 = u8::MAX;
 #[derive(Clone, PartialEq, Eq, Hash)]
+pub struct AstroClassDirective {
+    pub(crate) syntax: SyntaxNode,
+}
+impl AstroClassDirective {
+    #[doc = r" Create an AstNode from a SyntaxNode without checking its kind"]
+    #[doc = r""]
+    #[doc = r" # Safety"]
+    #[doc = r" This function must be guarded with a call to [AstNode::can_cast]"]
+    #[doc = r" or a match on [SyntaxNode::kind]"]
+    #[inline]
+    pub const unsafe fn new_unchecked(syntax: SyntaxNode) -> Self {
+        Self { syntax }
+    }
+    pub fn as_fields(&self) -> AstroClassDirectiveFields {
+        AstroClassDirectiveFields {
+            class_token: self.class_token(),
+            value: self.value(),
+        }
+    }
+    pub fn class_token(&self) -> SyntaxResult<SyntaxToken> {
+        support::required_token(&self.syntax, 0usize)
+    }
+    pub fn value(&self) -> SyntaxResult<AstroDirectiveValue> {
+        support::required_node(&self.syntax, 1usize)
+    }
+}
+impl Serialize for AstroClassDirective {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.as_fields().serialize(serializer)
+    }
+}
+#[derive(Serialize)]
+pub struct AstroClassDirectiveFields {
+    pub class_token: SyntaxResult<SyntaxToken>,
+    pub value: SyntaxResult<AstroDirectiveValue>,
+}
+#[derive(Clone, PartialEq, Eq, Hash)]
+pub struct AstroClientDirective {
+    pub(crate) syntax: SyntaxNode,
+}
+impl AstroClientDirective {
+    #[doc = r" Create an AstNode from a SyntaxNode without checking its kind"]
+    #[doc = r""]
+    #[doc = r" # Safety"]
+    #[doc = r" This function must be guarded with a call to [AstNode::can_cast]"]
+    #[doc = r" or a match on [SyntaxNode::kind]"]
+    #[inline]
+    pub const unsafe fn new_unchecked(syntax: SyntaxNode) -> Self {
+        Self { syntax }
+    }
+    pub fn as_fields(&self) -> AstroClientDirectiveFields {
+        AstroClientDirectiveFields {
+            client_token: self.client_token(),
+            value: self.value(),
+        }
+    }
+    pub fn client_token(&self) -> SyntaxResult<SyntaxToken> {
+        support::required_token(&self.syntax, 0usize)
+    }
+    pub fn value(&self) -> SyntaxResult<AstroDirectiveValue> {
+        support::required_node(&self.syntax, 1usize)
+    }
+}
+impl Serialize for AstroClientDirective {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.as_fields().serialize(serializer)
+    }
+}
+#[derive(Serialize)]
+pub struct AstroClientDirectiveFields {
+    pub client_token: SyntaxResult<SyntaxToken>,
+    pub value: SyntaxResult<AstroDirectiveValue>,
+}
+#[derive(Clone, PartialEq, Eq, Hash)]
+pub struct AstroDefineDirective {
+    pub(crate) syntax: SyntaxNode,
+}
+impl AstroDefineDirective {
+    #[doc = r" Create an AstNode from a SyntaxNode without checking its kind"]
+    #[doc = r""]
+    #[doc = r" # Safety"]
+    #[doc = r" This function must be guarded with a call to [AstNode::can_cast]"]
+    #[doc = r" or a match on [SyntaxNode::kind]"]
+    #[inline]
+    pub const unsafe fn new_unchecked(syntax: SyntaxNode) -> Self {
+        Self { syntax }
+    }
+    pub fn as_fields(&self) -> AstroDefineDirectiveFields {
+        AstroDefineDirectiveFields {
+            define_token: self.define_token(),
+            value: self.value(),
+        }
+    }
+    pub fn define_token(&self) -> SyntaxResult<SyntaxToken> {
+        support::required_token(&self.syntax, 0usize)
+    }
+    pub fn value(&self) -> SyntaxResult<AstroDirectiveValue> {
+        support::required_node(&self.syntax, 1usize)
+    }
+}
+impl Serialize for AstroDefineDirective {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.as_fields().serialize(serializer)
+    }
+}
+#[derive(Serialize)]
+pub struct AstroDefineDirectiveFields {
+    pub define_token: SyntaxResult<SyntaxToken>,
+    pub value: SyntaxResult<AstroDirectiveValue>,
+}
+#[derive(Clone, PartialEq, Eq, Hash)]
+pub struct AstroDirectiveValue {
+    pub(crate) syntax: SyntaxNode,
+}
+impl AstroDirectiveValue {
+    #[doc = r" Create an AstNode from a SyntaxNode without checking its kind"]
+    #[doc = r""]
+    #[doc = r" # Safety"]
+    #[doc = r" This function must be guarded with a call to [AstNode::can_cast]"]
+    #[doc = r" or a match on [SyntaxNode::kind]"]
+    #[inline]
+    pub const unsafe fn new_unchecked(syntax: SyntaxNode) -> Self {
+        Self { syntax }
+    }
+    pub fn as_fields(&self) -> AstroDirectiveValueFields {
+        AstroDirectiveValueFields {
+            colon_token_token: self.colon_token_token(),
+            name: self.name(),
+            initializer: self.initializer(),
+        }
+    }
+    pub fn colon_token_token(&self) -> SyntaxResult<SyntaxToken> {
+        support::required_token(&self.syntax, 0usize)
+    }
+    pub fn name(&self) -> SyntaxResult<HtmlAttributeName> {
+        support::required_node(&self.syntax, 1usize)
+    }
+    pub fn initializer(&self) -> Option<HtmlAttributeInitializerClause> {
+        support::node(&self.syntax, 2usize)
+    }
+}
+impl Serialize for AstroDirectiveValue {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.as_fields().serialize(serializer)
+    }
+}
+#[derive(Serialize)]
+pub struct AstroDirectiveValueFields {
+    pub colon_token_token: SyntaxResult<SyntaxToken>,
+    pub name: SyntaxResult<HtmlAttributeName>,
+    pub initializer: Option<HtmlAttributeInitializerClause>,
+}
+#[derive(Clone, PartialEq, Eq, Hash)]
 pub struct AstroEmbeddedContent {
     pub(crate) syntax: SyntaxNode,
 }
@@ -100,6 +265,126 @@ pub struct AstroFrontmatterElementFields {
     pub r_fence_token: SyntaxResult<SyntaxToken>,
 }
 #[derive(Clone, PartialEq, Eq, Hash)]
+pub struct AstroIsDirective {
+    pub(crate) syntax: SyntaxNode,
+}
+impl AstroIsDirective {
+    #[doc = r" Create an AstNode from a SyntaxNode without checking its kind"]
+    #[doc = r""]
+    #[doc = r" # Safety"]
+    #[doc = r" This function must be guarded with a call to [AstNode::can_cast]"]
+    #[doc = r" or a match on [SyntaxNode::kind]"]
+    #[inline]
+    pub const unsafe fn new_unchecked(syntax: SyntaxNode) -> Self {
+        Self { syntax }
+    }
+    pub fn as_fields(&self) -> AstroIsDirectiveFields {
+        AstroIsDirectiveFields {
+            is_token: self.is_token(),
+            value: self.value(),
+        }
+    }
+    pub fn is_token(&self) -> SyntaxResult<SyntaxToken> {
+        support::required_token(&self.syntax, 0usize)
+    }
+    pub fn value(&self) -> SyntaxResult<AstroDirectiveValue> {
+        support::required_node(&self.syntax, 1usize)
+    }
+}
+impl Serialize for AstroIsDirective {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.as_fields().serialize(serializer)
+    }
+}
+#[derive(Serialize)]
+pub struct AstroIsDirectiveFields {
+    pub is_token: SyntaxResult<SyntaxToken>,
+    pub value: SyntaxResult<AstroDirectiveValue>,
+}
+#[derive(Clone, PartialEq, Eq, Hash)]
+pub struct AstroServerDirective {
+    pub(crate) syntax: SyntaxNode,
+}
+impl AstroServerDirective {
+    #[doc = r" Create an AstNode from a SyntaxNode without checking its kind"]
+    #[doc = r""]
+    #[doc = r" # Safety"]
+    #[doc = r" This function must be guarded with a call to [AstNode::can_cast]"]
+    #[doc = r" or a match on [SyntaxNode::kind]"]
+    #[inline]
+    pub const unsafe fn new_unchecked(syntax: SyntaxNode) -> Self {
+        Self { syntax }
+    }
+    pub fn as_fields(&self) -> AstroServerDirectiveFields {
+        AstroServerDirectiveFields {
+            server_token: self.server_token(),
+            value: self.value(),
+        }
+    }
+    pub fn server_token(&self) -> SyntaxResult<SyntaxToken> {
+        support::required_token(&self.syntax, 0usize)
+    }
+    pub fn value(&self) -> SyntaxResult<AstroDirectiveValue> {
+        support::required_node(&self.syntax, 1usize)
+    }
+}
+impl Serialize for AstroServerDirective {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.as_fields().serialize(serializer)
+    }
+}
+#[derive(Serialize)]
+pub struct AstroServerDirectiveFields {
+    pub server_token: SyntaxResult<SyntaxToken>,
+    pub value: SyntaxResult<AstroDirectiveValue>,
+}
+#[derive(Clone, PartialEq, Eq, Hash)]
+pub struct AstroSetDirective {
+    pub(crate) syntax: SyntaxNode,
+}
+impl AstroSetDirective {
+    #[doc = r" Create an AstNode from a SyntaxNode without checking its kind"]
+    #[doc = r""]
+    #[doc = r" # Safety"]
+    #[doc = r" This function must be guarded with a call to [AstNode::can_cast]"]
+    #[doc = r" or a match on [SyntaxNode::kind]"]
+    #[inline]
+    pub const unsafe fn new_unchecked(syntax: SyntaxNode) -> Self {
+        Self { syntax }
+    }
+    pub fn as_fields(&self) -> AstroSetDirectiveFields {
+        AstroSetDirectiveFields {
+            set_token: self.set_token(),
+            value: self.value(),
+        }
+    }
+    pub fn set_token(&self) -> SyntaxResult<SyntaxToken> {
+        support::required_token(&self.syntax, 0usize)
+    }
+    pub fn value(&self) -> SyntaxResult<AstroDirectiveValue> {
+        support::required_node(&self.syntax, 1usize)
+    }
+}
+impl Serialize for AstroSetDirective {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.as_fields().serialize(serializer)
+    }
+}
+#[derive(Serialize)]
+pub struct AstroSetDirectiveFields {
+    pub set_token: SyntaxResult<SyntaxToken>,
+    pub value: SyntaxResult<AstroDirectiveValue>,
+}
+#[derive(Clone, PartialEq, Eq, Hash)]
 pub struct HtmlAttribute {
     pub(crate) syntax: SyntaxNode,
 }
@@ -138,6 +423,51 @@ impl Serialize for HtmlAttribute {
 pub struct HtmlAttributeFields {
     pub name: SyntaxResult<HtmlAttributeName>,
     pub initializer: Option<HtmlAttributeInitializerClause>,
+}
+#[derive(Clone, PartialEq, Eq, Hash)]
+pub struct HtmlAttributeDoubleTextExpression {
+    pub(crate) syntax: SyntaxNode,
+}
+impl HtmlAttributeDoubleTextExpression {
+    #[doc = r" Create an AstNode from a SyntaxNode without checking its kind"]
+    #[doc = r""]
+    #[doc = r" # Safety"]
+    #[doc = r" This function must be guarded with a call to [AstNode::can_cast]"]
+    #[doc = r" or a match on [SyntaxNode::kind]"]
+    #[inline]
+    pub const unsafe fn new_unchecked(syntax: SyntaxNode) -> Self {
+        Self { syntax }
+    }
+    pub fn as_fields(&self) -> HtmlAttributeDoubleTextExpressionFields {
+        HtmlAttributeDoubleTextExpressionFields {
+            l_double_curly_token: self.l_double_curly_token(),
+            expression: self.expression(),
+            r_double_curly_token: self.r_double_curly_token(),
+        }
+    }
+    pub fn l_double_curly_token(&self) -> SyntaxResult<SyntaxToken> {
+        support::required_token(&self.syntax, 0usize)
+    }
+    pub fn expression(&self) -> SyntaxResult<HtmlTextExpression> {
+        support::required_node(&self.syntax, 1usize)
+    }
+    pub fn r_double_curly_token(&self) -> SyntaxResult<SyntaxToken> {
+        support::required_token(&self.syntax, 2usize)
+    }
+}
+impl Serialize for HtmlAttributeDoubleTextExpression {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.as_fields().serialize(serializer)
+    }
+}
+#[derive(Serialize)]
+pub struct HtmlAttributeDoubleTextExpressionFields {
+    pub l_double_curly_token: SyntaxResult<SyntaxToken>,
+    pub expression: SyntaxResult<HtmlTextExpression>,
+    pub r_double_curly_token: SyntaxResult<SyntaxToken>,
 }
 #[derive(Clone, PartialEq, Eq, Hash)]
 pub struct HtmlAttributeInitializerClause {
@@ -215,6 +545,51 @@ pub struct HtmlAttributeNameFields {
     pub value_token: SyntaxResult<SyntaxToken>,
 }
 #[derive(Clone, PartialEq, Eq, Hash)]
+pub struct HtmlAttributeSingleTextExpression {
+    pub(crate) syntax: SyntaxNode,
+}
+impl HtmlAttributeSingleTextExpression {
+    #[doc = r" Create an AstNode from a SyntaxNode without checking its kind"]
+    #[doc = r""]
+    #[doc = r" # Safety"]
+    #[doc = r" This function must be guarded with a call to [AstNode::can_cast]"]
+    #[doc = r" or a match on [SyntaxNode::kind]"]
+    #[inline]
+    pub const unsafe fn new_unchecked(syntax: SyntaxNode) -> Self {
+        Self { syntax }
+    }
+    pub fn as_fields(&self) -> HtmlAttributeSingleTextExpressionFields {
+        HtmlAttributeSingleTextExpressionFields {
+            l_curly_token: self.l_curly_token(),
+            expression: self.expression(),
+            r_curly_token: self.r_curly_token(),
+        }
+    }
+    pub fn l_curly_token(&self) -> SyntaxResult<SyntaxToken> {
+        support::required_token(&self.syntax, 0usize)
+    }
+    pub fn expression(&self) -> SyntaxResult<HtmlTextExpression> {
+        support::required_node(&self.syntax, 1usize)
+    }
+    pub fn r_curly_token(&self) -> SyntaxResult<SyntaxToken> {
+        support::required_token(&self.syntax, 2usize)
+    }
+}
+impl Serialize for HtmlAttributeSingleTextExpression {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.as_fields().serialize(serializer)
+    }
+}
+#[derive(Serialize)]
+pub struct HtmlAttributeSingleTextExpressionFields {
+    pub l_curly_token: SyntaxResult<SyntaxToken>,
+    pub expression: SyntaxResult<HtmlTextExpression>,
+    pub r_curly_token: SyntaxResult<SyntaxToken>,
+}
+#[derive(Clone, PartialEq, Eq, Hash)]
 pub struct HtmlCdataSection {
     pub(crate) syntax: SyntaxNode,
 }
@@ -287,7 +662,7 @@ impl HtmlClosingElement {
     pub fn slash_token(&self) -> SyntaxResult<SyntaxToken> {
         support::required_token(&self.syntax, 1usize)
     }
-    pub fn name(&self) -> SyntaxResult<HtmlTagName> {
+    pub fn name(&self) -> SyntaxResult<AnyHtmlTagName> {
         support::required_node(&self.syntax, 2usize)
     }
     pub fn r_angle_token(&self) -> SyntaxResult<SyntaxToken> {
@@ -306,8 +681,43 @@ impl Serialize for HtmlClosingElement {
 pub struct HtmlClosingElementFields {
     pub l_angle_token: SyntaxResult<SyntaxToken>,
     pub slash_token: SyntaxResult<SyntaxToken>,
-    pub name: SyntaxResult<HtmlTagName>,
+    pub name: SyntaxResult<AnyHtmlTagName>,
     pub r_angle_token: SyntaxResult<SyntaxToken>,
+}
+#[derive(Clone, PartialEq, Eq, Hash)]
+pub struct HtmlComponentName {
+    pub(crate) syntax: SyntaxNode,
+}
+impl HtmlComponentName {
+    #[doc = r" Create an AstNode from a SyntaxNode without checking its kind"]
+    #[doc = r""]
+    #[doc = r" # Safety"]
+    #[doc = r" This function must be guarded with a call to [AstNode::can_cast]"]
+    #[doc = r" or a match on [SyntaxNode::kind]"]
+    #[inline]
+    pub const unsafe fn new_unchecked(syntax: SyntaxNode) -> Self {
+        Self { syntax }
+    }
+    pub fn as_fields(&self) -> HtmlComponentNameFields {
+        HtmlComponentNameFields {
+            value_token: self.value_token(),
+        }
+    }
+    pub fn value_token(&self) -> SyntaxResult<SyntaxToken> {
+        support::required_token(&self.syntax, 0usize)
+    }
+}
+impl Serialize for HtmlComponentName {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.as_fields().serialize(serializer)
+    }
+}
+#[derive(Serialize)]
+pub struct HtmlComponentNameFields {
+    pub value_token: SyntaxResult<SyntaxToken>,
 }
 #[derive(Clone, PartialEq, Eq, Hash)]
 pub struct HtmlContent {
@@ -540,6 +950,51 @@ pub struct HtmlEmbeddedContentFields {
     pub value_token: SyntaxResult<SyntaxToken>,
 }
 #[derive(Clone, PartialEq, Eq, Hash)]
+pub struct HtmlMemberName {
+    pub(crate) syntax: SyntaxNode,
+}
+impl HtmlMemberName {
+    #[doc = r" Create an AstNode from a SyntaxNode without checking its kind"]
+    #[doc = r""]
+    #[doc = r" # Safety"]
+    #[doc = r" This function must be guarded with a call to [AstNode::can_cast]"]
+    #[doc = r" or a match on [SyntaxNode::kind]"]
+    #[inline]
+    pub const unsafe fn new_unchecked(syntax: SyntaxNode) -> Self {
+        Self { syntax }
+    }
+    pub fn as_fields(&self) -> HtmlMemberNameFields {
+        HtmlMemberNameFields {
+            object: self.object(),
+            dot_token: self.dot_token(),
+            member: self.member(),
+        }
+    }
+    pub fn object(&self) -> SyntaxResult<AnyHtmlComponentObjectName> {
+        support::required_node(&self.syntax, 0usize)
+    }
+    pub fn dot_token(&self) -> SyntaxResult<SyntaxToken> {
+        support::required_token(&self.syntax, 1usize)
+    }
+    pub fn member(&self) -> SyntaxResult<HtmlTagName> {
+        support::required_node(&self.syntax, 2usize)
+    }
+}
+impl Serialize for HtmlMemberName {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.as_fields().serialize(serializer)
+    }
+}
+#[derive(Serialize)]
+pub struct HtmlMemberNameFields {
+    pub object: SyntaxResult<AnyHtmlComponentObjectName>,
+    pub dot_token: SyntaxResult<SyntaxToken>,
+    pub member: SyntaxResult<HtmlTagName>,
+}
+#[derive(Clone, PartialEq, Eq, Hash)]
 pub struct HtmlOpeningElement {
     pub(crate) syntax: SyntaxNode,
 }
@@ -564,7 +1019,7 @@ impl HtmlOpeningElement {
     pub fn l_angle_token(&self) -> SyntaxResult<SyntaxToken> {
         support::required_token(&self.syntax, 0usize)
     }
-    pub fn name(&self) -> SyntaxResult<HtmlTagName> {
+    pub fn name(&self) -> SyntaxResult<AnyHtmlTagName> {
         support::required_node(&self.syntax, 1usize)
     }
     pub fn attributes(&self) -> HtmlAttributeList {
@@ -585,7 +1040,7 @@ impl Serialize for HtmlOpeningElement {
 #[derive(Serialize)]
 pub struct HtmlOpeningElementFields {
     pub l_angle_token: SyntaxResult<SyntaxToken>,
-    pub name: SyntaxResult<HtmlTagName>,
+    pub name: SyntaxResult<AnyHtmlTagName>,
     pub attributes: HtmlAttributeList,
     pub r_angle_token: SyntaxResult<SyntaxToken>,
 }
@@ -670,7 +1125,7 @@ impl HtmlSelfClosingElement {
     pub fn l_angle_token(&self) -> SyntaxResult<SyntaxToken> {
         support::required_token(&self.syntax, 0usize)
     }
-    pub fn name(&self) -> SyntaxResult<HtmlTagName> {
+    pub fn name(&self) -> SyntaxResult<AnyHtmlTagName> {
         support::required_node(&self.syntax, 1usize)
     }
     pub fn attributes(&self) -> HtmlAttributeList {
@@ -694,7 +1149,7 @@ impl Serialize for HtmlSelfClosingElement {
 #[derive(Serialize)]
 pub struct HtmlSelfClosingElementFields {
     pub l_angle_token: SyntaxResult<SyntaxToken>,
-    pub name: SyntaxResult<HtmlTagName>,
+    pub name: SyntaxResult<AnyHtmlTagName>,
     pub attributes: HtmlAttributeList,
     pub slash_token: Option<SyntaxToken>,
     pub r_angle_token: SyntaxResult<SyntaxToken>,
@@ -742,6 +1197,56 @@ impl Serialize for HtmlSingleTextExpression {
 pub struct HtmlSingleTextExpressionFields {
     pub l_curly_token: SyntaxResult<SyntaxToken>,
     pub expression: SyntaxResult<HtmlTextExpression>,
+    pub r_curly_token: SyntaxResult<SyntaxToken>,
+}
+#[derive(Clone, PartialEq, Eq, Hash)]
+pub struct HtmlSpreadAttribute {
+    pub(crate) syntax: SyntaxNode,
+}
+impl HtmlSpreadAttribute {
+    #[doc = r" Create an AstNode from a SyntaxNode without checking its kind"]
+    #[doc = r""]
+    #[doc = r" # Safety"]
+    #[doc = r" This function must be guarded with a call to [AstNode::can_cast]"]
+    #[doc = r" or a match on [SyntaxNode::kind]"]
+    #[inline]
+    pub const unsafe fn new_unchecked(syntax: SyntaxNode) -> Self {
+        Self { syntax }
+    }
+    pub fn as_fields(&self) -> HtmlSpreadAttributeFields {
+        HtmlSpreadAttributeFields {
+            l_curly_token: self.l_curly_token(),
+            dotdotdot_token: self.dotdotdot_token(),
+            argument: self.argument(),
+            r_curly_token: self.r_curly_token(),
+        }
+    }
+    pub fn l_curly_token(&self) -> SyntaxResult<SyntaxToken> {
+        support::required_token(&self.syntax, 0usize)
+    }
+    pub fn dotdotdot_token(&self) -> SyntaxResult<SyntaxToken> {
+        support::required_token(&self.syntax, 1usize)
+    }
+    pub fn argument(&self) -> SyntaxResult<HtmlTextExpression> {
+        support::required_node(&self.syntax, 2usize)
+    }
+    pub fn r_curly_token(&self) -> SyntaxResult<SyntaxToken> {
+        support::required_token(&self.syntax, 3usize)
+    }
+}
+impl Serialize for HtmlSpreadAttribute {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.as_fields().serialize(serializer)
+    }
+}
+#[derive(Serialize)]
+pub struct HtmlSpreadAttributeFields {
+    pub l_curly_token: SyntaxResult<SyntaxToken>,
+    pub dotdotdot_token: SyntaxResult<SyntaxToken>,
+    pub argument: SyntaxResult<HtmlTextExpression>,
     pub r_curly_token: SyntaxResult<SyntaxToken>,
 }
 #[derive(Clone, PartialEq, Eq, Hash)]
@@ -3270,6 +3775,53 @@ pub struct VueVSlotShorthandDirectiveFields {
     pub initializer: Option<HtmlAttributeInitializerClause>,
 }
 #[derive(Clone, PartialEq, Eq, Hash, Serialize)]
+pub enum AnyAstroDirective {
+    AstroClassDirective(AstroClassDirective),
+    AstroClientDirective(AstroClientDirective),
+    AstroDefineDirective(AstroDefineDirective),
+    AstroIsDirective(AstroIsDirective),
+    AstroServerDirective(AstroServerDirective),
+    AstroSetDirective(AstroSetDirective),
+}
+impl AnyAstroDirective {
+    pub fn as_astro_class_directive(&self) -> Option<&AstroClassDirective> {
+        match &self {
+            Self::AstroClassDirective(item) => Some(item),
+            _ => None,
+        }
+    }
+    pub fn as_astro_client_directive(&self) -> Option<&AstroClientDirective> {
+        match &self {
+            Self::AstroClientDirective(item) => Some(item),
+            _ => None,
+        }
+    }
+    pub fn as_astro_define_directive(&self) -> Option<&AstroDefineDirective> {
+        match &self {
+            Self::AstroDefineDirective(item) => Some(item),
+            _ => None,
+        }
+    }
+    pub fn as_astro_is_directive(&self) -> Option<&AstroIsDirective> {
+        match &self {
+            Self::AstroIsDirective(item) => Some(item),
+            _ => None,
+        }
+    }
+    pub fn as_astro_server_directive(&self) -> Option<&AstroServerDirective> {
+        match &self {
+            Self::AstroServerDirective(item) => Some(item),
+            _ => None,
+        }
+    }
+    pub fn as_astro_set_directive(&self) -> Option<&AstroSetDirective> {
+        match &self {
+            Self::AstroSetDirective(item) => Some(item),
+            _ => None,
+        }
+    }
+}
+#[derive(Clone, PartialEq, Eq, Hash, Serialize)]
 pub enum AnyAstroFrontmatterElement {
     AstroBogusFrontmatter(AstroBogusFrontmatter),
     AstroFrontmatterElement(AstroFrontmatterElement),
@@ -3290,15 +3842,23 @@ impl AnyAstroFrontmatterElement {
 }
 #[derive(Clone, PartialEq, Eq, Hash, Serialize)]
 pub enum AnyHtmlAttribute {
+    AnyAstroDirective(AnyAstroDirective),
     AnySvelteDirective(AnySvelteDirective),
     AnyVueDirective(AnyVueDirective),
     HtmlAttribute(HtmlAttribute),
+    HtmlAttributeDoubleTextExpression(HtmlAttributeDoubleTextExpression),
+    HtmlAttributeSingleTextExpression(HtmlAttributeSingleTextExpression),
     HtmlBogusAttribute(HtmlBogusAttribute),
-    HtmlDoubleTextExpression(HtmlDoubleTextExpression),
-    HtmlSingleTextExpression(HtmlSingleTextExpression),
+    HtmlSpreadAttribute(HtmlSpreadAttribute),
     SvelteAttachAttribute(SvelteAttachAttribute),
 }
 impl AnyHtmlAttribute {
+    pub fn as_any_astro_directive(&self) -> Option<&AnyAstroDirective> {
+        match &self {
+            Self::AnyAstroDirective(item) => Some(item),
+            _ => None,
+        }
+    }
     pub fn as_any_svelte_directive(&self) -> Option<&AnySvelteDirective> {
         match &self {
             Self::AnySvelteDirective(item) => Some(item),
@@ -3317,21 +3877,31 @@ impl AnyHtmlAttribute {
             _ => None,
         }
     }
+    pub fn as_html_attribute_double_text_expression(
+        &self,
+    ) -> Option<&HtmlAttributeDoubleTextExpression> {
+        match &self {
+            Self::HtmlAttributeDoubleTextExpression(item) => Some(item),
+            _ => None,
+        }
+    }
+    pub fn as_html_attribute_single_text_expression(
+        &self,
+    ) -> Option<&HtmlAttributeSingleTextExpression> {
+        match &self {
+            Self::HtmlAttributeSingleTextExpression(item) => Some(item),
+            _ => None,
+        }
+    }
     pub fn as_html_bogus_attribute(&self) -> Option<&HtmlBogusAttribute> {
         match &self {
             Self::HtmlBogusAttribute(item) => Some(item),
             _ => None,
         }
     }
-    pub fn as_html_double_text_expression(&self) -> Option<&HtmlDoubleTextExpression> {
+    pub fn as_html_spread_attribute(&self) -> Option<&HtmlSpreadAttribute> {
         match &self {
-            Self::HtmlDoubleTextExpression(item) => Some(item),
-            _ => None,
-        }
-    }
-    pub fn as_html_single_text_expression(&self) -> Option<&HtmlSingleTextExpression> {
-        match &self {
-            Self::HtmlSingleTextExpression(item) => Some(item),
+            Self::HtmlSpreadAttribute(item) => Some(item),
             _ => None,
         }
     }
@@ -3344,19 +3914,47 @@ impl AnyHtmlAttribute {
 }
 #[derive(Clone, PartialEq, Eq, Hash, Serialize)]
 pub enum AnyHtmlAttributeInitializer {
-    HtmlSingleTextExpression(HtmlSingleTextExpression),
+    HtmlAttributeSingleTextExpression(HtmlAttributeSingleTextExpression),
     HtmlString(HtmlString),
 }
 impl AnyHtmlAttributeInitializer {
-    pub fn as_html_single_text_expression(&self) -> Option<&HtmlSingleTextExpression> {
+    pub fn as_html_attribute_single_text_expression(
+        &self,
+    ) -> Option<&HtmlAttributeSingleTextExpression> {
         match &self {
-            Self::HtmlSingleTextExpression(item) => Some(item),
+            Self::HtmlAttributeSingleTextExpression(item) => Some(item),
             _ => None,
         }
     }
     pub fn as_html_string(&self) -> Option<&HtmlString> {
         match &self {
             Self::HtmlString(item) => Some(item),
+            _ => None,
+        }
+    }
+}
+#[derive(Clone, PartialEq, Eq, Hash, Serialize)]
+pub enum AnyHtmlComponentObjectName {
+    HtmlComponentName(HtmlComponentName),
+    HtmlMemberName(HtmlMemberName),
+    HtmlTagName(HtmlTagName),
+}
+impl AnyHtmlComponentObjectName {
+    pub fn as_html_component_name(&self) -> Option<&HtmlComponentName> {
+        match &self {
+            Self::HtmlComponentName(item) => Some(item),
+            _ => None,
+        }
+    }
+    pub fn as_html_member_name(&self) -> Option<&HtmlMemberName> {
+        match &self {
+            Self::HtmlMemberName(item) => Some(item),
+            _ => None,
+        }
+    }
+    pub fn as_html_tag_name(&self) -> Option<&HtmlTagName> {
+        match &self {
+            Self::HtmlTagName(item) => Some(item),
             _ => None,
         }
     }
@@ -3423,6 +4021,32 @@ impl AnyHtmlElement {
     pub fn as_html_self_closing_element(&self) -> Option<&HtmlSelfClosingElement> {
         match &self {
             Self::HtmlSelfClosingElement(item) => Some(item),
+            _ => None,
+        }
+    }
+}
+#[derive(Clone, PartialEq, Eq, Hash, Serialize)]
+pub enum AnyHtmlTagName {
+    HtmlComponentName(HtmlComponentName),
+    HtmlMemberName(HtmlMemberName),
+    HtmlTagName(HtmlTagName),
+}
+impl AnyHtmlTagName {
+    pub fn as_html_component_name(&self) -> Option<&HtmlComponentName> {
+        match &self {
+            Self::HtmlComponentName(item) => Some(item),
+            _ => None,
+        }
+    }
+    pub fn as_html_member_name(&self) -> Option<&HtmlMemberName> {
+        match &self {
+            Self::HtmlMemberName(item) => Some(item),
+            _ => None,
+        }
+    }
+    pub fn as_html_tag_name(&self) -> Option<&HtmlTagName> {
+        match &self {
+            Self::HtmlTagName(item) => Some(item),
             _ => None,
         }
     }
@@ -3790,6 +4414,214 @@ impl AnyVueDirectiveArgument {
         }
     }
 }
+impl AstNode for AstroClassDirective {
+    type Language = Language;
+    const KIND_SET: SyntaxKindSet<Language> =
+        SyntaxKindSet::from_raw(RawSyntaxKind(ASTRO_CLASS_DIRECTIVE as u16));
+    fn can_cast(kind: SyntaxKind) -> bool {
+        kind == ASTRO_CLASS_DIRECTIVE
+    }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        if Self::can_cast(syntax.kind()) {
+            Some(Self { syntax })
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> SyntaxNode {
+        self.syntax
+    }
+}
+impl std::fmt::Debug for AstroClassDirective {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
+        let current_depth = DEPTH.get();
+        let result = if current_depth < 16 {
+            DEPTH.set(current_depth + 1);
+            f.debug_struct("AstroClassDirective")
+                .field(
+                    "class_token",
+                    &support::DebugSyntaxResult(self.class_token()),
+                )
+                .field("value", &support::DebugSyntaxResult(self.value()))
+                .finish()
+        } else {
+            f.debug_struct("AstroClassDirective").finish()
+        };
+        DEPTH.set(current_depth);
+        result
+    }
+}
+impl From<AstroClassDirective> for SyntaxNode {
+    fn from(n: AstroClassDirective) -> Self {
+        n.syntax
+    }
+}
+impl From<AstroClassDirective> for SyntaxElement {
+    fn from(n: AstroClassDirective) -> Self {
+        n.syntax.into()
+    }
+}
+impl AstNode for AstroClientDirective {
+    type Language = Language;
+    const KIND_SET: SyntaxKindSet<Language> =
+        SyntaxKindSet::from_raw(RawSyntaxKind(ASTRO_CLIENT_DIRECTIVE as u16));
+    fn can_cast(kind: SyntaxKind) -> bool {
+        kind == ASTRO_CLIENT_DIRECTIVE
+    }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        if Self::can_cast(syntax.kind()) {
+            Some(Self { syntax })
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> SyntaxNode {
+        self.syntax
+    }
+}
+impl std::fmt::Debug for AstroClientDirective {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
+        let current_depth = DEPTH.get();
+        let result = if current_depth < 16 {
+            DEPTH.set(current_depth + 1);
+            f.debug_struct("AstroClientDirective")
+                .field(
+                    "client_token",
+                    &support::DebugSyntaxResult(self.client_token()),
+                )
+                .field("value", &support::DebugSyntaxResult(self.value()))
+                .finish()
+        } else {
+            f.debug_struct("AstroClientDirective").finish()
+        };
+        DEPTH.set(current_depth);
+        result
+    }
+}
+impl From<AstroClientDirective> for SyntaxNode {
+    fn from(n: AstroClientDirective) -> Self {
+        n.syntax
+    }
+}
+impl From<AstroClientDirective> for SyntaxElement {
+    fn from(n: AstroClientDirective) -> Self {
+        n.syntax.into()
+    }
+}
+impl AstNode for AstroDefineDirective {
+    type Language = Language;
+    const KIND_SET: SyntaxKindSet<Language> =
+        SyntaxKindSet::from_raw(RawSyntaxKind(ASTRO_DEFINE_DIRECTIVE as u16));
+    fn can_cast(kind: SyntaxKind) -> bool {
+        kind == ASTRO_DEFINE_DIRECTIVE
+    }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        if Self::can_cast(syntax.kind()) {
+            Some(Self { syntax })
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> SyntaxNode {
+        self.syntax
+    }
+}
+impl std::fmt::Debug for AstroDefineDirective {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
+        let current_depth = DEPTH.get();
+        let result = if current_depth < 16 {
+            DEPTH.set(current_depth + 1);
+            f.debug_struct("AstroDefineDirective")
+                .field(
+                    "define_token",
+                    &support::DebugSyntaxResult(self.define_token()),
+                )
+                .field("value", &support::DebugSyntaxResult(self.value()))
+                .finish()
+        } else {
+            f.debug_struct("AstroDefineDirective").finish()
+        };
+        DEPTH.set(current_depth);
+        result
+    }
+}
+impl From<AstroDefineDirective> for SyntaxNode {
+    fn from(n: AstroDefineDirective) -> Self {
+        n.syntax
+    }
+}
+impl From<AstroDefineDirective> for SyntaxElement {
+    fn from(n: AstroDefineDirective) -> Self {
+        n.syntax.into()
+    }
+}
+impl AstNode for AstroDirectiveValue {
+    type Language = Language;
+    const KIND_SET: SyntaxKindSet<Language> =
+        SyntaxKindSet::from_raw(RawSyntaxKind(ASTRO_DIRECTIVE_VALUE as u16));
+    fn can_cast(kind: SyntaxKind) -> bool {
+        kind == ASTRO_DIRECTIVE_VALUE
+    }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        if Self::can_cast(syntax.kind()) {
+            Some(Self { syntax })
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> SyntaxNode {
+        self.syntax
+    }
+}
+impl std::fmt::Debug for AstroDirectiveValue {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
+        let current_depth = DEPTH.get();
+        let result = if current_depth < 16 {
+            DEPTH.set(current_depth + 1);
+            f.debug_struct("AstroDirectiveValue")
+                .field(
+                    "colon_token_token",
+                    &support::DebugSyntaxResult(self.colon_token_token()),
+                )
+                .field("name", &support::DebugSyntaxResult(self.name()))
+                .field(
+                    "initializer",
+                    &support::DebugOptionalElement(self.initializer()),
+                )
+                .finish()
+        } else {
+            f.debug_struct("AstroDirectiveValue").finish()
+        };
+        DEPTH.set(current_depth);
+        result
+    }
+}
+impl From<AstroDirectiveValue> for SyntaxNode {
+    fn from(n: AstroDirectiveValue) -> Self {
+        n.syntax
+    }
+}
+impl From<AstroDirectiveValue> for SyntaxElement {
+    fn from(n: AstroDirectiveValue) -> Self {
+        n.syntax.into()
+    }
+}
 impl AstNode for AstroEmbeddedContent {
     type Language = Language;
     const KIND_SET: SyntaxKindSet<Language> =
@@ -3895,6 +4727,153 @@ impl From<AstroFrontmatterElement> for SyntaxElement {
         n.syntax.into()
     }
 }
+impl AstNode for AstroIsDirective {
+    type Language = Language;
+    const KIND_SET: SyntaxKindSet<Language> =
+        SyntaxKindSet::from_raw(RawSyntaxKind(ASTRO_IS_DIRECTIVE as u16));
+    fn can_cast(kind: SyntaxKind) -> bool {
+        kind == ASTRO_IS_DIRECTIVE
+    }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        if Self::can_cast(syntax.kind()) {
+            Some(Self { syntax })
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> SyntaxNode {
+        self.syntax
+    }
+}
+impl std::fmt::Debug for AstroIsDirective {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
+        let current_depth = DEPTH.get();
+        let result = if current_depth < 16 {
+            DEPTH.set(current_depth + 1);
+            f.debug_struct("AstroIsDirective")
+                .field("is_token", &support::DebugSyntaxResult(self.is_token()))
+                .field("value", &support::DebugSyntaxResult(self.value()))
+                .finish()
+        } else {
+            f.debug_struct("AstroIsDirective").finish()
+        };
+        DEPTH.set(current_depth);
+        result
+    }
+}
+impl From<AstroIsDirective> for SyntaxNode {
+    fn from(n: AstroIsDirective) -> Self {
+        n.syntax
+    }
+}
+impl From<AstroIsDirective> for SyntaxElement {
+    fn from(n: AstroIsDirective) -> Self {
+        n.syntax.into()
+    }
+}
+impl AstNode for AstroServerDirective {
+    type Language = Language;
+    const KIND_SET: SyntaxKindSet<Language> =
+        SyntaxKindSet::from_raw(RawSyntaxKind(ASTRO_SERVER_DIRECTIVE as u16));
+    fn can_cast(kind: SyntaxKind) -> bool {
+        kind == ASTRO_SERVER_DIRECTIVE
+    }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        if Self::can_cast(syntax.kind()) {
+            Some(Self { syntax })
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> SyntaxNode {
+        self.syntax
+    }
+}
+impl std::fmt::Debug for AstroServerDirective {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
+        let current_depth = DEPTH.get();
+        let result = if current_depth < 16 {
+            DEPTH.set(current_depth + 1);
+            f.debug_struct("AstroServerDirective")
+                .field(
+                    "server_token",
+                    &support::DebugSyntaxResult(self.server_token()),
+                )
+                .field("value", &support::DebugSyntaxResult(self.value()))
+                .finish()
+        } else {
+            f.debug_struct("AstroServerDirective").finish()
+        };
+        DEPTH.set(current_depth);
+        result
+    }
+}
+impl From<AstroServerDirective> for SyntaxNode {
+    fn from(n: AstroServerDirective) -> Self {
+        n.syntax
+    }
+}
+impl From<AstroServerDirective> for SyntaxElement {
+    fn from(n: AstroServerDirective) -> Self {
+        n.syntax.into()
+    }
+}
+impl AstNode for AstroSetDirective {
+    type Language = Language;
+    const KIND_SET: SyntaxKindSet<Language> =
+        SyntaxKindSet::from_raw(RawSyntaxKind(ASTRO_SET_DIRECTIVE as u16));
+    fn can_cast(kind: SyntaxKind) -> bool {
+        kind == ASTRO_SET_DIRECTIVE
+    }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        if Self::can_cast(syntax.kind()) {
+            Some(Self { syntax })
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> SyntaxNode {
+        self.syntax
+    }
+}
+impl std::fmt::Debug for AstroSetDirective {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
+        let current_depth = DEPTH.get();
+        let result = if current_depth < 16 {
+            DEPTH.set(current_depth + 1);
+            f.debug_struct("AstroSetDirective")
+                .field("set_token", &support::DebugSyntaxResult(self.set_token()))
+                .field("value", &support::DebugSyntaxResult(self.value()))
+                .finish()
+        } else {
+            f.debug_struct("AstroSetDirective").finish()
+        };
+        DEPTH.set(current_depth);
+        result
+    }
+}
+impl From<AstroSetDirective> for SyntaxNode {
+    fn from(n: AstroSetDirective) -> Self {
+        n.syntax
+    }
+}
+impl From<AstroSetDirective> for SyntaxElement {
+    fn from(n: AstroSetDirective) -> Self {
+        n.syntax.into()
+    }
+}
 impl AstNode for HtmlAttribute {
     type Language = Language;
     const KIND_SET: SyntaxKindSet<Language> =
@@ -3943,6 +4922,61 @@ impl From<HtmlAttribute> for SyntaxNode {
 }
 impl From<HtmlAttribute> for SyntaxElement {
     fn from(n: HtmlAttribute) -> Self {
+        n.syntax.into()
+    }
+}
+impl AstNode for HtmlAttributeDoubleTextExpression {
+    type Language = Language;
+    const KIND_SET: SyntaxKindSet<Language> =
+        SyntaxKindSet::from_raw(RawSyntaxKind(HTML_ATTRIBUTE_DOUBLE_TEXT_EXPRESSION as u16));
+    fn can_cast(kind: SyntaxKind) -> bool {
+        kind == HTML_ATTRIBUTE_DOUBLE_TEXT_EXPRESSION
+    }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        if Self::can_cast(syntax.kind()) {
+            Some(Self { syntax })
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> SyntaxNode {
+        self.syntax
+    }
+}
+impl std::fmt::Debug for HtmlAttributeDoubleTextExpression {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
+        let current_depth = DEPTH.get();
+        let result = if current_depth < 16 {
+            DEPTH.set(current_depth + 1);
+            f.debug_struct("HtmlAttributeDoubleTextExpression")
+                .field(
+                    "l_double_curly_token",
+                    &support::DebugSyntaxResult(self.l_double_curly_token()),
+                )
+                .field("expression", &support::DebugSyntaxResult(self.expression()))
+                .field(
+                    "r_double_curly_token",
+                    &support::DebugSyntaxResult(self.r_double_curly_token()),
+                )
+                .finish()
+        } else {
+            f.debug_struct("HtmlAttributeDoubleTextExpression").finish()
+        };
+        DEPTH.set(current_depth);
+        result
+    }
+}
+impl From<HtmlAttributeDoubleTextExpression> for SyntaxNode {
+    fn from(n: HtmlAttributeDoubleTextExpression) -> Self {
+        n.syntax
+    }
+}
+impl From<HtmlAttributeDoubleTextExpression> for SyntaxElement {
+    fn from(n: HtmlAttributeDoubleTextExpression) -> Self {
         n.syntax.into()
     }
 }
@@ -4041,6 +5075,61 @@ impl From<HtmlAttributeName> for SyntaxNode {
 }
 impl From<HtmlAttributeName> for SyntaxElement {
     fn from(n: HtmlAttributeName) -> Self {
+        n.syntax.into()
+    }
+}
+impl AstNode for HtmlAttributeSingleTextExpression {
+    type Language = Language;
+    const KIND_SET: SyntaxKindSet<Language> =
+        SyntaxKindSet::from_raw(RawSyntaxKind(HTML_ATTRIBUTE_SINGLE_TEXT_EXPRESSION as u16));
+    fn can_cast(kind: SyntaxKind) -> bool {
+        kind == HTML_ATTRIBUTE_SINGLE_TEXT_EXPRESSION
+    }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        if Self::can_cast(syntax.kind()) {
+            Some(Self { syntax })
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> SyntaxNode {
+        self.syntax
+    }
+}
+impl std::fmt::Debug for HtmlAttributeSingleTextExpression {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
+        let current_depth = DEPTH.get();
+        let result = if current_depth < 16 {
+            DEPTH.set(current_depth + 1);
+            f.debug_struct("HtmlAttributeSingleTextExpression")
+                .field(
+                    "l_curly_token",
+                    &support::DebugSyntaxResult(self.l_curly_token()),
+                )
+                .field("expression", &support::DebugSyntaxResult(self.expression()))
+                .field(
+                    "r_curly_token",
+                    &support::DebugSyntaxResult(self.r_curly_token()),
+                )
+                .finish()
+        } else {
+            f.debug_struct("HtmlAttributeSingleTextExpression").finish()
+        };
+        DEPTH.set(current_depth);
+        result
+    }
+}
+impl From<HtmlAttributeSingleTextExpression> for SyntaxNode {
+    fn from(n: HtmlAttributeSingleTextExpression) -> Self {
+        n.syntax
+    }
+}
+impl From<HtmlAttributeSingleTextExpression> for SyntaxElement {
+    fn from(n: HtmlAttributeSingleTextExpression) -> Self {
         n.syntax.into()
     }
 }
@@ -4158,6 +5247,56 @@ impl From<HtmlClosingElement> for SyntaxNode {
 }
 impl From<HtmlClosingElement> for SyntaxElement {
     fn from(n: HtmlClosingElement) -> Self {
+        n.syntax.into()
+    }
+}
+impl AstNode for HtmlComponentName {
+    type Language = Language;
+    const KIND_SET: SyntaxKindSet<Language> =
+        SyntaxKindSet::from_raw(RawSyntaxKind(HTML_COMPONENT_NAME as u16));
+    fn can_cast(kind: SyntaxKind) -> bool {
+        kind == HTML_COMPONENT_NAME
+    }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        if Self::can_cast(syntax.kind()) {
+            Some(Self { syntax })
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> SyntaxNode {
+        self.syntax
+    }
+}
+impl std::fmt::Debug for HtmlComponentName {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
+        let current_depth = DEPTH.get();
+        let result = if current_depth < 16 {
+            DEPTH.set(current_depth + 1);
+            f.debug_struct("HtmlComponentName")
+                .field(
+                    "value_token",
+                    &support::DebugSyntaxResult(self.value_token()),
+                )
+                .finish()
+        } else {
+            f.debug_struct("HtmlComponentName").finish()
+        };
+        DEPTH.set(current_depth);
+        result
+    }
+}
+impl From<HtmlComponentName> for SyntaxNode {
+    fn from(n: HtmlComponentName) -> Self {
+        n.syntax
+    }
+}
+impl From<HtmlComponentName> for SyntaxElement {
+    fn from(n: HtmlComponentName) -> Self {
         n.syntax.into()
     }
 }
@@ -4446,6 +5585,55 @@ impl From<HtmlEmbeddedContent> for SyntaxElement {
         n.syntax.into()
     }
 }
+impl AstNode for HtmlMemberName {
+    type Language = Language;
+    const KIND_SET: SyntaxKindSet<Language> =
+        SyntaxKindSet::from_raw(RawSyntaxKind(HTML_MEMBER_NAME as u16));
+    fn can_cast(kind: SyntaxKind) -> bool {
+        kind == HTML_MEMBER_NAME
+    }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        if Self::can_cast(syntax.kind()) {
+            Some(Self { syntax })
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> SyntaxNode {
+        self.syntax
+    }
+}
+impl std::fmt::Debug for HtmlMemberName {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
+        let current_depth = DEPTH.get();
+        let result = if current_depth < 16 {
+            DEPTH.set(current_depth + 1);
+            f.debug_struct("HtmlMemberName")
+                .field("object", &support::DebugSyntaxResult(self.object()))
+                .field("dot_token", &support::DebugSyntaxResult(self.dot_token()))
+                .field("member", &support::DebugSyntaxResult(self.member()))
+                .finish()
+        } else {
+            f.debug_struct("HtmlMemberName").finish()
+        };
+        DEPTH.set(current_depth);
+        result
+    }
+}
+impl From<HtmlMemberName> for SyntaxNode {
+    fn from(n: HtmlMemberName) -> Self {
+        n.syntax
+    }
+}
+impl From<HtmlMemberName> for SyntaxElement {
+    fn from(n: HtmlMemberName) -> Self {
+        n.syntax.into()
+    }
+}
 impl AstNode for HtmlOpeningElement {
     type Language = Language;
     const KIND_SET: SyntaxKindSet<Language> =
@@ -4674,6 +5862,65 @@ impl From<HtmlSingleTextExpression> for SyntaxNode {
 }
 impl From<HtmlSingleTextExpression> for SyntaxElement {
     fn from(n: HtmlSingleTextExpression) -> Self {
+        n.syntax.into()
+    }
+}
+impl AstNode for HtmlSpreadAttribute {
+    type Language = Language;
+    const KIND_SET: SyntaxKindSet<Language> =
+        SyntaxKindSet::from_raw(RawSyntaxKind(HTML_SPREAD_ATTRIBUTE as u16));
+    fn can_cast(kind: SyntaxKind) -> bool {
+        kind == HTML_SPREAD_ATTRIBUTE
+    }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        if Self::can_cast(syntax.kind()) {
+            Some(Self { syntax })
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode {
+        &self.syntax
+    }
+    fn into_syntax(self) -> SyntaxNode {
+        self.syntax
+    }
+}
+impl std::fmt::Debug for HtmlSpreadAttribute {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
+        let current_depth = DEPTH.get();
+        let result = if current_depth < 16 {
+            DEPTH.set(current_depth + 1);
+            f.debug_struct("HtmlSpreadAttribute")
+                .field(
+                    "l_curly_token",
+                    &support::DebugSyntaxResult(self.l_curly_token()),
+                )
+                .field(
+                    "dotdotdot_token",
+                    &support::DebugSyntaxResult(self.dotdotdot_token()),
+                )
+                .field("argument", &support::DebugSyntaxResult(self.argument()))
+                .field(
+                    "r_curly_token",
+                    &support::DebugSyntaxResult(self.r_curly_token()),
+                )
+                .finish()
+        } else {
+            f.debug_struct("HtmlSpreadAttribute").finish()
+        };
+        DEPTH.set(current_depth);
+        result
+    }
+}
+impl From<HtmlSpreadAttribute> for SyntaxNode {
+    fn from(n: HtmlSpreadAttribute) -> Self {
+        n.syntax
+    }
+}
+impl From<HtmlSpreadAttribute> for SyntaxElement {
+    fn from(n: HtmlSpreadAttribute) -> Self {
         n.syntax.into()
     }
 }
@@ -7692,6 +8939,118 @@ impl From<VueVSlotShorthandDirective> for SyntaxElement {
         n.syntax.into()
     }
 }
+impl From<AstroClassDirective> for AnyAstroDirective {
+    fn from(node: AstroClassDirective) -> Self {
+        Self::AstroClassDirective(node)
+    }
+}
+impl From<AstroClientDirective> for AnyAstroDirective {
+    fn from(node: AstroClientDirective) -> Self {
+        Self::AstroClientDirective(node)
+    }
+}
+impl From<AstroDefineDirective> for AnyAstroDirective {
+    fn from(node: AstroDefineDirective) -> Self {
+        Self::AstroDefineDirective(node)
+    }
+}
+impl From<AstroIsDirective> for AnyAstroDirective {
+    fn from(node: AstroIsDirective) -> Self {
+        Self::AstroIsDirective(node)
+    }
+}
+impl From<AstroServerDirective> for AnyAstroDirective {
+    fn from(node: AstroServerDirective) -> Self {
+        Self::AstroServerDirective(node)
+    }
+}
+impl From<AstroSetDirective> for AnyAstroDirective {
+    fn from(node: AstroSetDirective) -> Self {
+        Self::AstroSetDirective(node)
+    }
+}
+impl AstNode for AnyAstroDirective {
+    type Language = Language;
+    const KIND_SET: SyntaxKindSet<Language> = AstroClassDirective::KIND_SET
+        .union(AstroClientDirective::KIND_SET)
+        .union(AstroDefineDirective::KIND_SET)
+        .union(AstroIsDirective::KIND_SET)
+        .union(AstroServerDirective::KIND_SET)
+        .union(AstroSetDirective::KIND_SET);
+    fn can_cast(kind: SyntaxKind) -> bool {
+        matches!(
+            kind,
+            ASTRO_CLASS_DIRECTIVE
+                | ASTRO_CLIENT_DIRECTIVE
+                | ASTRO_DEFINE_DIRECTIVE
+                | ASTRO_IS_DIRECTIVE
+                | ASTRO_SERVER_DIRECTIVE
+                | ASTRO_SET_DIRECTIVE
+        )
+    }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        let res = match syntax.kind() {
+            ASTRO_CLASS_DIRECTIVE => Self::AstroClassDirective(AstroClassDirective { syntax }),
+            ASTRO_CLIENT_DIRECTIVE => Self::AstroClientDirective(AstroClientDirective { syntax }),
+            ASTRO_DEFINE_DIRECTIVE => Self::AstroDefineDirective(AstroDefineDirective { syntax }),
+            ASTRO_IS_DIRECTIVE => Self::AstroIsDirective(AstroIsDirective { syntax }),
+            ASTRO_SERVER_DIRECTIVE => Self::AstroServerDirective(AstroServerDirective { syntax }),
+            ASTRO_SET_DIRECTIVE => Self::AstroSetDirective(AstroSetDirective { syntax }),
+            _ => return None,
+        };
+        Some(res)
+    }
+    fn syntax(&self) -> &SyntaxNode {
+        match self {
+            Self::AstroClassDirective(it) => it.syntax(),
+            Self::AstroClientDirective(it) => it.syntax(),
+            Self::AstroDefineDirective(it) => it.syntax(),
+            Self::AstroIsDirective(it) => it.syntax(),
+            Self::AstroServerDirective(it) => it.syntax(),
+            Self::AstroSetDirective(it) => it.syntax(),
+        }
+    }
+    fn into_syntax(self) -> SyntaxNode {
+        match self {
+            Self::AstroClassDirective(it) => it.into_syntax(),
+            Self::AstroClientDirective(it) => it.into_syntax(),
+            Self::AstroDefineDirective(it) => it.into_syntax(),
+            Self::AstroIsDirective(it) => it.into_syntax(),
+            Self::AstroServerDirective(it) => it.into_syntax(),
+            Self::AstroSetDirective(it) => it.into_syntax(),
+        }
+    }
+}
+impl std::fmt::Debug for AnyAstroDirective {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::AstroClassDirective(it) => std::fmt::Debug::fmt(it, f),
+            Self::AstroClientDirective(it) => std::fmt::Debug::fmt(it, f),
+            Self::AstroDefineDirective(it) => std::fmt::Debug::fmt(it, f),
+            Self::AstroIsDirective(it) => std::fmt::Debug::fmt(it, f),
+            Self::AstroServerDirective(it) => std::fmt::Debug::fmt(it, f),
+            Self::AstroSetDirective(it) => std::fmt::Debug::fmt(it, f),
+        }
+    }
+}
+impl From<AnyAstroDirective> for SyntaxNode {
+    fn from(n: AnyAstroDirective) -> Self {
+        match n {
+            AnyAstroDirective::AstroClassDirective(it) => it.into_syntax(),
+            AnyAstroDirective::AstroClientDirective(it) => it.into_syntax(),
+            AnyAstroDirective::AstroDefineDirective(it) => it.into_syntax(),
+            AnyAstroDirective::AstroIsDirective(it) => it.into_syntax(),
+            AnyAstroDirective::AstroServerDirective(it) => it.into_syntax(),
+            AnyAstroDirective::AstroSetDirective(it) => it.into_syntax(),
+        }
+    }
+}
+impl From<AnyAstroDirective> for SyntaxElement {
+    fn from(n: AnyAstroDirective) -> Self {
+        let node: SyntaxNode = n.into();
+        node.into()
+    }
+}
 impl From<AstroBogusFrontmatter> for AnyAstroFrontmatterElement {
     fn from(node: AstroBogusFrontmatter) -> Self {
         Self::AstroBogusFrontmatter(node)
@@ -7761,19 +9120,24 @@ impl From<HtmlAttribute> for AnyHtmlAttribute {
         Self::HtmlAttribute(node)
     }
 }
+impl From<HtmlAttributeDoubleTextExpression> for AnyHtmlAttribute {
+    fn from(node: HtmlAttributeDoubleTextExpression) -> Self {
+        Self::HtmlAttributeDoubleTextExpression(node)
+    }
+}
+impl From<HtmlAttributeSingleTextExpression> for AnyHtmlAttribute {
+    fn from(node: HtmlAttributeSingleTextExpression) -> Self {
+        Self::HtmlAttributeSingleTextExpression(node)
+    }
+}
 impl From<HtmlBogusAttribute> for AnyHtmlAttribute {
     fn from(node: HtmlBogusAttribute) -> Self {
         Self::HtmlBogusAttribute(node)
     }
 }
-impl From<HtmlDoubleTextExpression> for AnyHtmlAttribute {
-    fn from(node: HtmlDoubleTextExpression) -> Self {
-        Self::HtmlDoubleTextExpression(node)
-    }
-}
-impl From<HtmlSingleTextExpression> for AnyHtmlAttribute {
-    fn from(node: HtmlSingleTextExpression) -> Self {
-        Self::HtmlSingleTextExpression(node)
+impl From<HtmlSpreadAttribute> for AnyHtmlAttribute {
+    fn from(node: HtmlSpreadAttribute) -> Self {
+        Self::HtmlSpreadAttribute(node)
     }
 }
 impl From<SvelteAttachAttribute> for AnyHtmlAttribute {
@@ -7783,20 +9147,24 @@ impl From<SvelteAttachAttribute> for AnyHtmlAttribute {
 }
 impl AstNode for AnyHtmlAttribute {
     type Language = Language;
-    const KIND_SET: SyntaxKindSet<Language> = AnySvelteDirective::KIND_SET
+    const KIND_SET: SyntaxKindSet<Language> = AnyAstroDirective::KIND_SET
+        .union(AnySvelteDirective::KIND_SET)
         .union(AnyVueDirective::KIND_SET)
         .union(HtmlAttribute::KIND_SET)
+        .union(HtmlAttributeDoubleTextExpression::KIND_SET)
+        .union(HtmlAttributeSingleTextExpression::KIND_SET)
         .union(HtmlBogusAttribute::KIND_SET)
-        .union(HtmlDoubleTextExpression::KIND_SET)
-        .union(HtmlSingleTextExpression::KIND_SET)
+        .union(HtmlSpreadAttribute::KIND_SET)
         .union(SvelteAttachAttribute::KIND_SET);
     fn can_cast(kind: SyntaxKind) -> bool {
         match kind {
             HTML_ATTRIBUTE
+            | HTML_ATTRIBUTE_DOUBLE_TEXT_EXPRESSION
+            | HTML_ATTRIBUTE_SINGLE_TEXT_EXPRESSION
             | HTML_BOGUS_ATTRIBUTE
-            | HTML_DOUBLE_TEXT_EXPRESSION
-            | HTML_SINGLE_TEXT_EXPRESSION
+            | HTML_SPREAD_ATTRIBUTE
             | SVELTE_ATTACH_ATTRIBUTE => true,
+            k if AnyAstroDirective::can_cast(k) => true,
             k if AnySvelteDirective::can_cast(k) => true,
             k if AnyVueDirective::can_cast(k) => true,
             _ => false,
@@ -7805,17 +9173,28 @@ impl AstNode for AnyHtmlAttribute {
     fn cast(syntax: SyntaxNode) -> Option<Self> {
         let res = match syntax.kind() {
             HTML_ATTRIBUTE => Self::HtmlAttribute(HtmlAttribute { syntax }),
+            HTML_ATTRIBUTE_DOUBLE_TEXT_EXPRESSION => {
+                Self::HtmlAttributeDoubleTextExpression(HtmlAttributeDoubleTextExpression {
+                    syntax,
+                })
+            }
+            HTML_ATTRIBUTE_SINGLE_TEXT_EXPRESSION => {
+                Self::HtmlAttributeSingleTextExpression(HtmlAttributeSingleTextExpression {
+                    syntax,
+                })
+            }
             HTML_BOGUS_ATTRIBUTE => Self::HtmlBogusAttribute(HtmlBogusAttribute { syntax }),
-            HTML_DOUBLE_TEXT_EXPRESSION => {
-                Self::HtmlDoubleTextExpression(HtmlDoubleTextExpression { syntax })
-            }
-            HTML_SINGLE_TEXT_EXPRESSION => {
-                Self::HtmlSingleTextExpression(HtmlSingleTextExpression { syntax })
-            }
+            HTML_SPREAD_ATTRIBUTE => Self::HtmlSpreadAttribute(HtmlSpreadAttribute { syntax }),
             SVELTE_ATTACH_ATTRIBUTE => {
                 Self::SvelteAttachAttribute(SvelteAttachAttribute { syntax })
             }
             _ => {
+                let syntax = match AnyAstroDirective::try_cast(syntax) {
+                    Ok(any_astro_directive) => {
+                        return Some(Self::AnyAstroDirective(any_astro_directive));
+                    }
+                    Err(syntax) => syntax,
+                };
                 let syntax = match AnySvelteDirective::try_cast(syntax) {
                     Ok(any_svelte_directive) => {
                         return Some(Self::AnySvelteDirective(any_svelte_directive));
@@ -7833,10 +9212,12 @@ impl AstNode for AnyHtmlAttribute {
     fn syntax(&self) -> &SyntaxNode {
         match self {
             Self::HtmlAttribute(it) => it.syntax(),
+            Self::HtmlAttributeDoubleTextExpression(it) => it.syntax(),
+            Self::HtmlAttributeSingleTextExpression(it) => it.syntax(),
             Self::HtmlBogusAttribute(it) => it.syntax(),
-            Self::HtmlDoubleTextExpression(it) => it.syntax(),
-            Self::HtmlSingleTextExpression(it) => it.syntax(),
+            Self::HtmlSpreadAttribute(it) => it.syntax(),
             Self::SvelteAttachAttribute(it) => it.syntax(),
+            Self::AnyAstroDirective(it) => it.syntax(),
             Self::AnySvelteDirective(it) => it.syntax(),
             Self::AnyVueDirective(it) => it.syntax(),
         }
@@ -7844,10 +9225,12 @@ impl AstNode for AnyHtmlAttribute {
     fn into_syntax(self) -> SyntaxNode {
         match self {
             Self::HtmlAttribute(it) => it.into_syntax(),
+            Self::HtmlAttributeDoubleTextExpression(it) => it.into_syntax(),
+            Self::HtmlAttributeSingleTextExpression(it) => it.into_syntax(),
             Self::HtmlBogusAttribute(it) => it.into_syntax(),
-            Self::HtmlDoubleTextExpression(it) => it.into_syntax(),
-            Self::HtmlSingleTextExpression(it) => it.into_syntax(),
+            Self::HtmlSpreadAttribute(it) => it.into_syntax(),
             Self::SvelteAttachAttribute(it) => it.into_syntax(),
+            Self::AnyAstroDirective(it) => it.into_syntax(),
             Self::AnySvelteDirective(it) => it.into_syntax(),
             Self::AnyVueDirective(it) => it.into_syntax(),
         }
@@ -7856,12 +9239,14 @@ impl AstNode for AnyHtmlAttribute {
 impl std::fmt::Debug for AnyHtmlAttribute {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
+            Self::AnyAstroDirective(it) => std::fmt::Debug::fmt(it, f),
             Self::AnySvelteDirective(it) => std::fmt::Debug::fmt(it, f),
             Self::AnyVueDirective(it) => std::fmt::Debug::fmt(it, f),
             Self::HtmlAttribute(it) => std::fmt::Debug::fmt(it, f),
+            Self::HtmlAttributeDoubleTextExpression(it) => std::fmt::Debug::fmt(it, f),
+            Self::HtmlAttributeSingleTextExpression(it) => std::fmt::Debug::fmt(it, f),
             Self::HtmlBogusAttribute(it) => std::fmt::Debug::fmt(it, f),
-            Self::HtmlDoubleTextExpression(it) => std::fmt::Debug::fmt(it, f),
-            Self::HtmlSingleTextExpression(it) => std::fmt::Debug::fmt(it, f),
+            Self::HtmlSpreadAttribute(it) => std::fmt::Debug::fmt(it, f),
             Self::SvelteAttachAttribute(it) => std::fmt::Debug::fmt(it, f),
         }
     }
@@ -7869,12 +9254,14 @@ impl std::fmt::Debug for AnyHtmlAttribute {
 impl From<AnyHtmlAttribute> for SyntaxNode {
     fn from(n: AnyHtmlAttribute) -> Self {
         match n {
+            AnyHtmlAttribute::AnyAstroDirective(it) => it.into_syntax(),
             AnyHtmlAttribute::AnySvelteDirective(it) => it.into_syntax(),
             AnyHtmlAttribute::AnyVueDirective(it) => it.into_syntax(),
             AnyHtmlAttribute::HtmlAttribute(it) => it.into_syntax(),
+            AnyHtmlAttribute::HtmlAttributeDoubleTextExpression(it) => it.into_syntax(),
+            AnyHtmlAttribute::HtmlAttributeSingleTextExpression(it) => it.into_syntax(),
             AnyHtmlAttribute::HtmlBogusAttribute(it) => it.into_syntax(),
-            AnyHtmlAttribute::HtmlDoubleTextExpression(it) => it.into_syntax(),
-            AnyHtmlAttribute::HtmlSingleTextExpression(it) => it.into_syntax(),
+            AnyHtmlAttribute::HtmlSpreadAttribute(it) => it.into_syntax(),
             AnyHtmlAttribute::SvelteAttachAttribute(it) => it.into_syntax(),
         }
     }
@@ -7885,9 +9272,9 @@ impl From<AnyHtmlAttribute> for SyntaxElement {
         node.into()
     }
 }
-impl From<HtmlSingleTextExpression> for AnyHtmlAttributeInitializer {
-    fn from(node: HtmlSingleTextExpression) -> Self {
-        Self::HtmlSingleTextExpression(node)
+impl From<HtmlAttributeSingleTextExpression> for AnyHtmlAttributeInitializer {
+    fn from(node: HtmlAttributeSingleTextExpression) -> Self {
+        Self::HtmlAttributeSingleTextExpression(node)
     }
 }
 impl From<HtmlString> for AnyHtmlAttributeInitializer {
@@ -7898,14 +9285,16 @@ impl From<HtmlString> for AnyHtmlAttributeInitializer {
 impl AstNode for AnyHtmlAttributeInitializer {
     type Language = Language;
     const KIND_SET: SyntaxKindSet<Language> =
-        HtmlSingleTextExpression::KIND_SET.union(HtmlString::KIND_SET);
+        HtmlAttributeSingleTextExpression::KIND_SET.union(HtmlString::KIND_SET);
     fn can_cast(kind: SyntaxKind) -> bool {
-        matches!(kind, HTML_SINGLE_TEXT_EXPRESSION | HTML_STRING)
+        matches!(kind, HTML_ATTRIBUTE_SINGLE_TEXT_EXPRESSION | HTML_STRING)
     }
     fn cast(syntax: SyntaxNode) -> Option<Self> {
         let res = match syntax.kind() {
-            HTML_SINGLE_TEXT_EXPRESSION => {
-                Self::HtmlSingleTextExpression(HtmlSingleTextExpression { syntax })
+            HTML_ATTRIBUTE_SINGLE_TEXT_EXPRESSION => {
+                Self::HtmlAttributeSingleTextExpression(HtmlAttributeSingleTextExpression {
+                    syntax,
+                })
             }
             HTML_STRING => Self::HtmlString(HtmlString { syntax }),
             _ => return None,
@@ -7914,13 +9303,13 @@ impl AstNode for AnyHtmlAttributeInitializer {
     }
     fn syntax(&self) -> &SyntaxNode {
         match self {
-            Self::HtmlSingleTextExpression(it) => it.syntax(),
+            Self::HtmlAttributeSingleTextExpression(it) => it.syntax(),
             Self::HtmlString(it) => it.syntax(),
         }
     }
     fn into_syntax(self) -> SyntaxNode {
         match self {
-            Self::HtmlSingleTextExpression(it) => it.into_syntax(),
+            Self::HtmlAttributeSingleTextExpression(it) => it.into_syntax(),
             Self::HtmlString(it) => it.into_syntax(),
         }
     }
@@ -7928,7 +9317,7 @@ impl AstNode for AnyHtmlAttributeInitializer {
 impl std::fmt::Debug for AnyHtmlAttributeInitializer {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::HtmlSingleTextExpression(it) => std::fmt::Debug::fmt(it, f),
+            Self::HtmlAttributeSingleTextExpression(it) => std::fmt::Debug::fmt(it, f),
             Self::HtmlString(it) => std::fmt::Debug::fmt(it, f),
         }
     }
@@ -7936,13 +9325,84 @@ impl std::fmt::Debug for AnyHtmlAttributeInitializer {
 impl From<AnyHtmlAttributeInitializer> for SyntaxNode {
     fn from(n: AnyHtmlAttributeInitializer) -> Self {
         match n {
-            AnyHtmlAttributeInitializer::HtmlSingleTextExpression(it) => it.into_syntax(),
+            AnyHtmlAttributeInitializer::HtmlAttributeSingleTextExpression(it) => it.into_syntax(),
             AnyHtmlAttributeInitializer::HtmlString(it) => it.into_syntax(),
         }
     }
 }
 impl From<AnyHtmlAttributeInitializer> for SyntaxElement {
     fn from(n: AnyHtmlAttributeInitializer) -> Self {
+        let node: SyntaxNode = n.into();
+        node.into()
+    }
+}
+impl From<HtmlComponentName> for AnyHtmlComponentObjectName {
+    fn from(node: HtmlComponentName) -> Self {
+        Self::HtmlComponentName(node)
+    }
+}
+impl From<HtmlMemberName> for AnyHtmlComponentObjectName {
+    fn from(node: HtmlMemberName) -> Self {
+        Self::HtmlMemberName(node)
+    }
+}
+impl From<HtmlTagName> for AnyHtmlComponentObjectName {
+    fn from(node: HtmlTagName) -> Self {
+        Self::HtmlTagName(node)
+    }
+}
+impl AstNode for AnyHtmlComponentObjectName {
+    type Language = Language;
+    const KIND_SET: SyntaxKindSet<Language> = HtmlComponentName::KIND_SET
+        .union(HtmlMemberName::KIND_SET)
+        .union(HtmlTagName::KIND_SET);
+    fn can_cast(kind: SyntaxKind) -> bool {
+        matches!(kind, HTML_COMPONENT_NAME | HTML_MEMBER_NAME | HTML_TAG_NAME)
+    }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        let res = match syntax.kind() {
+            HTML_COMPONENT_NAME => Self::HtmlComponentName(HtmlComponentName { syntax }),
+            HTML_MEMBER_NAME => Self::HtmlMemberName(HtmlMemberName { syntax }),
+            HTML_TAG_NAME => Self::HtmlTagName(HtmlTagName { syntax }),
+            _ => return None,
+        };
+        Some(res)
+    }
+    fn syntax(&self) -> &SyntaxNode {
+        match self {
+            Self::HtmlComponentName(it) => it.syntax(),
+            Self::HtmlMemberName(it) => it.syntax(),
+            Self::HtmlTagName(it) => it.syntax(),
+        }
+    }
+    fn into_syntax(self) -> SyntaxNode {
+        match self {
+            Self::HtmlComponentName(it) => it.into_syntax(),
+            Self::HtmlMemberName(it) => it.into_syntax(),
+            Self::HtmlTagName(it) => it.into_syntax(),
+        }
+    }
+}
+impl std::fmt::Debug for AnyHtmlComponentObjectName {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::HtmlComponentName(it) => std::fmt::Debug::fmt(it, f),
+            Self::HtmlMemberName(it) => std::fmt::Debug::fmt(it, f),
+            Self::HtmlTagName(it) => std::fmt::Debug::fmt(it, f),
+        }
+    }
+}
+impl From<AnyHtmlComponentObjectName> for SyntaxNode {
+    fn from(n: AnyHtmlComponentObjectName) -> Self {
+        match n {
+            AnyHtmlComponentObjectName::HtmlComponentName(it) => it.into_syntax(),
+            AnyHtmlComponentObjectName::HtmlMemberName(it) => it.into_syntax(),
+            AnyHtmlComponentObjectName::HtmlTagName(it) => it.into_syntax(),
+        }
+    }
+}
+impl From<AnyHtmlComponentObjectName> for SyntaxElement {
+    fn from(n: AnyHtmlComponentObjectName) -> Self {
         let node: SyntaxNode = n.into();
         node.into()
     }
@@ -8117,6 +9577,77 @@ impl From<AnyHtmlElement> for SyntaxNode {
 }
 impl From<AnyHtmlElement> for SyntaxElement {
     fn from(n: AnyHtmlElement) -> Self {
+        let node: SyntaxNode = n.into();
+        node.into()
+    }
+}
+impl From<HtmlComponentName> for AnyHtmlTagName {
+    fn from(node: HtmlComponentName) -> Self {
+        Self::HtmlComponentName(node)
+    }
+}
+impl From<HtmlMemberName> for AnyHtmlTagName {
+    fn from(node: HtmlMemberName) -> Self {
+        Self::HtmlMemberName(node)
+    }
+}
+impl From<HtmlTagName> for AnyHtmlTagName {
+    fn from(node: HtmlTagName) -> Self {
+        Self::HtmlTagName(node)
+    }
+}
+impl AstNode for AnyHtmlTagName {
+    type Language = Language;
+    const KIND_SET: SyntaxKindSet<Language> = HtmlComponentName::KIND_SET
+        .union(HtmlMemberName::KIND_SET)
+        .union(HtmlTagName::KIND_SET);
+    fn can_cast(kind: SyntaxKind) -> bool {
+        matches!(kind, HTML_COMPONENT_NAME | HTML_MEMBER_NAME | HTML_TAG_NAME)
+    }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        let res = match syntax.kind() {
+            HTML_COMPONENT_NAME => Self::HtmlComponentName(HtmlComponentName { syntax }),
+            HTML_MEMBER_NAME => Self::HtmlMemberName(HtmlMemberName { syntax }),
+            HTML_TAG_NAME => Self::HtmlTagName(HtmlTagName { syntax }),
+            _ => return None,
+        };
+        Some(res)
+    }
+    fn syntax(&self) -> &SyntaxNode {
+        match self {
+            Self::HtmlComponentName(it) => it.syntax(),
+            Self::HtmlMemberName(it) => it.syntax(),
+            Self::HtmlTagName(it) => it.syntax(),
+        }
+    }
+    fn into_syntax(self) -> SyntaxNode {
+        match self {
+            Self::HtmlComponentName(it) => it.into_syntax(),
+            Self::HtmlMemberName(it) => it.into_syntax(),
+            Self::HtmlTagName(it) => it.into_syntax(),
+        }
+    }
+}
+impl std::fmt::Debug for AnyHtmlTagName {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::HtmlComponentName(it) => std::fmt::Debug::fmt(it, f),
+            Self::HtmlMemberName(it) => std::fmt::Debug::fmt(it, f),
+            Self::HtmlTagName(it) => std::fmt::Debug::fmt(it, f),
+        }
+    }
+}
+impl From<AnyHtmlTagName> for SyntaxNode {
+    fn from(n: AnyHtmlTagName) -> Self {
+        match n {
+            AnyHtmlTagName::HtmlComponentName(it) => it.into_syntax(),
+            AnyHtmlTagName::HtmlMemberName(it) => it.into_syntax(),
+            AnyHtmlTagName::HtmlTagName(it) => it.into_syntax(),
+        }
+    }
+}
+impl From<AnyHtmlTagName> for SyntaxElement {
+    fn from(n: AnyHtmlTagName) -> Self {
         let node: SyntaxNode = n.into();
         node.into()
     }
@@ -9097,6 +10628,11 @@ impl From<AnyVueDirectiveArgument> for SyntaxElement {
         node.into()
     }
 }
+impl std::fmt::Display for AnyAstroDirective {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
 impl std::fmt::Display for AnyAstroFrontmatterElement {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Display::fmt(self.syntax(), f)
@@ -9112,12 +10648,22 @@ impl std::fmt::Display for AnyHtmlAttributeInitializer {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
+impl std::fmt::Display for AnyHtmlComponentObjectName {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
 impl std::fmt::Display for AnyHtmlContent {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
 impl std::fmt::Display for AnyHtmlElement {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
+impl std::fmt::Display for AnyHtmlTagName {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Display::fmt(self.syntax(), f)
     }
@@ -9177,6 +10723,26 @@ impl std::fmt::Display for AnyVueDirectiveArgument {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
+impl std::fmt::Display for AstroClassDirective {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
+impl std::fmt::Display for AstroClientDirective {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
+impl std::fmt::Display for AstroDefineDirective {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
+impl std::fmt::Display for AstroDirectiveValue {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
 impl std::fmt::Display for AstroEmbeddedContent {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Display::fmt(self.syntax(), f)
@@ -9187,7 +10753,27 @@ impl std::fmt::Display for AstroFrontmatterElement {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
+impl std::fmt::Display for AstroIsDirective {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
+impl std::fmt::Display for AstroServerDirective {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
+impl std::fmt::Display for AstroSetDirective {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
 impl std::fmt::Display for HtmlAttribute {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
+impl std::fmt::Display for HtmlAttributeDoubleTextExpression {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Display::fmt(self.syntax(), f)
     }
@@ -9202,12 +10788,22 @@ impl std::fmt::Display for HtmlAttributeName {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
+impl std::fmt::Display for HtmlAttributeSingleTextExpression {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
 impl std::fmt::Display for HtmlCdataSection {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
 impl std::fmt::Display for HtmlClosingElement {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
+impl std::fmt::Display for HtmlComponentName {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Display::fmt(self.syntax(), f)
     }
@@ -9237,6 +10833,11 @@ impl std::fmt::Display for HtmlEmbeddedContent {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
+impl std::fmt::Display for HtmlMemberName {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
 impl std::fmt::Display for HtmlOpeningElement {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Display::fmt(self.syntax(), f)
@@ -9253,6 +10854,11 @@ impl std::fmt::Display for HtmlSelfClosingElement {
     }
 }
 impl std::fmt::Display for HtmlSingleTextExpression {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
+impl std::fmt::Display for HtmlSpreadAttribute {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Display::fmt(self.syntax(), f)
     }

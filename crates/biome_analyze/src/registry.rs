@@ -409,6 +409,7 @@ impl<L: Language + Default> RegistryRule<L> {
             let jsx_factory = params.options.jsx_factory();
             let jsx_fragment_factory = params.options.jsx_fragment_factory();
             let options = params.options.rule_options::<R>().unwrap_or_default();
+            let working_directory = params.options.working_directory.as_deref();
             let ctx = RuleContext::new(
                 &query_result,
                 params.root,
@@ -422,9 +423,14 @@ impl<L: Language + Default> RegistryRule<L> {
                 jsx_runtime,
                 jsx_factory,
                 jsx_fragment_factory,
+                working_directory,
             )?;
 
-            for result in R::run(&ctx) {
+            let rule_timer = crate::profiling::start_rule::<R>();
+            let signals = R::run(&ctx);
+            rule_timer.stop();
+
+            for result in signals {
                 let text_range =
                     R::text_range(&ctx, &result).unwrap_or_else(|| params.query.text_range());
 

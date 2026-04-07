@@ -6,6 +6,10 @@ use biome_rowan::AstNode;
 use biome_rule_options::no_svg_without_title::NoSvgWithoutTitleOptions;
 use biome_string_case::StrLikeExtension;
 
+use crate::a11y::is_aria_hidden_true;
+
+const NAME_REQUIRED_ROLES: &[&str] = &["img", "image", "graphics-document", "graphics-symbol"];
+
 declare_lint_rule! {
     /// Enforces the usage of the `title` element for the `svg` element.
     ///
@@ -41,23 +45,23 @@ declare_lint_rule! {
     /// </svg>
     /// ```
     ///
-    /// ### Valid
-    ///
-    /// ```html
+    /// ```html,expect_diagnostic
     /// <svg>
     ///     <rect />
     ///     <rect />
     ///     <g>
+    ///         <title>foo</title>
     ///         <circle />
     ///         <circle />
-    ///         <g>
-    ///             <title>Pass</title>
-    ///             <circle />
-    ///             <circle />
-    ///         </g>
     ///     </g>
     /// </svg>
     /// ```
+    ///
+    /// ```html,expect_diagnostic
+    /// <svg role="graphics-symbol"><rect /></svg>
+    /// ```
+    ///
+    /// ### Valid
     ///
     /// ```html
     /// <svg>
@@ -85,11 +89,10 @@ declare_lint_rule! {
     /// ```
     ///
     /// ```html
-    /// <svg role="graphics-symbol"><rect /></svg>
-    /// ```
-    ///
-    /// ```html
-    /// <svg role="graphics-symbol img"><rect /></svg>
+    /// <svg role="graphics-symbol">
+    ///     <title>Pass</title>
+    ///     <rect />
+    /// </svg>
     /// ```
     ///
     /// ```html
@@ -101,7 +104,6 @@ declare_lint_rule! {
     /// ```
     ///
     ///
-    ///
     /// ## Accessibility guidelines
     /// [Document Structure – SVG 1.1 (Second Edition)](https://www.w3.org/TR/SVG11/struct.html#DescriptionAndTitleElements)
     /// [ARIA: img role - Accessibility | MDN](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Roles/img_role)
@@ -110,7 +112,7 @@ declare_lint_rule! {
     /// [Accessible SVGs](https://www.unimelb.edu.au/accessibility/techniques/accessible-svgs)
     ///
     pub NoSvgWithoutTitle {
-        version: "next",
+        version: "2.4.0",
         name: "noSvgWithoutTitle",
         language: "html",
         recommended: true,
@@ -131,13 +133,8 @@ impl Rule for NoSvgWithoutTitle {
             return None;
         }
 
-        if let Some(aria_hidden_attr) = node.find_attribute_by_name("aria-hidden")
-            && let Some(attr_static_val) = aria_hidden_attr.initializer()
-        {
-            let attr_text = attr_static_val.value().ok()?.string_value()?;
-            if attr_text == "true" {
-                return None;
-            }
+        if is_aria_hidden_true(node) {
+            return None;
         }
 
         // Checks if a `svg` element has a valid `title` element in a childlist
@@ -149,6 +146,7 @@ impl Rule for NoSvgWithoutTitle {
             }
         }
 
+        // TODO: use `aria_roles.has_name_required_image_role` of aria crate
         // Checks if a `svg` element has role='img' and title/aria-label/aria-labelledby attribute
         let Some(role_attribute) = node.find_attribute_by_name("role") else {
             return Some(());
@@ -163,21 +161,28 @@ impl Rule for NoSvgWithoutTitle {
             return Some(());
         };
 
-        match role_attribute_text.to_ascii_lowercase_cow().as_ref() {
-            "img" => {
-                let aria_label = node.find_attribute_by_name("aria-label");
-                let aria_labelledby = node.find_attribute_by_name("aria-labelledby");
-                let is_valid_a11y_attribute = aria_label.is_some()
-                    || is_valid_attribute_value(aria_labelledby, &html_element.children())
-                        .unwrap_or(false);
-                if is_valid_a11y_attribute {
-                    return None;
-                }
-                Some(())
+        let role_text = role_attribute_text.to_ascii_lowercase_cow();
+        if role_text.trim().is_empty() {
+            return Some(());
+        }
+
+        // Check if any of the space-separated roles are valid
+        let has_name_required_role = role_text
+            .split_whitespace()
+            .any(|role| NAME_REQUIRED_ROLES.contains(&role));
+
+        if has_name_required_role {
+            let aria_label = node.find_attribute_by_name("aria-label");
+            let aria_labelledby = node.find_attribute_by_name("aria-labelledby");
+            let is_valid_a11y_attribute = aria_label.is_some()
+                || is_valid_attribute_value(aria_labelledby, &html_element.children())
+                    .unwrap_or(false);
+            if is_valid_a11y_attribute {
+                return None;
             }
-            // if role attribute is empty, the svg element should have title element
-            "" => Some(()),
-            _ => None,
+            Some(())
+        } else {
+            None
         }
     }
 
@@ -197,19 +202,19 @@ impl Rule for NoSvgWithoutTitle {
     }
 }
 
-/// Checks if the given `HtmlElementList` has a valid `title` element.
+// Checks if the first element of the given `HtmlElementList` is a valid `title` element.
 fn has_valid_title_element(html_child_list: &HtmlElementList) -> Option<bool> {
-    html_child_list.into_iter().find_map(|child| {
-        let html_element = child.as_html_element()?;
-        let opening_element = html_element.opening_element().ok()?;
-        let name = opening_element.name().ok()?.value_token().ok()?;
-        let has_title_element = name.text_trimmed() == "title";
-        if !has_title_element {
-            return has_valid_title_element(&html_element.children());
-        }
-        let has_title_name = html_element.children().into_iter().count() > 0;
-        Some(has_title_element && has_title_name)
-    })
+    let first_child = html_child_list.into_iter().next()?;
+    let html_element = first_child.as_html_element()?;
+    let opening_element = html_element.opening_element().ok()?;
+    let name = opening_element.name().ok()?;
+    let name_text = name.token_text_trimmed()?;
+    let has_title_name = name_text == "title";
+    if !has_title_name {
+        return Some(false);
+    }
+    let has_child = html_element.children().into_iter().count() > 0;
+    Some(has_child)
 }
 
 /// Checks if the given attribute is attached to the `svg` element and the attribute value is used by the `id` of the child element.

@@ -30,14 +30,14 @@ declare_lint_rule! {
     /// ### Valid
     ///
     /// ```html
-    /// <>
+    /// <div>
     /// 	<img src="src" alt="alt" />
     /// 	<img src="bar" aria-hidden alt="Picture of me taking a photo of an image" />
-    /// </>
+    /// </div>
     /// ```
     ///
     pub NoRedundantAlt {
-        version: "next",
+        version: "2.4.0",
         name: "noRedundantAlt",
         language: "html",
         sources: &[RuleSource::EslintJsxA11y("img-redundant-alt").same()],
@@ -56,33 +56,16 @@ impl Rule for NoRedundantAlt {
         let node = ctx.query();
         let file_source = ctx.source_type::<HtmlFileSource>();
 
-        let name = node.name().ok()?.value_token().ok()?;
-        if (file_source.is_html() && !name.text_trimmed().eq_ignore_ascii_case("img"))
-            || (!file_source.is_html() && name.text_trimmed() != "img")
+        let name = node.name().ok()?.token_text_trimmed()?;
+        if (file_source.is_html() && !name.eq_ignore_ascii_case("img"))
+            || (!file_source.is_html() && name != "img")
         {
             return None;
         }
 
-        let aria_hidden_attribute = node.find_attribute_by_name("aria-hidden");
-        if let Some(aria_hidden) = aria_hidden_attribute {
-            let is_false = match aria_hidden.initializer()?.value().ok()? {
-                AnyHtmlAttributeInitializer::HtmlSingleTextExpression(aria_hidden) => {
-                    aria_hidden
-                        .expression()
-                        .ok()?
-                        .html_literal_token()
-                        .ok()?
-                        .text_trimmed()
-                        == "false"
-                }
-                AnyHtmlAttributeInitializer::HtmlString(aria_hidden) => {
-                    aria_hidden.inner_string_text().ok()?.text() == "false"
-                }
-            };
-
-            if !is_false {
-                return None;
-            }
+        // If aria-hidden is truthy (present and not "false"), skip the check
+        if node.has_truthy_attribute("aria-hidden") {
+            return None;
         }
 
         let alt = node
@@ -92,7 +75,7 @@ impl Rule for NoRedundantAlt {
             .ok()?;
 
         match alt {
-            AnyHtmlAttributeInitializer::HtmlSingleTextExpression(ref expression) => {
+            AnyHtmlAttributeInitializer::HtmlAttributeSingleTextExpression(ref expression) => {
                 let value = expression.expression().ok()?.html_literal_token().ok()?;
 
                 is_redundant_alt(value.text_trimmed()).then_some(alt)

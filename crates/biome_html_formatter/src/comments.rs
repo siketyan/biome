@@ -54,8 +54,16 @@ impl CommentStyle for HtmlCommentStyle {
             .any(|(key, ..)| key == category!("format"))
     }
 
-    fn get_comment_kind(_comment: &SyntaxTriviaPieceComments<HtmlLanguage>) -> CommentKind {
-        CommentKind::Line
+    fn get_comment_kind(comment: &SyntaxTriviaPieceComments<HtmlLanguage>) -> CommentKind {
+        // Svelte/Vue files can have JS-style `//` line comments inside tags.
+        // These must be treated as line comments so the formatter uses `line_suffix`,
+        // which forces a newline after them — preventing `>` from being swallowed.
+        // HTML `<!-- -->` comments and `/* */` block comments are both block-style.
+        if comment.text().starts_with("//") {
+            CommentKind::Line
+        } else {
+            CommentKind::Block
+        }
     }
 
     /// This allows us to override which comments are associated with which nodes.
@@ -82,18 +90,14 @@ impl CommentStyle for HtmlCommentStyle {
                 return CommentPlacement::trailing(comment.enclosing_node().clone(), comment);
             }
 
-            // Fix trailing comments that should actually be leading comments for the next node.
-            // ```html
-            // 123<!--biome-ignore format: prettier ignore-->456
-            // ```
-            // This fix will ensure that the ignore comment is assigned to the 456 node instead of the 123 node.
-            if let Some(following_node) = comment.following_node()
-                && comment.text_position().is_same_line()
-            {
-                return CommentPlacement::leading(following_node.clone(), comment);
-            }
-
-            // move leading comments placed on closing tags to trailing tags of previous siblings, or to be dangling if no siblings are present.
+            // Move comments placed between opening and closing tags to be dangling comments of the opening tag
+            // (if empty element) or trailing comments of the previous sibling.
+            // This MUST be checked before the same-line check below to avoid incorrectly making
+            // these comments leading comments of the closing element.
+            //
+            // For whitespace-sensitive elements like <span><!-- comment --></span>, we don't want
+            // the comment to become a leading comment of </span> because that would add unwanted
+            // formatting (like spaces) between the comment and the closing tag.
             if let Some(_closing_tag) = comment
                 .following_node()
                 .and_then(|node| node.clone().cast::<HtmlClosingElement>())
@@ -114,10 +118,52 @@ impl CommentStyle for HtmlCommentStyle {
                 }
             }
 
+            // Attach comments between attributes to the following attribute as leading comments.
+            // This is required for suppression comments (e.g. `// biome-ignore format: reason`)
+            // to work on attributes:
+            //
+            // ```svelte
+            // <div
+            //   // biome-ignore format: reason
+            //   class="foo"
+            // >
+            // ```
+            //
+            // Without this rule, the comment would be a trailing comment of the preceding attribute
+            // (or a dangling comment of the opening element if it's the first attribute), and
+            // `is_suppressed(class_attr)` would return false.
+            //
+            // NOTE: Do NOT use `comment.kind().is_line()` here to detect `//` comments — the
+            // comment kind is determined after `place_comment()` runs in the pipeline, so
+            // `kind()` always returns `Block` at this point. Instead, inspect the text directly.
+            if matches!(
+                comment.enclosing_node().kind(),
+                HtmlSyntaxKind::HTML_OPENING_ELEMENT | HtmlSyntaxKind::HTML_SELF_CLOSING_ELEMENT
+            ) && let Some(following_node) = comment.following_node()
+            {
+                // Only re-attach for attribute-level following nodes.
+                // The closing tag case is already handled by the check above.
+                if !HtmlClosingElement::can_cast(following_node.kind()) {
+                    return CommentPlacement::leading(following_node.clone(), comment);
+                }
+            }
+
+            // Fix trailing comments that should actually be leading comments for the next node.
+            // ```html
+            // 123<!--biome-ignore format: prettier ignore-->456
+            // ```
+            // This fix will ensure that the ignore comment is assigned to the 456 node instead of the 123 node.
+            if let Some(following_node) = comment.following_node()
+                && comment.text_position().is_same_line()
+            {
+                return CommentPlacement::leading(following_node.clone(), comment);
+            }
+
             CommentPlacement::Default(comment)
         })
     }
 }
+
 fn handle_global_suppression(
     comment: DecoratedComment<HtmlLanguage>,
 ) -> CommentPlacement<HtmlLanguage> {

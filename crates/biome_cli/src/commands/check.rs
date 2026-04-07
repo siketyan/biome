@@ -45,6 +45,7 @@ pub(crate) struct CheckCommandPayload {
     pub(crate) only: Vec<AnalyzerSelector>,
     pub(crate) skip: Vec<AnalyzerSelector>,
     pub(crate) watch: bool,
+    pub(crate) profile_rules: bool,
 }
 
 struct CheckExecution {
@@ -73,12 +74,12 @@ struct CheckExecution {
 }
 
 impl Execution for CheckExecution {
-    fn features(&self) -> FeatureName {
-        FeaturesBuilder::new()
-            .with_linter()
-            .with_formatter()
-            .with_assist()
-            .build()
+    fn wanted_features(&self) -> FeatureName {
+        FeaturesBuilder::new().with_all().without_search().build()
+    }
+
+    fn not_requested_features(&self) -> FeatureName {
+        FeaturesBuilder::new().with_search().build()
     }
 
     fn can_handle(&self, features: FeaturesSupported) -> bool {
@@ -183,6 +184,10 @@ impl TraversalCommand for CheckCommandPayload {
             fix: self.fix,
             unsafe_: self.unsafe_,
         })?;
+
+        if self.profile_rules {
+            biome_analyze::profiling::enable();
+        }
 
         Ok(Box::new(CheckExecution {
             fix_file_mode,

@@ -55,8 +55,16 @@ struct FormatExecution {
 }
 
 impl Execution for FormatExecution {
-    fn features(&self) -> FeatureName {
+    fn wanted_features(&self) -> FeatureName {
         FeaturesBuilder::new().with_formatter().build()
+    }
+
+    fn not_requested_features(&self) -> FeatureName {
+        FeaturesBuilder::new()
+            .with_linter()
+            .with_assist()
+            .with_search()
+            .build()
     }
 
     fn can_handle(&self, features: FeaturesSupported) -> bool {

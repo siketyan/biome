@@ -55,8 +55,12 @@ struct SearchExecution {
 }
 
 impl Execution for SearchExecution {
-    fn features(&self) -> FeatureName {
+    fn wanted_features(&self) -> FeatureName {
         FeaturesBuilder::new().with_search().build()
+    }
+
+    fn not_requested_features(&self) -> FeatureName {
+        FeaturesBuilder::new().with_all().without_search().build()
     }
 
     fn can_handle(&self, features: FeaturesSupported) -> bool {
@@ -123,6 +127,9 @@ impl SearchProcessFile {
             }
             GritTargetLanguage::CssTargetLanguage(_) => {
                 matches!(file_source, DocumentFileSource::Css(_))
+            }
+            GritTargetLanguage::JsonTargetLanguage(_) => {
+                matches!(file_source, DocumentFileSource::Json(_))
             }
         }
     }

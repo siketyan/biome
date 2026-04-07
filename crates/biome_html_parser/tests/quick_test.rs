@@ -1,15 +1,19 @@
-use biome_html_parser::{HtmlParseOptions, parse_html};
+use biome_html_parser::{HtmlParserOptions, parse_html};
+use biome_html_syntax::HtmlFileSource;
 use biome_test_utils::has_bogus_nodes_or_empty_slots;
 
 #[ignore]
 #[test]
 pub fn quick_test() {
-    let code = r#"<p style:width style:height>Multiple shorthand</p>
+    let code = r#"<Component
+	bind:value
 
+/>
 
 "#;
 
-    let options = HtmlParseOptions::default().with_single_text_expression();
+    let source_type = HtmlFileSource::svelte();
+    let options = HtmlParserOptions::from(&source_type);
     let root = parse_html(code, options);
     let syntax = root.syntax();
     dbg!(&syntax, root.diagnostics(), root.has_errors());

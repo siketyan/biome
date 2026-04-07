@@ -42,6 +42,11 @@ if (foo) {
 const ASTRO_CARRIAGE_RETURN_LINE_FEED_FILE_UNFORMATTED: &str =
     "---\r\n  const a    = \"b\";\r\n---\r\n<div></div>";
 
+const ASTRO_RETURN_IN_TEMPLATE: &str = r#"---
+const x = 5;
+---
+<div>{ return x }</div>"#;
+
 const ASTRO_FILE_CHECK_BEFORE: &str = r#"---
 import {a as a} from 'mod';
 import {    something } from "file.astro";
@@ -218,6 +223,37 @@ fn full_support() {
 import z from "zod";
 import { sure } from "sure.js";
 import s from "src/utils";
+
+// Always considered as used
+interface Props {
+  name: string;
+}
+
+type Props = {
+  name: string;
+};
+
+// Still reported as unused
+interface Foo {
+  name: string;
+}
+
+type Bar = {
+  name: string;
+};
+
+function doSomething() {
+  // Still reported as unused, Props interface must be at top-level
+  interface Props {
+    name: string;
+  }
+
+  type Props = {
+    name: string;
+  };
+}
+
+const { name } = Astro.props;
 
 let schema = z.object().optional();
 schema + sure()
@@ -753,46 +789,52 @@ fn does_not_throw_parse_error_for_return_full_support() {
 }
 
 #[test]
-fn embedded_bindings_are_tracked_correctly() {
+fn issue_7912() {
     let fs = MemoryFileSystem::default();
     let mut console = BufferConsole::default();
 
     fs.insert(
         "biome.json".into(),
-        r#"{ "html": { "linter": {"enabled": true}, "experimentalFullSupportEnabled": true } }"#
-            .as_bytes(),
+        r#"{ "html": { "experimentalFullSupportEnabled": true, "formatter": { "enabled": true } } }"#.as_bytes(),
     );
 
-    let file = Utf8Path::new("file.astro");
+    let astro_file_path = Utf8Path::new("file.astro");
     fs.insert(
-        file.into(),
+        astro_file_path.into(),
         r#"---
-import { Component } from "./component.svelte";
-let hello = "Hello World";
-let array = [];
+            const title = "Hello World";
 ---
 
 <html>
-    <span>{hello}</span>
-    <span>{notDefined}</span>
-    { array.map(item => (<span>{item}</span>)) }
-    <Component />
-</html>
-"#
-        .as_bytes(),
+  <head>
+            <title>{title}</title>
+  </head>
+  <body>
+            <h1>{title}</h1>
+  </body>
+</html>"#
+            .as_bytes(),
     );
 
     let (fs, result) = run_cli(
         fs,
         &mut console,
-        Args::from(["lint", "--only=noUnusedVariables", file.as_str()].as_slice()),
+        Args::from(
+            [
+                "lint",
+                "--write",
+                "--only=suspicious/noDebugger",
+                astro_file_path.as_str(),
+            ]
+            .as_slice(),
+        ),
     );
 
     assert!(result.is_ok(), "run_cli returned {result:?}");
 
     assert_cli_snapshot(SnapshotPayload::new(
         module_path!(),
-        "embedded_bindings_are_tracked_correctly",
+        "issue_7912",
         fs,
         console,
         result,
@@ -800,7 +842,7 @@ let array = [];
 }
 
 #[test]
-fn use_const_not_triggered_in_snippet_sources() {
+fn return_in_template_expression_should_error() {
     let fs = MemoryFileSystem::default();
     let mut console = BufferConsole::default();
 
@@ -810,71 +852,25 @@ fn use_const_not_triggered_in_snippet_sources() {
             .as_bytes(),
     );
 
-    let file = Utf8Path::new("file.astro");
-    fs.insert(
-        file.into(),
-        r#"---
-let hello = "Hello World";
----
-
-<html>
-    <span>{hello}</span>
-</html>
-"#
-        .as_bytes(),
-    );
+    let astro_file_path = Utf8Path::new("file.astro");
+    fs.insert(astro_file_path.into(), ASTRO_RETURN_IN_TEMPLATE.as_bytes());
 
     let (fs, result) = run_cli(
         fs,
         &mut console,
-        Args::from(["lint", "--only=useConst", file.as_str()].as_slice()),
+        Args::from(["lint", astro_file_path.as_str()].as_slice()),
     );
 
-    assert!(result.is_ok(), "run_cli returned {result:?}");
+    // The result should have errors because return is not allowed in template expressions
+    // We expect the check to fail with errors
+    assert!(
+        result.is_err(),
+        "Expected errors but run_cli returned {result:?}"
+    );
 
     assert_cli_snapshot(SnapshotPayload::new(
         module_path!(),
-        "use_const_not_triggered_in_snippet_sources",
-        fs,
-        console,
-        result,
-    ));
-}
-
-#[test]
-fn no_unused_imports_is_not_triggered_in_snippet_sources() {
-    let fs = MemoryFileSystem::default();
-    let mut console = BufferConsole::default();
-
-    fs.insert(
-        "biome.json".into(),
-        r#"{ "html": { "linter": {"enabled": true}, "experimentalFullSupportEnabled": true } }"#
-            .as_bytes(),
-    );
-
-    let file = Utf8Path::new("file.astro");
-    fs.insert(
-        file.into(),
-        r#"---
-import Component from "./Component.vue"
----
-
-<Component />
-"#
-        .as_bytes(),
-    );
-
-    let (fs, result) = run_cli(
-        fs,
-        &mut console,
-        Args::from(["lint", "--only=noUnusedImports", file.as_str()].as_slice()),
-    );
-
-    assert!(result.is_ok(), "run_cli returned {result:?}");
-
-    assert_cli_snapshot(SnapshotPayload::new(
-        module_path!(),
-        "no_unused_imports_is_not_triggered_in_snippet_sources",
+        "return_in_template_expression_should_error",
         fs,
         console,
         result,

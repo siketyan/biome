@@ -1,5 +1,5 @@
 use crate::changed::{get_changed_files, get_staged_files};
-use crate::cli_options::{CliOptions, CliReporter, ColorsArg, cli_options};
+use crate::cli_options::{CliOptions, CliReporterKind, ColorsArg, cli_options};
 use crate::logging::log_options;
 use crate::logging::{LogOptions, LoggingKind};
 use crate::{CliDiagnostic, LoggingLevel, VERSION};
@@ -142,8 +142,15 @@ pub enum BiomeCommand {
         configuration: Option<Configuration>,
         #[bpaf(external, hide_usage)]
         cli_options: CliOptions,
+
         #[bpaf(external, hide_usage)]
         log_options: LogOptions,
+
+        /// Enable rule profiling output.
+        /// Captures timing only for rule execution, not preprocessing such as querying or building the semantic model.
+        #[bpaf(long("profile-rules"), switch)]
+        profile_rules: bool,
+
         /// Use this option when you want to format code piped from `stdin`, and
         /// print the output to `stdout`.
         ///
@@ -321,6 +328,11 @@ pub enum BiomeCommand {
         /// flag and the `defaultBranch` is not set in your biome.json
         #[bpaf(long("since"), argument("REF"))]
         since: Option<String>,
+        /// Enable rule profiling output.
+        /// Captures timing only for rule execution, not preprocessing such as querying or building the semantic model.
+        #[bpaf(long("profile-rules"), switch)]
+        profile_rules: bool,
+
 
         /// Enables the watch mode to re-run the check automatically when any file in the workspace has changed.
         #[bpaf(long("watch"), switch)]
@@ -712,16 +724,24 @@ impl BiomeCommand {
         }
     }
 
-    pub const fn get_color(&self) -> Option<&ColorsArg> {
+    pub fn get_color(&self) -> Option<&ColorsArg> {
         match self.cli_options() {
             Some(cli_options) => {
                 // To properly display GitHub annotations we need to disable colors
-                if matches!(cli_options.reporter, CliReporter::GitHub) {
+                if cli_options
+                    .cli_reporter
+                    .iter()
+                    .any(|r| r.kind == CliReporterKind::GitHub)
+                {
                     return Some(&ColorsArg::Off);
                 }
-                // We want force colors in CI, to give e better UX experience
-                // Unless users explicitly set the colors flag
+                // In CI, we force colors for a better UX unless users explicitly set `--colors`.
+                // In GitHub Actions, we disable colors so the auto-enabled GitHub reporter
+                // output is not corrupted by ANSI escape codes.
                 if matches!(self, Self::Ci { .. }) && cli_options.colors.is_none() {
+                    if is_github_actions() {
+                        return Some(&ColorsArg::Off);
+                    }
                     return Some(&ColorsArg::Force);
                 }
                 // Normal behaviors
@@ -759,6 +779,20 @@ impl BiomeCommand {
         self.log_options()
             .map_or(LoggingKind::default(), |log_options| log_options.log_kind)
     }
+}
+
+/// Returns `true` when running in GitHub Actions in release builds.
+///
+/// In debug builds, this always returns `false` to avoid false positives in
+/// tests that run `biome ci` under CI (CI-ception).
+fn is_github_actions() -> bool {
+    if cfg!(debug_assertions) {
+        return false;
+    }
+    // Ref: https://docs.github.com/actions/learn-github-actions/variables#default-environment-variables
+    std::env::var("GITHUB_ACTIONS")
+        .ok()
+        .is_some_and(|v| v == "true")
 }
 
 /// It accepts a [LoadedConfiguration] and it prints the diagnostics emitted during parsing and deserialization.

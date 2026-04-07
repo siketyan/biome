@@ -1,4 +1,4 @@
-use crate::cli_options::CliOptions;
+use crate::cli_options::{CliOptions, CliReporter};
 use biome_configuration::analyzer::AnalyzerSelector;
 use biome_console::MarkupBuf;
 use biome_diagnostics::Category;
@@ -15,7 +15,10 @@ use tracing::info;
 
 pub(crate) trait Execution: Send + Sync + std::panic::RefUnwindSafe {
     /// The features that this command requires to be enabled.
-    fn features(&self) -> FeatureName;
+    fn wanted_features(&self) -> FeatureName;
+
+    /// The features that this command should be disabled.
+    fn not_requested_features(&self) -> FeatureName;
 
     /// Whether this command can handle the incoming file given its features.
     fn can_handle(&self, features: FeaturesSupported) -> bool;
@@ -26,14 +29,17 @@ pub(crate) trait Execution: Send + Sync + std::panic::RefUnwindSafe {
     }
 
     fn get_max_diagnostics(&self, cli_options: &CliOptions) -> u32 {
-        if cli_options.reporter.is_default() {
-            cli_options.max_diagnostics.into()
-        } else {
+        if cli_options
+            .cli_reporter
+            .iter()
+            .any(|reporter| !reporter.is_default())
+        {
             info!(
-                "Removing the limit of --max-diagnostics, because of a reporter different from the default one: {}",
-                cli_options.reporter
+                "Removing the limit of --max-diagnostics, because of a reporter list contains a reporter different from the default one."
             );
             u32::MAX
+        } else {
+            cli_options.max_diagnostics.into()
         }
     }
 
@@ -155,6 +161,11 @@ pub(crate) trait Execution: Send + Sync + std::panic::RefUnwindSafe {
 
     /// Used when printing summary
     fn summary_phrase(&self, files: usize, duration: &Duration) -> MarkupBuf;
+
+    /// Uses additional reporters based on the environment execution
+    fn environment_to_reporter(&self) -> Option<CliReporter> {
+        None
+    }
 }
 
 #[derive(Debug, Default, Clone)]

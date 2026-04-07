@@ -72,7 +72,7 @@ fn generate_rule_template(
 ) -> String {
     let macro_name = match category {
         Category::Lint => "declare_lint_rule",
-        Category::Assist => "declare_assist_rule",
+        Category::Assist => "declare_source_rule",
         Category::Syntax => "declare_syntax_rule",
     };
     match kind {
@@ -93,6 +93,11 @@ use biome_rule_options::{rule_name_snake_case}::{rule_name_upper_camel}Options;
     /// As a starting point, you can take the description of the corresponding _ESLint_ rule (if any).
     ///
     /// Try to stay consistent with the descriptions of implemented rules.
+    ///
+    /// You can use asides to highlight important information:
+    /// :::note
+    /// Important information for users.
+    /// :::
     ///
     /// ## Examples
     ///
@@ -168,6 +173,11 @@ use biome_rule_options::{rule_name_snake_case}::{rule_name_upper_camel}Options;
     /// Try to stay consistent with the descriptions of implemented rules.
     ///
     /// Add a link to the corresponding stylelint rule (if any):
+    ///
+    /// You can use asides to highlight important information:
+    /// :::note
+    /// Important information for users.
+    /// :::
     ///
     /// ## Examples
     ///
@@ -246,6 +256,11 @@ use biome_rule_options::{rule_name_snake_case}::{rule_name_upper_camel}Options;
     ///
     /// Try to stay consistent with the descriptions of implemented rules.
     ///
+    /// You can use asides to highlight important information:
+    /// :::note
+    /// Important information for users.
+    /// :::
+    ///
     /// ## Examples
     ///
     /// ### Invalid
@@ -323,6 +338,11 @@ use biome_rule_options::{rule_name_snake_case}::{rule_name_upper_camel}Options;
     ///
     /// Try to stay consistent with the descriptions of implemented rules.
     ///
+    /// You can use asides to highlight important information:
+    /// :::note
+    /// Important information for users.
+    /// :::
+    ///
     /// ## Examples
     ///
     /// ### Invalid
@@ -397,6 +417,11 @@ use biome_rule_options::{rule_name_snake_case}::{rule_name_upper_camel}Options;
     ///
     /// Try to stay consistent with the descriptions of implemented rules.
     ///
+    /// You can use asides to highlight important information:
+    /// :::note
+    /// Important information for users.
+    /// :::
+    ///
     /// ## Examples
     ///
     /// ### Invalid
@@ -470,6 +495,11 @@ use biome_rule_options::{rule_name_snake_case}::{rule_name_upper_camel}Options;
     /// As a starting point, you can take the description of the corresponding _ESLint_ rule (if any).
     ///
     /// Try to stay consistent with the descriptions of implemented rules.
+    ///
+    /// You can use asides to highlight important information:
+    /// :::note
+    /// Important information for users.
+    /// :::
     ///
     /// ## Examples
     ///
@@ -557,10 +587,14 @@ pub fn generate_new_analyzer_rule(kind: LanguageKind, category: Category, rule_n
         _ => "/* should generate diagnostics */\nvar a = 1;\na = 2;\na = 3;",
     };
     let crate_folder = project_root().join(format!("crates/biome_{rule_kind}_analyze"));
-    let test_folder = crate_folder.join("tests/specs/nursery");
+    let test_folder = match &category {
+        Category::Lint => crate_folder.join("tests/specs/nursery"),
+        Category::Assist => crate_folder.join("tests/specs/source"),
+        Category::Syntax => crate_folder.join("tests/specs/nursery"),
+    };
     let rule_folder = match &category {
         Category::Lint => crate_folder.join("src/lint/nursery"),
-        Category::Assist => crate_folder.join("src/assists/nursery"),
+        Category::Assist => crate_folder.join("src/assist/source"),
         Category::Syntax => crate_folder.join("src/syntax/nursery"),
     };
     // Generate rule code
@@ -592,7 +626,7 @@ pub fn generate_new_analyzer_rule(kind: LanguageKind, category: Category, rule_n
                 r#"    "lint/nursery/{rule_name_camel}": "https://biomejs.dev/linter/rules/{kebab_case_rule}","#
             ),
             Category::Assist => format!(
-                r#"    "assists/nursery/{rule_name_camel}": "https://biomejs.dev/assists/{kebab_case_rule}","#
+                r#"    "assist/source/{rule_name_camel}": "https://biomejs.dev/assist/actions/{kebab_case_rule}","#
             ),
             Category::Syntax => format!(r#"    "syntax/nursery/{rule_name_camel}","#),
         };

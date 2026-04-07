@@ -2,8 +2,8 @@ use crate::categories::{
     SUPPRESSION_INLINE_ACTION_CATEGORY, SUPPRESSION_TOP_LEVEL_ACTION_CATEGORY,
 };
 use crate::{
-    AnalyzerDiagnostic, AnalyzerOptions, OtherActionCategory, Queryable, RuleGroup, ServiceBag,
-    SuppressionAction,
+    AnalyzerDiagnostic, AnalyzerOptions, OtherActionCategory, PluginActionData, Queryable,
+    RuleDiagnostic, RuleGroup, ServiceBag, SuppressionAction,
     categories::ActionCategory,
     context::RuleContext,
     registry::{RuleLanguage, RuleRoot},
@@ -11,7 +11,9 @@ use crate::{
 };
 use biome_console::{MarkupBuf, markup};
 use biome_diagnostics::{Applicability, CodeSuggestion, Error, advice::CodeSuggestionAdvice};
-use biome_rowan::{BatchMutation, Language};
+use biome_rowan::{BatchMutation, Language, SyntaxNode, TextRange};
+use biome_text_edit::TextEdit;
+use std::borrow::Cow;
 use std::iter::FusedIterator;
 use std::marker::PhantomData;
 use std::vec::IntoIter;
@@ -101,6 +103,72 @@ where
     }
 }
 
+/// Implementation of [AnalyzerSignal] for plugin diagnostics that preserves
+/// the [RuleDiagnostic] as [DiagnosticKind::Rule](crate::diagnostics::DiagnosticKind::Rule),
+/// ensuring diagnostic offset adjustments are correctly applied for embedded
+/// languages (Vue, Svelte, Astro).
+///
+/// Unlike [DiagnosticSignal] which converts through [Error] into
+/// [DiagnosticKind::Raw](crate::diagnostics::DiagnosticKind::Raw), this type
+/// directly converts via `AnalyzerDiagnostic::from(RuleDiagnostic)`.
+pub struct PluginSignal<L: Language> {
+    diagnostic: RuleDiagnostic,
+    plugin_action: Option<PluginActionData>,
+    root: Option<SyntaxNode<L>>,
+}
+
+impl<L: Language> PluginSignal<L> {
+    pub fn new(diagnostic: RuleDiagnostic) -> Self {
+        Self {
+            diagnostic,
+            plugin_action: None,
+            root: None,
+        }
+    }
+
+    pub fn with_plugin_action(mut self, action: Option<PluginActionData>) -> Self {
+        self.plugin_action = action;
+        self
+    }
+
+    pub fn with_root(mut self, root: SyntaxNode<L>) -> Self {
+        self.root = Some(root);
+        self
+    }
+}
+
+impl<L: Language> AnalyzerSignal<L> for PluginSignal<L> {
+    fn diagnostic(&self) -> Option<AnalyzerDiagnostic> {
+        Some(AnalyzerDiagnostic::from(self.diagnostic.clone()))
+    }
+
+    fn actions(&self) -> AnalyzerActionIter<L> {
+        let Some(action_data) = &self.plugin_action else {
+            return AnalyzerActionIter::new(vec![]);
+        };
+
+        let Some(root) = &self.root else {
+            return AnalyzerActionIter::new(vec![]);
+        };
+
+        let text_edit =
+            TextEdit::from_unicode_words(&action_data.original_text, &action_data.rewritten_text);
+
+        AnalyzerActionIter::new(vec![AnalyzerAction {
+            rule_name: None,
+            category: ActionCategory::QuickFix(Cow::Borrowed("plugin")),
+            applicability: action_data.applicability,
+            message: markup!({ action_data.message }).to_owned(),
+            mutation: BatchMutation::new(root.clone()),
+            text_edit: Some((action_data.source_range, text_edit)),
+        }])
+    }
+
+    fn transformations(&self) -> AnalyzerTransformationIter<L> {
+        AnalyzerTransformationIter::new(vec![])
+    }
+}
+
 /// Code Action object returned by the analyzer, generated from a [crate::RuleAction]
 /// with additional information about the rule injected by the analyzer
 ///
@@ -113,6 +181,8 @@ pub struct AnalyzerAction<L: Language> {
     pub applicability: Applicability,
     pub message: MarkupBuf,
     pub mutation: BatchMutation<L>,
+    /// Pre-computed text edit for plugin rewrites. Takes precedence over mutation.
+    pub text_edit: Option<(TextRange, TextEdit)>,
 }
 
 impl<L: Language> AnalyzerAction<L> {
@@ -143,7 +213,10 @@ impl<L: Language> Default for AnalyzerActionIter<L> {
 
 impl<L: Language> From<AnalyzerAction<L>> for CodeSuggestionAdvice<MarkupBuf> {
     fn from(action: AnalyzerAction<L>) -> Self {
-        let (_, suggestion) = action.mutation.to_text_range_and_edit().unwrap_or_default();
+        let (_, suggestion) = action
+            .text_edit
+            .or_else(|| action.mutation.to_text_range_and_edit())
+            .unwrap_or_default();
         Self {
             applicability: action.applicability,
             msg: action.message,
@@ -154,7 +227,10 @@ impl<L: Language> From<AnalyzerAction<L>> for CodeSuggestionAdvice<MarkupBuf> {
 
 impl<L: Language> From<AnalyzerAction<L>> for CodeSuggestionItem {
     fn from(action: AnalyzerAction<L>) -> Self {
-        let (range, suggestion) = action.mutation.to_text_range_and_edit().unwrap_or_default();
+        let (range, suggestion) = action
+            .text_edit
+            .or_else(|| action.mutation.to_text_range_and_edit())
+            .unwrap_or_default();
 
         Self {
             rule_name: action.rule_name,
@@ -372,6 +448,7 @@ where
             self.options.jsx_runtime(),
             self.options.jsx_factory(),
             self.options.jsx_fragment_factory(),
+            self.options.working_directory.as_deref(),
         )
         .ok()?;
 
@@ -422,6 +499,7 @@ where
             self.options.jsx_runtime(),
             self.options.jsx_factory(),
             self.options.jsx_fragment_factory(),
+            self.options.working_directory.as_deref(),
         )
         .ok();
         let mut actions = Vec::new();
@@ -433,6 +511,7 @@ where
                     category: action.category,
                     mutation: action.mutation,
                     message: action.message,
+                    text_edit: None,
                 });
             };
             if let Some(text_range) = R::text_range(&ctx, &self.state)
@@ -449,6 +528,7 @@ where
                     applicability: Applicability::Always,
                     mutation: suppression_action.mutation,
                     message: suppression_action.message,
+                    text_edit: None,
                 };
                 actions.push(action);
             }
@@ -462,6 +542,7 @@ where
                     applicability: Applicability::Always,
                     mutation: suppression_action.mutation,
                     message: suppression_action.message,
+                    text_edit: None,
                 };
                 actions.push(action);
             }
@@ -488,6 +569,7 @@ where
             self.options.jsx_runtime(),
             self.options.jsx_factory(),
             self.options.jsx_fragment_factory(),
+            self.options.working_directory.as_deref(),
         )
         .ok();
         if let Some(ctx) = ctx {

@@ -18,6 +18,7 @@ pub mod grit;
 pub mod html;
 pub mod javascript;
 pub mod json;
+pub mod markdown;
 pub mod max_size;
 mod overrides;
 pub mod vcs;
@@ -34,12 +35,14 @@ use crate::graphql::{GraphqlFormatterConfiguration, GraphqlLinterConfiguration};
 pub use crate::grit::{GritConfiguration, grit_configuration};
 use crate::javascript::{JsFormatterConfiguration, JsLinterConfiguration};
 use crate::json::{JsonFormatterConfiguration, JsonLinterConfiguration};
+pub use crate::markdown::{MarkdownConfiguration, markdown_configuration};
 use crate::max_size::MaxSize;
 use crate::vcs::{VcsConfiguration, vcs_configuration};
 pub use analyzer::{
     LinterConfiguration, RuleConfiguration, RuleFixConfiguration, RulePlainConfiguration,
     RuleWithFixOptions, RuleWithOptions, Rules, linter_configuration,
 };
+use biome_analyze::ExtendedConfigurationProvider;
 use biome_console::fmt::{Display, Formatter};
 use biome_console::{KeyValuePair, markup};
 use biome_deserialize::{
@@ -151,6 +154,12 @@ pub struct Configuration {
     #[bpaf(external(css_configuration), optional)]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub css: Option<CssConfiguration>,
+
+    /// Specific configuration for the Markdown language
+    #[bpaf(external(markdown_configuration), optional, hide)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[cfg(feature = "markdown")]
+    pub markdown: Option<MarkdownConfiguration>,
 
     /// Specific configuration for the GraphQL language
     #[bpaf(external(graphql_configuration), optional)]
@@ -692,6 +701,10 @@ pub enum ConfigurationPathHint {
     /// The path can either be a directory path or a file path.
     /// Throws any kind of I/O errors.
     FromUser(Utf8PathBuf),
+
+    /// Very similar to [ConfigurationPathHint::FromUser]. However, this variant is used to indicate
+    /// that the configuration is outside of the current workspace.
+    FromUserExternal(Utf8PathBuf),
 }
 
 impl Display for ConfigurationPathHint {
@@ -704,7 +717,7 @@ impl Display for ConfigurationPathHint {
             Self::FromLsp(path) => {
                 write!(fmt, "Configuration path provided from the LSP: {path}",)
             }
-            Self::FromUser(path) => {
+            Self::FromUser(path) | Self::FromUserExternal(path) => {
                 write!(fmt, "Configuration path provided by the user: {path}",)
             }
         }
@@ -722,9 +735,10 @@ impl ConfigurationPathHint {
     pub fn to_path_buf(&self) -> Option<Utf8PathBuf> {
         match self {
             Self::None => None,
-            Self::FromWorkspace(path) | Self::FromLsp(path) | Self::FromUser(path) => {
-                Some(path.to_path_buf())
-            }
+            Self::FromWorkspace(path)
+            | Self::FromLsp(path)
+            | Self::FromUser(path)
+            | Self::FromUserExternal(path) => Some(path.to_path_buf()),
         }
     }
 }
@@ -800,6 +814,17 @@ impl ConfigurationSource {
         self.source.as_ref().and_then(|source| {
             let (_, path) = source.clone();
             path.map(|p| p.as_path().to_path_buf())
+        })
+    }
+}
+
+impl ExtendedConfigurationProvider for ConfigurationSource {
+    fn any_extended_starts_with_catch_all(&self) -> bool {
+        self.extended_configurations().any(|c| {
+            c.files
+                .as_ref()
+                .and_then(|files| files.includes.as_deref())
+                .is_some_and(|globs| globs.first().is_some_and(|glob| glob.as_str() == "**"))
         })
     }
 }

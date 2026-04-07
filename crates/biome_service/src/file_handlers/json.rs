@@ -1,6 +1,6 @@
 use super::{
     AnalyzerVisitorBuilder, CodeActionsParams, DocumentFileSource, EnabledForPath,
-    ExtensionHandler, ParseResult, ProcessFixAll, ProcessLint, SearchCapabilities,
+    ExtensionHandler, ParseResult, ProcessFixAll, ProcessLint, SearchCapabilities, search,
 };
 use crate::configuration::to_analyzer_rules;
 use crate::file_handlers::DebugCapabilities;
@@ -28,7 +28,7 @@ use biome_formatter::{
     TrailingNewline,
 };
 use biome_fs::{BiomePath, ConfigName};
-use biome_json_analyze::{JsonAnalyzeServices, analyze};
+use biome_json_analyze::{ExtendedConfigurationProvider, JsonAnalyzeServices, analyze};
 use biome_json_formatter::context::{JsonFormatOptions, TrailingCommas};
 use biome_json_formatter::format_node;
 use biome_json_parser::JsonParserOptions;
@@ -153,6 +153,7 @@ impl ServiceLanguage for JsonLanguage {
                     || optional_json_file_source.is_some_and(|x| x.allow_trailing_commas()),
                     |value| value.value(),
                 ),
+                allow_metavariables: false,
             };
 
             overrides.apply_override_json_parser_options(path, &mut options);
@@ -367,7 +368,9 @@ impl ExtensionHandler for JsonFileHandler {
                 format_on_type: Some(format_on_type),
                 format_embedded: None,
             },
-            search: SearchCapabilities { search: None },
+            search: SearchCapabilities {
+                search: Some(search),
+            },
         }
     }
 }
@@ -516,6 +519,7 @@ fn lint(params: LintParams) -> LintResults {
 
     let analyzer_options = params.settings.analyzer_options::<JsonLanguage>(
         params.path,
+        params.working_directory,
         &params.language,
         params.suppression_reason.as_deref(),
     );
@@ -539,11 +543,20 @@ fn lint(params: LintParams) -> LintResults {
     let mut process_lint = ProcessLint::new(&params);
     let services = JsonAnalyzeServices {
         file_source,
-        configuration_source: params.settings.as_ref().full_source(),
+        configuration_provider: params
+            .settings
+            .full_source()
+            .map(|s| s as std::sync::Arc<dyn ExtendedConfigurationProvider>),
+        project_layout: Some(params.project_layout.clone()),
     };
-    let (_, analyze_diagnostics) = analyze(&root, filter, &analyzer_options, services, |signal| {
-        process_lint.process_signal(signal)
-    });
+    let (_, analyze_diagnostics) = analyze(
+        &root,
+        filter,
+        &analyzer_options,
+        services,
+        &params.plugins,
+        |signal| process_lint.process_signal(signal),
+    );
 
     let mut diagnostics = params
         .parse
@@ -579,20 +592,23 @@ fn code_actions(params: CodeActionsParams) -> PullActionsResult {
         only,
         enabled_rules: rules,
         suppression_reason,
-        plugins: _,
+        plugins,
         categories,
         action_offset,
         document_services: _,
+        working_directory,
     } = params;
 
     let _ = debug_span!("Code actions JSON",  range =? range, path =? path).entered();
     let tree: JsonRoot = parse.tree();
     let analyzer_options = workspace.analyzer_options::<JsonLanguage>(
         params.path,
+        working_directory,
         &params.language,
         suppression_reason.as_deref(),
     );
     let mut actions = Vec::new();
+    let project_layout_for_services = project_layout.clone();
     let (enabled_rules, disabled_rules, analyzer_options) =
         AnalyzerVisitorBuilder::new(params.settings.as_ref(), analyzer_options)
             .with_only(only)
@@ -615,22 +631,32 @@ fn code_actions(params: CodeActionsParams) -> PullActionsResult {
     };
     let services = JsonAnalyzeServices {
         file_source,
-        configuration_source: workspace.as_ref().full_source(),
+        configuration_provider: workspace
+            .full_source()
+            .map(|s| s as std::sync::Arc<dyn ExtendedConfigurationProvider>),
+        project_layout: Some(project_layout_for_services),
     };
-    analyze(&tree, filter, &analyzer_options, services, |signal| {
-        actions.extend(signal.actions().into_code_action_iter().map(|item| {
-            CodeAction {
-                category: item.category.clone(),
-                rule_name: item
-                    .rule_name
-                    .map(|(group, name)| (Cow::Borrowed(group), Cow::Borrowed(name))),
-                suggestion: item.suggestion,
-                offset: action_offset,
-            }
-        }));
+    analyze(
+        &tree,
+        filter,
+        &analyzer_options,
+        services,
+        &plugins,
+        |signal| {
+            actions.extend(signal.actions().into_code_action_iter().map(|item| {
+                CodeAction {
+                    category: item.category.clone(),
+                    rule_name: item
+                        .rule_name
+                        .map(|(group, name)| (Cow::Borrowed(group), Cow::Borrowed(name))),
+                    suggestion: item.suggestion,
+                    offset: action_offset,
+                }
+            }));
 
-        ControlFlow::<Never>::Continue(())
-    });
+            ControlFlow::<Never>::Continue(())
+        },
+    );
 
     PullActionsResult { actions }
 }
@@ -646,6 +672,7 @@ fn fix_all(params: FixAllParams) -> Result<FixFileResult, WorkspaceError> {
         .as_linter_rules(params.biome_path.as_path());
     let analyzer_options = params.settings.analyzer_options::<JsonLanguage>(
         params.biome_path,
+        params.working_directory,
         &params.document_file_source,
         params.suppression_reason.as_deref(),
     );
@@ -681,11 +708,22 @@ fn fix_all(params: FixAllParams) -> Result<FixFileResult, WorkspaceError> {
     loop {
         let services = JsonAnalyzeServices {
             file_source,
-            configuration_source: params.settings.as_ref().full_source(),
+            configuration_provider: params
+                .settings
+                .full_source()
+                .map(|s| s as std::sync::Arc<dyn ExtendedConfigurationProvider>),
+            project_layout: Some(params.project_layout.clone()),
         };
-        let (action, _) = analyze(&tree, filter, &analyzer_options, services, |signal| {
-            process_fix_all.process_signal(signal)
-        });
+        let (action, _) = analyze(
+            &tree,
+            filter,
+            &analyzer_options,
+            services,
+            &params.plugins,
+            |signal| process_fix_all.process_signal(signal),
+        );
+
+        let plugin_text_edit = action.as_ref().and_then(|a| a.text_edit.clone());
 
         let result = process_fix_all.process_action(action, |root| {
             tree = match JsonRoot::cast(root) {
@@ -696,19 +734,33 @@ fn fix_all(params: FixAllParams) -> Result<FixFileResult, WorkspaceError> {
         })?;
 
         if result.is_none() {
-            return process_fix_all.finish(|| {
-                Ok(if params.should_format {
-                    Either::Left(format_node(
-                        params.settings.format_options::<JsonLanguage>(
-                            params.biome_path,
-                            &params.document_file_source,
-                        ),
-                        tree.syntax(),
-                    ))
-                } else {
-                    Either::Right(tree.syntax().to_string())
-                })
-            });
+            if let Some(new_text) = process_fix_all
+                .apply_plugin_text_edit(plugin_text_edit, &tree.syntax().to_string())?
+            {
+                let options = params
+                    .settings
+                    .parse_options::<JsonLanguage>(params.biome_path, &params.document_file_source);
+                let parse = biome_json_parser::parse_json(&new_text, options);
+                tree = parse.tree();
+                continue;
+            }
+
+            return process_fix_all.finish(
+                || {
+                    Ok(if params.should_format {
+                        Either::Left(format_node(
+                            params.settings.format_options::<JsonLanguage>(
+                                params.biome_path,
+                                &params.document_file_source,
+                            ),
+                            tree.syntax(),
+                        ))
+                    } else {
+                        Either::Right(tree.syntax().to_string())
+                    })
+                },
+                params.embeds_initial_indent,
+            );
         }
     }
 }

@@ -28,6 +28,15 @@ impl TypedService {
             .unwrap_or_default()
     }
 
+    /// Returns the [`Type`] of the value with the given `name`, as defined
+    /// in the scope that contains `range`.
+    pub fn type_of_named_value(&self, range: TextRange, name: &str) -> Type {
+        self.resolver
+            .as_ref()
+            .map(|resolver| resolver.resolved_type_of_named_value(range, name))
+            .unwrap_or_default()
+    }
+
     /// Returns the [`Type`] for the given `function`.
     pub fn type_of_function(&self, function: &AnyJsFunction) -> Type {
         match function {
@@ -70,9 +79,7 @@ impl FromServices for TypedService {
                 .iter()
                 .any(|d| d == &RuleDomain::Types);
             if !has_project_domain {
-                panic!(
-                    "The rule {rule_key} uses TypedService, but it is not in the TypeAware domain."
-                );
+                panic!("The rule {rule_key} uses TypedService, but it is not in the Types domain.");
             }
         }
 

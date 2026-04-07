@@ -1,8 +1,8 @@
 use crate::bool::Bool;
 use biome_deserialize_macros::{Deserializable, Merge};
 use biome_formatter::{
-    AttributePosition, BracketSameLine, BracketSpacing, Expand, IndentStyle, IndentWidth,
-    LineEnding, LineWidth, TrailingNewline,
+    AttributePosition, BracketSameLine, BracketSpacing, DelimiterSpacing, Expand, IndentStyle,
+    IndentWidth, LineEnding, LineWidth, TrailingNewline,
 };
 use bpaf::Bpaf;
 use serde::{Deserialize, Serialize};
@@ -64,6 +64,15 @@ pub struct FormatterConfiguration {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub bracket_spacing: Option<BracketSpacing>,
 
+    /// Whether to insert spaces inside delimiters (after the opening delimiter and before the
+    /// closing delimiter), such as parentheses, brackets, angle brackets, and template literal
+    /// interpolations. Spaces are not added before the opening delimiter, and empty delimiters
+    /// are not affected. Only applies when the content fits on a single line. The specific
+    /// delimiters affected depend on the language. Defaults to false.
+    #[bpaf(long("delimiter-spacing"), argument("true|false"))]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub delimiter_spacing: Option<DelimiterSpacing>,
+
     /// Whether to expand arrays and objects on multiple lines.
     /// When set to `auto`, object literals are formatted on multiple lines if the first property has a newline,
     /// and array literals are formatted on a single line if it fits in the line.
@@ -77,9 +86,9 @@ pub struct FormatterConfiguration {
     /// Whether to add a trailing newline at the end of the file.
     ///
     /// Setting this option to `false` is **highly discouraged** because it could cause many problems with other tools:
-    /// - <https://thoughtbot.com/blog/no-newline-at-end-of-file>
-    /// - <https://callmeryan.medium.com/no-newline-at-end-of-file-navigating-gits-warning-for-android-developers-af14e73dd804>
-    /// - <https://unix.stackexchange.com/questions/345548/how-to-cat-files-together-adding-missing-newlines-at-end-of-some-files>
+    /// - https://thoughtbot.com/blog/no-newline-at-end-of-file
+    /// - https://callmeryan.medium.com/no-newline-at-end-of-file-navigating-gits-warning-for-android-developers-af14e73dd804
+    /// - https://unix.stackexchange.com/questions/345548/how-to-cat-files-together-adding-missing-newlines-at-end-of-some-files
     ///
     /// Disable the option at your own risk.
     ///
@@ -91,7 +100,7 @@ pub struct FormatterConfiguration {
     /// Use any `.editorconfig` files to configure the formatter. Configuration
     /// in `biome.json` will override `.editorconfig` configuration.
     ///
-    /// Default: `true`.
+    /// Default: `false`.
     #[bpaf(long("use-editorconfig"), argument("true|false"))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub use_editorconfig: Option<UseEditorconfigEnabled>,
@@ -134,6 +143,10 @@ impl FormatterConfiguration {
 
     pub fn bracket_spacing_resolved(&self) -> BracketSpacing {
         self.bracket_spacing.unwrap_or_default()
+    }
+
+    pub fn delimiter_spacing_resolved(&self) -> DelimiterSpacing {
+        self.delimiter_spacing.unwrap_or_default()
     }
 
     pub fn expand_resolved(&self) -> Expand {

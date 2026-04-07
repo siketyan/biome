@@ -11,17 +11,15 @@ pub mod utils;
 pub use crate::registry::visit_registry;
 use crate::services::config_source::ConfigSource;
 use crate::suppression_action::JsonSuppressionAction;
+pub use biome_analyze::ExtendedConfigurationProvider;
 use biome_analyze::{
-    AnalysisFilter, AnalyzerOptions, AnalyzerSignal, AnalyzerSuppression, ControlFlow,
-    LanguageRoot, MatchQueryParams, MetadataRegistry, RuleAction, RuleRegistry,
-    to_analyzer_suppressions,
+    AnalysisFilter, AnalyzerOptions, AnalyzerPluginSlice, AnalyzerSignal, AnalyzerSuppression,
+    BatchPluginVisitor, ControlFlow, LanguageRoot, MatchQueryParams, MetadataRegistry, Phases,
+    PluginTargetLanguage, RuleAction, RuleRegistry, to_analyzer_suppressions,
 };
-#[cfg(feature = "configuration")]
-use biome_configuration::ConfigurationSource;
-#[cfg(not(feature = "configuration"))]
-pub struct ConfigurationSource;
 use biome_diagnostics::Error;
 use biome_json_syntax::{JsonFileSource, JsonLanguage, TextRange};
+use biome_project_layout::ProjectLayout;
 use biome_suppression::{SuppressionDiagnostic, parse_suppression_comment};
 use std::ops::Deref;
 use std::sync::{Arc, LazyLock};
@@ -35,11 +33,14 @@ pub static METADATA: LazyLock<MetadataRegistry> = LazyLock::new(|| {
 });
 
 pub struct JsonAnalyzeServices {
-    /// The source of the configuration: the [biome_configuration::Configuration] (user one, or default).
-    pub configuration_source: Option<Arc<ConfigurationSource>>,
+    /// Provider for extended configuration information.
+    pub configuration_provider: Option<Arc<dyn ExtendedConfigurationProvider>>,
 
     /// The source file
     pub file_source: JsonFileSource,
+
+    /// The project layout, providing access to package manifests.
+    pub project_layout: Option<Arc<ProjectLayout>>,
 }
 
 /// Run the analyzer on the provided `root`: this process will use the given `filter`
@@ -50,13 +51,22 @@ pub fn analyze<'a, F, B>(
     filter: AnalysisFilter,
     options: &'a AnalyzerOptions,
     json_services: JsonAnalyzeServices,
+    plugins: AnalyzerPluginSlice<'a>,
     emit_signal: F,
 ) -> (Option<B>, Vec<Error>)
 where
     F: FnMut(&dyn AnalyzerSignal<JsonLanguage>) -> ControlFlow<B> + 'a,
     B: 'a,
 {
-    analyze_with_inspect_matcher(root, filter, |_| {}, options, json_services, emit_signal)
+    analyze_with_inspect_matcher(
+        root,
+        filter,
+        |_| {},
+        options,
+        json_services,
+        plugins,
+        emit_signal,
+    )
 }
 
 /// Run the analyzer on the provided `root`: this process will use the given `filter`
@@ -71,6 +81,7 @@ pub fn analyze_with_inspect_matcher<'a, V, F, B>(
     inspect_matcher: V,
     options: &'a AnalyzerOptions,
     json_services: JsonAnalyzeServices,
+    plugins: AnalyzerPluginSlice<'a>,
     mut emit_signal: F,
 ) -> (Option<B>, Vec<Error>)
 where
@@ -125,8 +136,25 @@ where
         analyzer.add_visitor(phase, visitor);
     }
 
-    services.insert_service(json_services.configuration_source);
+    let json_plugins: Vec<_> = plugins
+        .iter()
+        .filter(|p| p.language() == PluginTargetLanguage::Json)
+        .cloned()
+        .collect();
+
+    if !json_plugins.is_empty() {
+        // SAFETY: All plugins have been verified to target JSON above.
+        unsafe {
+            analyzer.add_visitor(
+                Phases::Syntax,
+                Box::new(BatchPluginVisitor::new_unchecked(&json_plugins)),
+            );
+        }
+    }
+
+    services.insert_service(json_services.configuration_provider);
     services.insert_service(json_services.file_source);
+    services.insert_service(json_services.project_layout);
 
     (
         analyzer.run(biome_analyze::AnalyzerContext {
@@ -178,7 +206,8 @@ mod tests {
         let options = AnalyzerOptions::default();
         let services = JsonAnalyzeServices {
             file_source: JsonFileSource::json(),
-            configuration_source: None,
+            configuration_provider: None,
+            project_layout: None,
         };
         analyze(
             &parsed.tree(),
@@ -188,6 +217,7 @@ mod tests {
             },
             &options,
             services,
+            &[],
             |signal| {
                 if let Some(diag) = signal.diagnostic() {
                     error_ranges.push(diag.location().span.unwrap());

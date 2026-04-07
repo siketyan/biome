@@ -408,6 +408,7 @@ impl FromServices for FunctionCallServices {
         let early_returns: &EarlyReturnsModel = services
             .get_service()
             .ok_or_else(|| ServicesDiagnostic::new(rule_key.rule_name(), &["EarlyReturnsModel"]))?;
+
         Ok(Self {
             early_returns: early_returns.clone(),
             semantic_services: SemanticServices::from_services(rule_key, rule_metadata, services)?,
@@ -473,6 +474,34 @@ impl Rule for UseHookAtTopLevel {
         // Early return for any function call that's not a hook call:
         if !is_react_hook_call(call) {
             return None;
+        }
+
+        // Check if the hook is in the ignore list
+        if let Some(ignore) = ctx.options().ignore.as_ref()
+            && let Ok(callee) = call.callee()
+        {
+            // Extract the hook name (handles both `useHook` and `obj.useHook`)
+            let hook_name = if let Some(identifier) = callee.as_js_identifier_expression() {
+                identifier
+                    .name()
+                    .ok()
+                    .and_then(|name| name.value_token().ok())
+                    .map(|token| token.token_text_trimmed())
+            } else if let Some(member_expression) = callee.as_js_static_member_expression() {
+                member_expression
+                    .member()
+                    .ok()
+                    .and_then(|member| member.value_token().ok())
+                    .map(|token| token.token_text_trimmed())
+            } else {
+                None
+            };
+
+            if let Some(name) = hook_name
+                && ignore.contains(name.text())
+            {
+                return None;
+            }
         }
 
         if is_top_level_call(call) {

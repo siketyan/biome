@@ -41,6 +41,7 @@ biome_js_analyze         = { workspace = true }
 biome_js_formatter       = { workspace = true }
 biome_js_syntax          = { workspace = true }
 biome_json_analyze       = { workspace = true }
+biome_json_factory       = { workspace = true }
 biome_json_formatter     = { workspace = true }
 biome_json_parser        = { workspace = true }
 biome_json_syntax        = { workspace = true }
@@ -56,6 +57,7 @@ camino                   = { workspace = true }
 crossbeam                = { workspace = true }
 dashmap                  = { workspace = true }
 notify                   = { workspace = true }
+papaya                   = { workspace = true }
 path-absolutize          = { workspace = true }
 quick-junit              = "0.5.2"
 rayon                    = { workspace = true }
@@ -81,20 +83,22 @@ tracing-subscriber       = { workspace = true, features = ["env-filter", "json"]
 tracing-tree             = "0.4.1"
 
 [dev-dependencies]
-biome_css_formatter  = { workspace = true }
-biome_js_formatter   = { workspace = true }
-biome_json_formatter = { workspace = true }
-biome_json_parser    = { workspace = true }
+biome_css_formatter  = { path = "../biome_css_formatter" }
+biome_css_parser     = { path = "../biome_css_parser" }
+biome_js_formatter   = { path = "../biome_js_formatter" }
+biome_json_formatter = { path = "../biome_json_formatter" }
+biome_json_parser    = { path = "../biome_json_parser" }
 directories          = { workspace = true }
 insta                = { workspace = true }
 regex                = { workspace = true }
+serial_test          = "3.3.1"
 tokio                = { workspace = true, features = ["io-util"] }
 
 [target.'cfg(all(target_family="unix", not(all(target_arch = "aarch64", target_env = "musl"))))'.dependencies]
 tikv-jemallocator = { workspace = true }
 
 [target.'cfg(unix)'.dependencies]
-libc  = "0.2.178"
+libc  = "0.2.180"
 tokio = { workspace = true, features = ["process"] }
 
 [target.'cfg(windows)'.dependencies]

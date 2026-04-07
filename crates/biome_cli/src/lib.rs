@@ -45,10 +45,6 @@ pub(crate) const VERSION: &str = match option_env!("BIOME_VERSION") {
     None => env!("CARGO_PKG_VERSION"),
 };
 
-/// JSON file that is temporarily to handle internal files via [Workspace].
-/// When using this file, make sure to close it via [Workspace::close_file].
-pub const TEMPORARY_INTERNAL_REPORTER_FILE: &str = "__BIOME_INTERNAL_FILE__.json";
-
 /// Global context for an execution of the CLI
 pub struct CliSession<'app> {
     /// Instance of [App] used by this run of the CLI
@@ -100,6 +96,7 @@ impl<'app> CliSession<'app> {
                 only,
                 skip,
                 watch,
+                profile_rules,
             } => run_command(
                 self,
                 &log_options,
@@ -123,6 +120,7 @@ impl<'app> CliSession<'app> {
                     css_parser,
                     only,
                     skip,
+                    profile_rules,
                     watch,
                 }),
             ),
@@ -150,6 +148,7 @@ impl<'app> CliSession<'app> {
                 css_parser,
                 json_parser,
                 log_options,
+                profile_rules,
                 watch,
             } => run_command(
                 self,
@@ -177,6 +176,7 @@ impl<'app> CliSession<'app> {
                     graphql_linter,
                     css_parser,
                     json_parser,
+                    profile_rules,
                     watch,
                 }),
             ),

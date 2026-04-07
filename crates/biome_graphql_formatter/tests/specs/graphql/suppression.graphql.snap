@@ -2,6 +2,7 @@
 source: crates/biome_formatter_test/src/snapshot_builder.rs
 info: graphql/suppression.graphql
 ---
+
 # Input
 
 ```graphql
@@ -29,21 +30,7 @@ info: graphql/suppression.graphql
 ```
 
 
-=============================
-
-# Outputs
-
-## Output 1
-
------
-Indent style: Tab
-Indent width: 2
-Line ending: LF
-Line width: 80
-Bracket spacing: true
-Quote style: Double Quotes
-Trailing newline: true
------
+# Formatted
 
 ```graphql
 # biome-ignore-all format: test reason

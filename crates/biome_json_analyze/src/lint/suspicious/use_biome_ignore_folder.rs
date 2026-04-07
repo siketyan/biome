@@ -73,7 +73,6 @@ impl Rule for UseBiomeIgnoreFolder {
 
         if name.is_some_and(|name| {
             name.inner_string_text()
-                .ok()
                 .is_some_and(|text| text.text() != "includes")
         }) {
             return values;

@@ -5,10 +5,12 @@ use crate::file_handlers::FormatEmbedNode;
 use crate::settings::ServiceLanguage;
 use crate::workspace::DocumentFileSource;
 use crate::workspace::document::services::embedded_bindings::EmbeddedExportedBindings;
+use crate::workspace::document::services::embedded_value_references::EmbeddedValueReferences;
 use biome_css_syntax::{AnyCssRoot, CssLanguage};
 use biome_diagnostics::Error;
 use biome_diagnostics::serde::Diagnostic as SerdeDiagnostic;
-use biome_js_syntax::JsLanguage;
+use biome_js_semantic::SemanticModelOptions;
+use biome_js_syntax::{AnyJsRoot, JsLanguage};
 use biome_json_syntax::JsonLanguage;
 use biome_parser::AnyParse;
 use biome_rowan::{AstNode, SyntaxNodeWithOffset, TextRange, TextSize};
@@ -19,6 +21,12 @@ pub enum AnyEmbeddedSnippet {
     Js(EmbeddedSnippet<JsLanguage>, DocumentServices),
     Css(EmbeddedSnippet<CssLanguage>, DocumentServices),
     Json(EmbeddedSnippet<JsonLanguage>, DocumentServices),
+}
+
+impl From<(EmbeddedSnippet<JsLanguage>, DocumentServices)> for AnyEmbeddedSnippet {
+    fn from(content: (EmbeddedSnippet<JsLanguage>, DocumentServices)) -> Self {
+        Self::Js(content.0, content.1)
+    }
 }
 
 impl From<EmbeddedSnippet<JsLanguage>> for AnyEmbeddedSnippet {
@@ -143,7 +151,7 @@ impl AnyEmbeddedSnippet {
 /// content with offset-aware positioning to maintain correct source locations.
 #[derive(Clone, Debug)]
 pub struct EmbeddedSnippet<L: ServiceLanguage + 'static> {
-    /// The JavaScript source code extracted from the script element.
+    /// The source code extracted from a snippet.
     pub parse: AnyParse,
 
     /// The range of the entire script element in the HTML document,
@@ -271,6 +279,9 @@ pub struct DocumentServices {
     /// Service to track bindings exported by the document
     exported_bindings: Option<EmbeddedExportedBindings>,
 
+    /// Service to track value references from non-source snippets
+    value_references: Option<EmbeddedValueReferences>,
+
     /// The document doesn't have any services
     language: LanguageServices,
 }
@@ -279,12 +290,17 @@ impl DocumentServices {
     pub fn none() -> Self {
         Self {
             exported_bindings: None,
+            value_references: None,
             language: LanguageServices::None,
         }
     }
 
     pub(crate) fn set_embedded_bindings(&mut self, bindings: EmbeddedExportedBindings) {
         self.exported_bindings = Some(bindings);
+    }
+
+    pub(crate) fn set_embedded_value_references(&mut self, value_refs: EmbeddedValueReferences) {
+        self.value_references = Some(value_refs);
     }
 
     pub fn as_css_services(&self) -> Option<&CssDocumentServices> {
@@ -295,8 +311,20 @@ impl DocumentServices {
         }
     }
 
+    pub fn as_js_services(&self) -> Option<&JsDocumentServices> {
+        if let LanguageServices::Js(services) = &self.language {
+            Some(services)
+        } else {
+            None
+        }
+    }
+
     pub fn embedded_bindings(&self) -> Option<EmbeddedExportedBindings> {
         self.exported_bindings.clone()
+    }
+
+    pub fn embedded_value_references(&self) -> Option<EmbeddedValueReferences> {
+        self.value_references.clone()
     }
 }
 
@@ -304,13 +332,25 @@ impl DocumentServices {
 pub enum LanguageServices {
     /// The document doesn't have any services
     None,
+    Js(JsDocumentServices),
     Css(CssDocumentServices),
+}
+
+impl From<JsDocumentServices> for DocumentServices {
+    fn from(services: JsDocumentServices) -> Self {
+        Self {
+            exported_bindings: None,
+            value_references: None,
+            language: LanguageServices::Js(services),
+        }
+    }
 }
 
 impl From<CssDocumentServices> for DocumentServices {
     fn from(services: CssDocumentServices) -> Self {
         Self {
             exported_bindings: None,
+            value_references: None,
             language: LanguageServices::Css(services),
         }
     }
@@ -325,6 +365,22 @@ pub struct CssDocumentServices {
 impl CssDocumentServices {
     pub fn with_css_semantic_model(mut self, root: &AnyCssRoot) -> Self {
         self.semantic_model = Some(biome_css_semantic::semantic_model(root));
+        self
+    }
+}
+
+#[derive(Clone, Default, Debug)]
+pub struct JsDocumentServices {
+    /// Semantic model that belongs to the file
+    pub(crate) semantic_model: Option<biome_js_semantic::SemanticModel>,
+}
+
+impl JsDocumentServices {
+    pub fn with_js_semantic_model(mut self, root: &AnyJsRoot) -> Self {
+        self.semantic_model = Some(biome_js_semantic::semantic_model(
+            root,
+            SemanticModelOptions::default(),
+        ));
         self
     }
 }
