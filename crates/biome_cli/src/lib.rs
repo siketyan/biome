@@ -95,6 +95,7 @@ impl<'app> CliSession<'app> {
                 log_options,
                 only,
                 skip,
+                watch,
                 profile_rules,
             } => run_command(
                 self,
@@ -120,6 +121,7 @@ impl<'app> CliSession<'app> {
                     only,
                     skip,
                     profile_rules,
+                    watch,
                 }),
             ),
             BiomeCommand::Lint {
@@ -147,6 +149,7 @@ impl<'app> CliSession<'app> {
                 json_parser,
                 log_options,
                 profile_rules,
+                watch,
             } => run_command(
                 self,
                 &log_options,
@@ -174,6 +177,7 @@ impl<'app> CliSession<'app> {
                     css_parser,
                     json_parser,
                     profile_rules,
+                    watch,
                 }),
             ),
             BiomeCommand::Ci {
@@ -233,6 +237,7 @@ impl<'app> CliSession<'app> {
                 css_parser,
                 json_parser,
                 log_options,
+                watch,
             } => run_command(
                 self,
                 &log_options,
@@ -255,6 +260,7 @@ impl<'app> CliSession<'app> {
                     since,
                     css_parser,
                     json_parser,
+                    watch,
                 }),
             ),
             BiomeCommand::Explain { doc } => commands::explain::explain(self, doc),
