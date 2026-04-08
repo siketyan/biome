@@ -3,6 +3,7 @@ use std::sync::mpsc::{Receiver, channel};
 use camino::Utf8PathBuf;
 use notify::event::{CreateKind, ModifyKind, RemoveKind};
 use notify::{Event, EventKind, RecursiveMode, Result, recommended_watcher};
+use tracing::warn;
 
 use crate::runner::watcher::{Watcher, WatcherEvent};
 
@@ -24,12 +25,13 @@ impl Watcher for DefaultWatcher {
         let mut watched_paths = self.watcher.paths_mut();
 
         for path in paths {
-            watched_paths
-                .add(path.as_std_path(), RecursiveMode::Recursive)
-                .ok();
+            if let Err(e) = watched_paths.add(path.as_std_path(), RecursiveMode::Recursive) {
+                warn!("Failed to watch path {}: {}", path, e);
+            }
         }
-
-        watched_paths.commit().ok();
+        if let Err(e) = watched_paths.commit() {
+            warn!("Failed to commit watched paths: {}", e);
+        }
     }
 
     fn poll(&mut self) -> Option<WatcherEvent> {
