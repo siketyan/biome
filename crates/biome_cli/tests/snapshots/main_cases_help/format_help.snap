@@ -331,8 +331,8 @@ Available options:
         --since=REF           Use this to specify the base branch to compare against when you're
                               using the --changed flag, and the `defaultBranch` is not set in your
                               biome.json
-        --watch               Enables the watch mode to re-run the check automatically when any file
-                              in the workspace has changed.
+        --watch               Enables the watch mode to re-run the check automatically when any
+                              non-excluded file in the workspace has changed.
     -h, --help                Prints help information
 
 ```

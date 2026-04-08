@@ -132,7 +132,7 @@ pub(crate) mod run;
 pub(crate) mod scan_kind;
 pub(crate) mod watcher;
 
-use crate::cli_options::{CliOptions, CliReporter};
+use crate::cli_options::CliOptions;
 use crate::commands::{
     print_diagnostics_from_workspace_result, validate_configuration_diagnostics,
 };
@@ -263,11 +263,13 @@ pub(crate) trait CommandRunner {
         self.setup_logging(log_options, cli_options);
         self.check_incompatible_arguments()?;
 
-        if self.is_watch_mode() && cli_options.reporter != CliReporter::Default {
+        let is_not_default_reporter = cli_options.cli_reporter.iter().any(|r| !r.is_default());
+
+        if self.is_watch_mode() && is_not_default_reporter {
             return Err(CliDiagnostic::incompatible_arguments(
                 "--watch",
                 "--reporter",
-                "Only default reporter can be used in watch mode.",
+                "The watch mode can only be used with the default reporter.",
             ));
         }
 
@@ -367,11 +369,9 @@ pub(crate) trait CommandRunner {
 
                 _ = Self::Finalizer::finalize(FinalizePayload {
                     cli_options,
-                    project_key,
                     execution: execution.as_ref(),
                     fs,
                     console,
-                    workspace,
                     scan_duration: duration,
                     crawler_output: output,
                     paths: event

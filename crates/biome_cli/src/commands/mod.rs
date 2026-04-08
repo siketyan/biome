@@ -211,7 +211,7 @@ pub enum BiomeCommand {
         #[bpaf(long("skip"), argument("GROUP|RULE|DOMAIN|ACTION"))]
         skip: Vec<AnalyzerSelector>,
 
-        /// Enables the watch mode to re-run the check automatically when any file in the workspace has changed.
+        /// Enables the watch mode to re-run the check automatically when any non-excluded file in the workspace has changed.
         #[bpaf(long("watch"), switch)]
         watch: bool,
 
@@ -333,8 +333,7 @@ pub enum BiomeCommand {
         #[bpaf(long("profile-rules"), switch)]
         profile_rules: bool,
 
-
-        /// Enables the watch mode to re-run the check automatically when any file in the workspace has changed.
+        /// Enables the watch mode to re-run the check automatically when any non-excluded file in the workspace has changed.
         #[bpaf(long("watch"), switch)]
         watch: bool,
 
@@ -419,7 +418,7 @@ pub enum BiomeCommand {
         #[bpaf(long("since"), argument("REF"))]
         since: Option<String>,
 
-        /// Enables the watch mode to re-run the check automatically when any file in the workspace has changed.
+        /// Enables the watch mode to re-run the check automatically when any non-excluded file in the workspace has changed.
         #[bpaf(long("watch"), switch)]
         watch: bool,
 
