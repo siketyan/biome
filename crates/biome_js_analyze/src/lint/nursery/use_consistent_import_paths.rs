@@ -22,6 +22,24 @@ declare_lint_rule! {
     ///
     /// ## Examples
     ///
+    /// ### Invalid
+    ///
+    /// ```json,file=package.json
+    /// {
+    ///   "imports": {
+    ///     "#internal/*": "./src/internal/*.ts"
+    ///   }
+    /// }
+    /// ```
+    ///
+    /// ```ts,file=src/internal/helper.ts
+    /// # export const helper = 1;
+    /// ```
+    ///
+    /// ```ts,expect_diagnostic,file=src/features/main.ts
+    /// export { helper } from "../internal/helper.ts";
+    /// ```
+    ///
     /// ### Valid
     ///
     /// ```json,file=tsconfig.json
