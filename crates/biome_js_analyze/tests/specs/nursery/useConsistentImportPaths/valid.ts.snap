@@ -1,3 +1,10 @@
+---
+source: crates/biome_js_analyze/tests/spec_tests.rs
+assertion_line: 149
+expression: valid.ts
+---
+# Input
+```ts
 /* should not generate diagnostics */
 
 import { featureValue } from "./src/feature/value.ts";
@@ -10,3 +17,5 @@ void externalThing;
 
 import("./src/shared/button.ts");
 require("./src/shared/button.ts");
+
+```

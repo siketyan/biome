@@ -2,13 +2,13 @@ use biome_analyze::{
     FixKind, Rule, RuleDiagnostic, RuleDomain, context::RuleContext, declare_lint_rule,
 };
 use biome_console::markup;
-use biome_deserialize_macros::{Deserializable, Merge};
 use biome_diagnostics::Severity;
+use biome_fs::normalize_path;
 use biome_js_syntax::{AnyJsImportLike, JsSyntaxKind, JsSyntaxToken, inner_string_text};
 use biome_package::{PackageJson, TsConfigJson};
 use biome_rowan::BatchMutationExt;
+use biome_rule_options::use_consistent_import_paths::UseConsistentImportPathsOptions;
 use camino::{Utf8Path, Utf8PathBuf};
-use serde::{Deserialize, Serialize};
 
 use crate::{JsRuleAction, services::module_graph::ResolvedImports};
 
@@ -62,10 +62,6 @@ declare_lint_rule! {
     }
 }
 
-#[derive(Default, Clone, Debug, Deserialize, Deserializable, Merge, Eq, PartialEq, Serialize)]
-#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(rename_all = "camelCase", deny_unknown_fields, default)]
-pub struct UseConsistentImportPathsOptions {}
 
 #[derive(Debug)]
 pub struct RuleState {
@@ -243,7 +239,8 @@ fn alias_from_package_imports(
     let imports = manifest.imports.as_ref()?.as_object()?;
 
     for (key, value) in imports.iter() {
-        let target = value.as_str()?;
+        let target = value.as_string()?;
+        let target = target.as_ref();
         if !target.starts_with("./") {
             continue;
         }
@@ -279,7 +276,9 @@ fn build_alias_from_mapping(
                 return None;
             }
 
-            let middle = &resolved[prefix.len()..resolved.len() - suffix.len()];
+            let middle = resolved[prefix.len()..resolved.len() - suffix.len()]
+                .strip_prefix('/')
+                .unwrap_or(&resolved[prefix.len()..resolved.len() - suffix.len()]);
             Some(format!("{alias_prefix}{middle}{alias_suffix}"))
         }
         (None, None) => {
@@ -292,7 +291,7 @@ fn build_alias_from_mapping(
 
 fn normalize_mapping_target(base: &Utf8Path, target: &str) -> Utf8PathBuf {
     let target = target.strip_prefix("./").unwrap_or(target);
-    base.join(target)
+    normalize_path(&base.join(target))
 }
 
 fn relative_specifier_for_path(
