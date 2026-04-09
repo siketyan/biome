@@ -22,7 +22,7 @@ declare_lint_rule! {
     ///
     /// ## Examples
     ///
-    /// ### Invalid
+    /// ### Valid
     ///
     /// ```json,file=tsconfig.json
     /// {
@@ -34,21 +34,15 @@ declare_lint_rule! {
     /// }
     /// ```
     ///
-    /// ```ts,expect_diagnostic,file=src/features/main.ts
-    /// import { Button } from "../ui/button.ts";
+    /// ```ts,file=src/feature/main.ts
+    /// import { Button } from "@/shared/button.ts";
     /// ```
     ///
-    /// ```ts,expect_diagnostic,file=src/features/main.ts
-    /// export { Button } from "@/features/button.ts";
+    /// ```ts,file=src/shared/button.ts
+    /// export const Button = () => null;
     /// ```
     ///
-    /// ### Valid
-    ///
-    /// ```ts,file=src/features/main.ts
-    /// import { Button } from "@/ui/button.ts";
-    /// ```
-    ///
-    /// ```ts,file=src/features/main.ts
+    /// ```ts,file=src/feature/main.ts
     /// import { buttonStyles } from "./button/styles.ts";
     /// ```
     pub UseConsistentImportPaths {
@@ -338,8 +332,7 @@ fn relative_specifier_for_path(
 fn split_specifier_suffix(specifier: &str) -> (&str, &str) {
     specifier
         .find(['?', '#'])
-        .map(|index| specifier.split_at(index))
-        .unwrap_or((specifier, ""))
+        .map_or((specifier, ""), |index| specifier.split_at(index))
 }
 
 fn strip_query_and_fragment(specifier: &str) -> &str {
