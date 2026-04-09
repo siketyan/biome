@@ -6,6 +6,7 @@ use biome_diagnostics::Severity;
 use biome_fs::normalize_path;
 use biome_js_syntax::{AnyJsImportLike, JsSyntaxKind, JsSyntaxToken, inner_string_text};
 use biome_package::{PackageJson, TsConfigJson};
+use biome_project_layout::ProjectLayout;
 use biome_rowan::BatchMutationExt;
 use biome_rule_options::use_consistent_import_paths::UseConsistentImportPathsOptions;
 use camino::{Utf8Path, Utf8PathBuf};
@@ -107,9 +108,12 @@ impl Rule for UseConsistentImportPaths {
         let module_name = node.module_name_token()?;
         let module_text = inner_string_text(&module_name);
         let (specifier, suffix) = split_specifier_suffix(module_text.text());
+        let file_path = ctx.file_path();
+        let project_layout = ctx.project_layout();
 
         if is_relative_parent_specifier(specifier) {
-            let replacement = preferred_alias_for_path(ctx, resolved_path, suffix)?;
+            let replacement =
+                preferred_alias_for_path(project_layout, file_path, resolved_path, suffix)?;
             return Some(RuleState {
                 module_name,
                 replacement,
@@ -121,11 +125,11 @@ impl Rule for UseConsistentImportPaths {
             return None;
         }
 
-        if !is_alias_specifier(ctx, specifier) {
+        if !is_alias_specifier(project_layout, file_path, specifier) {
             return None;
         }
 
-        let replacement = relative_specifier_for_path(ctx.file_path(), resolved_path, suffix)?;
+        let replacement = relative_specifier_for_path(file_path, resolved_path, suffix)?;
         if !is_relative_current_specifier(&replacement) {
             return None;
         }
@@ -190,35 +194,44 @@ impl Rule for UseConsistentImportPaths {
     }
 }
 
+/// Returns the preferred alias specifier for a resolved module path.
+///
+/// TypeScript path aliases take precedence over `package.json#imports`.
 fn preferred_alias_for_path(
-    ctx: &RuleContext<UseConsistentImportPaths>,
+    project_layout: &ProjectLayout,
+    file_path: &Utf8Path,
     resolved_path: &Utf8Path,
     suffix: &str,
 ) -> Option<String> {
-    tsconfig_alias_for_path(ctx.file_path(), resolved_path, ctx).or_else(|| {
-        package_import_alias_for_path(ctx.file_path(), resolved_path, ctx)
-    })
-    .map(|specifier| format!("{specifier}{suffix}"))
+    tsconfig_alias_for_path(project_layout, file_path, resolved_path)
+        .or_else(|| package_import_alias_for_path(project_layout, file_path, resolved_path))
+        .map(|specifier| format!("{specifier}{suffix}"))
 }
 
-fn is_alias_specifier(ctx: &RuleContext<UseConsistentImportPaths>, specifier: &str) -> bool {
+/// Returns whether the specifier already uses a configured alias form.
+fn is_alias_specifier(
+    project_layout: &ProjectLayout,
+    file_path: &Utf8Path,
+    specifier: &str,
+) -> bool {
     specifier.starts_with('#')
-        || ctx
-            .project_layout()
-            .query_tsconfig_for_path(ctx.file_path(), |tsconfig| tsconfig.matches_path_alias(specifier))
+        || project_layout
+            .query_tsconfig_for_path(file_path, |tsconfig| tsconfig.matches_path_alias(specifier))
             .unwrap_or(false)
 }
 
+/// Looks up the first matching `tsconfig.json` path alias for `resolved_path`.
 fn tsconfig_alias_for_path(
+    project_layout: &ProjectLayout,
     file_path: &Utf8Path,
     resolved_path: &Utf8Path,
-    ctx: &RuleContext<UseConsistentImportPaths>,
 ) -> Option<String> {
-    ctx.project_layout()
+    project_layout
         .query_tsconfig_for_path(file_path, |tsconfig| alias_from_tsconfig(tsconfig, resolved_path))
         .flatten()
 }
 
+/// Builds an alias from a `tsconfig.json` `paths` entry.
 fn alias_from_tsconfig(tsconfig: &TsConfigJson, resolved_path: &Utf8Path) -> Option<String> {
     let paths = tsconfig.compiler_options.paths.as_ref()?;
     let base = &tsconfig.compiler_options.paths_base;
@@ -234,15 +247,17 @@ fn alias_from_tsconfig(tsconfig: &TsConfigJson, resolved_path: &Utf8Path) -> Opt
     None
 }
 
+/// Looks up the first matching `package.json#imports` alias for `resolved_path`.
 fn package_import_alias_for_path(
+    project_layout: &ProjectLayout,
     file_path: &Utf8Path,
     resolved_path: &Utf8Path,
-    ctx: &RuleContext<UseConsistentImportPaths>,
 ) -> Option<String> {
-    let (package_path, manifest) = ctx.project_layout().find_node_manifest_for_path(file_path)?;
+    let (package_path, manifest) = project_layout.find_node_manifest_for_path(file_path)?;
     alias_from_package_imports(&manifest, &package_path, resolved_path)
 }
 
+/// Builds an alias from a `package.json#imports` entry.
 fn alias_from_package_imports(
     manifest: &PackageJson,
     package_path: &Utf8Path,
@@ -266,13 +281,17 @@ fn alias_from_package_imports(
     None
 }
 
+/// Converts a resolved file path back into an alias specifier using a mapping pair.
+///
+/// The wildcard portion is normalized to forward slashes so the produced import
+/// is stable across platforms.
 fn build_alias_from_mapping(
     alias: &str,
     target: &str,
     base: &Utf8Path,
     resolved_path: &Utf8Path,
 ) -> Option<String> {
-    let normalized_target = strip_query_and_fragment(target);
+    let normalized_target = split_specifier_suffix(target).0;
 
     match (alias.split_once('*'), normalized_target.split_once('*')) {
         (Some((alias_prefix, alias_suffix)), Some((target_prefix, target_suffix))) => {
@@ -288,26 +307,27 @@ fn build_alias_from_mapping(
                 return None;
             }
 
-            let middle = trim_leading_path_separator(&resolved[prefix.len()..resolved.len() - suffix.len()]);
+            let middle = resolved[prefix.len()..resolved.len() - suffix.len()]
+                .trim_start_matches(['/', '\\'])
+                .replace('\\', "/");
             Some(format!("{alias_prefix}{middle}{alias_suffix}"))
         }
         (None, None) => {
-            let target_path = normalize_mapping_target(base, normalized_target);
+            let target = normalized_target.strip_prefix("./").unwrap_or(normalized_target);
+            let target_path = normalize_path(&base.join(target));
             (target_path == resolved_path).then(|| alias.to_string())
         }
         _ => None,
     }
 }
 
+/// Resolves a mapping target relative to its base directory and removes `.` / `..`.
 fn normalize_mapping_target(base: &Utf8Path, target: &str) -> Utf8PathBuf {
     let target = target.strip_prefix("./").unwrap_or(target);
     normalize_path(&base.join(target))
 }
 
-fn trim_leading_path_separator(path: &str) -> &str {
-    path.trim_start_matches(['/', '\\'])
-}
-
+/// Computes a relative import specifier from one file to another.
 fn relative_specifier_for_path(
     from_file: &Utf8Path,
     to_file: &Utf8Path,
@@ -349,32 +369,53 @@ fn relative_specifier_for_path(
     Some(format!("{relative}{suffix}"))
 }
 
+/// Splits an import specifier into its path part and `?query` / `#fragment` suffix.
 fn split_specifier_suffix(specifier: &str) -> (&str, &str) {
     specifier
         .find(['?', '#'])
         .map_or((specifier, ""), |index| specifier.split_at(index))
 }
 
-fn strip_query_and_fragment(specifier: &str) -> &str {
-    split_specifier_suffix(specifier).0
-}
-
+/// Returns whether the specifier climbs to a parent directory.
 fn is_relative_parent_specifier(specifier: &str) -> bool {
     specifier == ".." || specifier.starts_with("../")
 }
 
+/// Returns whether the specifier stays within the current directory tree.
 fn is_relative_current_specifier(specifier: &str) -> bool {
     specifier == "." || specifier.starts_with("./")
 }
 
 #[cfg(test)]
 mod tests {
-    use super::trim_leading_path_separator;
+    use super::{build_alias_from_mapping, split_specifier_suffix};
+    use camino::Utf8Path;
 
     #[test]
-    fn trim_leading_path_separator_supports_windows_and_unix_separators() {
-        assert_eq!(trim_leading_path_separator("/shared/button.ts"), "shared/button.ts");
-        assert_eq!(trim_leading_path_separator(r"\shared\button.ts"), r"shared\button.ts");
-        assert_eq!(trim_leading_path_separator("shared/button.ts"), "shared/button.ts");
+    fn build_alias_from_mapping_normalizes_nested_windows_separators() {
+        let specifier = build_alias_from_mapping(
+            "@/*",
+            "./*",
+            Utf8Path::new("/repo"),
+            Utf8Path::new("/repo/shared\\button.ts"),
+        );
+
+        assert_eq!(specifier.as_deref(), Some("@/shared/button.ts"));
+    }
+
+    #[test]
+    fn split_specifier_suffix_preserves_queries_and_fragments() {
+        assert_eq!(
+            split_specifier_suffix("./shared/button.ts?raw"),
+            ("./shared/button.ts", "?raw")
+        );
+        assert_eq!(
+            split_specifier_suffix("./shared/button.ts#hash"),
+            ("./shared/button.ts", "#hash")
+        );
+        assert_eq!(
+            split_specifier_suffix("./shared/button.ts"),
+            ("./shared/button.ts", "")
+        );
     }
 }
