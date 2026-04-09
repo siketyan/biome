@@ -288,9 +288,7 @@ fn build_alias_from_mapping(
                 return None;
             }
 
-            let middle = resolved[prefix.len()..resolved.len() - suffix.len()]
-                .strip_prefix('/')
-                .unwrap_or(&resolved[prefix.len()..resolved.len() - suffix.len()]);
+            let middle = trim_leading_path_separator(&resolved[prefix.len()..resolved.len() - suffix.len()]);
             Some(format!("{alias_prefix}{middle}{alias_suffix}"))
         }
         (None, None) => {
@@ -304,6 +302,10 @@ fn build_alias_from_mapping(
 fn normalize_mapping_target(base: &Utf8Path, target: &str) -> Utf8PathBuf {
     let target = target.strip_prefix("./").unwrap_or(target);
     normalize_path(&base.join(target))
+}
+
+fn trim_leading_path_separator(path: &str) -> &str {
+    path.trim_start_matches(['/', '\\'])
 }
 
 fn relative_specifier_for_path(
@@ -363,4 +365,16 @@ fn is_relative_parent_specifier(specifier: &str) -> bool {
 
 fn is_relative_current_specifier(specifier: &str) -> bool {
     specifier == "." || specifier.starts_with("./")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::trim_leading_path_separator;
+
+    #[test]
+    fn trim_leading_path_separator_supports_windows_and_unix_separators() {
+        assert_eq!(trim_leading_path_separator("/shared/button.ts"), "shared/button.ts");
+        assert_eq!(trim_leading_path_separator(r"\shared\button.ts"), r"shared\button.ts");
+        assert_eq!(trim_leading_path_separator("shared/button.ts"), "shared/button.ts");
+    }
 }
