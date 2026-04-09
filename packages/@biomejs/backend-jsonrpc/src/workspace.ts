@@ -2406,6 +2406,11 @@ See https://biomejs.dev/linter/rules/use-consistent-graphql-descriptions
 	 */
 	useConsistentGraphqlDescriptions?: UseConsistentGraphqlDescriptionsConfiguration;
 	/**
+	* Enforce consistent import paths by preferring aliases for distant modules and relative paths for nearby modules.
+See https://biomejs.dev/linter/rules/use-consistent-import-paths 
+	 */
+	useConsistentImportPaths?: UseConsistentImportPathsConfiguration;
+	/**
 	* Enforce consistent use of either method signatures or function properties within interfaces and type aliases.
 See https://biomejs.dev/linter/rules/use-consistent-method-signatures 
 	 */
@@ -4362,6 +4367,9 @@ export type UseConsistentEnumValueTypeConfiguration =
 export type UseConsistentGraphqlDescriptionsConfiguration =
 	| RulePlainConfiguration
 	| RuleWithUseConsistentGraphqlDescriptionsOptions;
+export type UseConsistentImportPathsConfiguration =
+	| RulePlainConfiguration
+	| RuleWithUseConsistentImportPathsOptions;
 export type UseConsistentMethodSignaturesConfiguration =
 	| RulePlainConfiguration
 	| RuleWithUseConsistentMethodSignaturesOptions;
@@ -6124,6 +6132,11 @@ export interface RuleWithUseConsistentGraphqlDescriptionsOptions {
 	level: RulePlainConfiguration;
 	options?: UseConsistentGraphqlDescriptionsOptions;
 }
+export interface RuleWithUseConsistentImportPathsOptions {
+	fix?: FixKind;
+	level: RulePlainConfiguration;
+	options?: UseConsistentImportPathsOptions;
+}
 export interface RuleWithUseConsistentMethodSignaturesOptions {
 	fix?: FixKind;
 	level: RulePlainConfiguration;
@@ -7705,6 +7718,7 @@ export interface UseConsistentGraphqlDescriptionsOptions {
 	 */
 	style?: UseConsistentGraphqlDescriptionsStyle;
 }
+export type UseConsistentImportPathsOptions = {};
 /**
  * Options type for `useConsistentMethodSignatures`.
  */
@@ -8782,6 +8796,7 @@ export type Category =
 	| "lint/nursery/useBiomeSuppressionComment"
 	| "lint/nursery/useConsistentEnumValueType"
 	| "lint/nursery/useConsistentGraphqlDescriptions"
+	| "lint/nursery/useConsistentImportPaths"
 	| "lint/nursery/useConsistentMethodSignatures"
 	| "lint/nursery/useConsistentObjectDefinition"
 	| "lint/nursery/useConsistentTestIt"
