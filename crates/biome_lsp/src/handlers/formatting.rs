@@ -15,7 +15,7 @@ use biome_service::workspace::{
 };
 use biome_service::{WorkspaceError, extension_error};
 use std::ops::Sub;
-use tower_lsp_server::lsp_types::*;
+use tower_lsp_server::ls_types::*;
 
 #[tracing::instrument(level = "debug", skip(session), err)]
 pub(crate) fn format(
@@ -40,6 +40,8 @@ pub(crate) fn format(
         path: path.clone(),
         features,
         inline_config: session.inline_config(),
+        skip_ignore_check: false,
+        not_requested_features: FeaturesBuilder::new().with_search().build(),
     })?;
     if !file_features.supports_format() {
         return notify_user(file_features, path);
@@ -111,6 +113,8 @@ pub(crate) fn format_range(
         path: path.clone(),
         features,
         inline_config: session.inline_config(),
+        skip_ignore_check: false,
+        not_requested_features: FeaturesBuilder::new().with_search().build(),
     })?;
     if !file_features.supports_format() {
         return notify_user(file_features, path);
@@ -205,6 +209,8 @@ pub(crate) fn format_on_type(
         path: path.clone(),
         features,
         inline_config: session.inline_config(),
+        skip_ignore_check: false,
+        not_requested_features: FeaturesBuilder::new().with_search().build(),
     })?;
     if !file_features.supports_format() {
         return notify_user(file_features, path);

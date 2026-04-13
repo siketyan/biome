@@ -1,9 +1,29 @@
-use crate::{AnyJsonValue, JsonMember, JsonMemberName, JsonSyntaxToken, inner_string_text};
-use biome_rowan::{AstNode, AstSeparatedList, SyntaxResult, TokenText};
+use crate::{
+    AnyJsonMemberName, AnyJsonValue, JsonMember, JsonMemberName, JsonSyntaxToken, inner_string_text,
+};
+use biome_rowan::{AstSeparatedList, SyntaxResult, TokenText};
 
 impl JsonMemberName {
     pub fn inner_string_text(&self) -> SyntaxResult<TokenText> {
         Ok(inner_string_text(&self.value_token()?))
+    }
+}
+
+impl AnyJsonMemberName {
+    /// Returns the inner string text if this is a [JsonMemberName], [None] otherwise
+    pub fn inner_string_text(&self) -> Option<TokenText> {
+        match self {
+            Self::JsonMemberName(name) => name.inner_string_text().ok(),
+            _ => None,
+        }
+    }
+
+    /// Returns the value token if this is a [JsonMemberName], [None] otherwise
+    pub fn value_token(&self) -> Option<JsonSyntaxToken> {
+        match self {
+            Self::JsonMemberName(name) => name.value_token().ok(),
+            _ => None,
+        }
     }
 }
 
@@ -19,19 +39,5 @@ impl JsonMember {
         let members = value.json_member_list().iter().flatten().collect();
         let separators = value.json_member_list().separators().flatten().collect();
         Some((members, separators))
-    }
-
-    pub fn with_name(self, name: JsonMemberName) -> Self {
-        Self::unwrap_cast(
-            self.into_syntax()
-                .splice_slots(0..=0, [Some(name.into_syntax().into())]),
-        )
-    }
-
-    pub fn with_value(self, value: AnyJsonValue) -> Self {
-        Self::unwrap_cast(
-            self.into_syntax()
-                .splice_slots(2..=2, [Some(value.into_syntax().into())]),
-        )
     }
 }

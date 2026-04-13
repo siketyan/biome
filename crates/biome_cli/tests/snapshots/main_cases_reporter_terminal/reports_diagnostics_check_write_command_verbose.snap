@@ -5,15 +5,13 @@ expression: redactor(content)
 ## `index.css`
 
 ```css
-
-
-.brokenStyle { color: f( }
-
-.style {
-                color:
-                fakeFunction()
+.brokenStyle {
+  color: f(
 }
 
+.style {
+  color: fakeFunction();
+}
 ```
 
 ## `index.ts`
@@ -80,19 +78,23 @@ check ━━━━━━━━━━━━━━━━━━━━━━━━�
 # Emitted Messages
 
 ```block
-index.css:3:26 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+index.css:3:1 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   × Expected a declaration item but instead found '}'.
   
-  > 3 │ .brokenStyle { color: f( }
-      │                          ^
+    1 │ .brokenStyle {
+    2 │ 	color: f(
+  > 3 │ }
+      │ ^
     4 │ 
     5 │ .style {
   
   i Expected a declaration item here.
   
-  > 3 │ .brokenStyle { color: f( }
-      │                          ^
+    1 │ .brokenStyle {
+    2 │ 	color: f(
+  > 3 │ }
+      │ ^
     4 │ 
     5 │ .style {
   
@@ -100,14 +102,15 @@ index.css:3:26 parse ━━━━━━━━━━━━━━━━━━━�
 ```
 
 ```block
-index.css:3:23 lint/correctness/noUnknownFunction ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+index.css:2:9 lint/correctness/noUnknownFunction ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   × Unexpected unknown function: f
   
-  > 3 │ .brokenStyle { color: f( }
-      │                       ^
+    1 │ .brokenStyle {
+  > 2 │ 	color: f(
+      │ 	       ^
+    3 │ }
     4 │ 
-    5 │ .style {
   
   i Use a known function instead.
   
@@ -117,40 +120,19 @@ index.css:3:23 lint/correctness/noUnknownFunction ━━━━━━━━━━
 ```
 
 ```block
-index.css:7:17 lint/correctness/noUnknownFunction ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+index.css:6:9 lint/correctness/noUnknownFunction ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   × Unexpected unknown function: fakeFunction
   
     5 │ .style {
-    6 │                 color:
-  > 7 │                 fakeFunction()
-      │                 ^^^^^^^^^^^^
-    8 │ }
-    9 │ 
+  > 6 │ 	color: fakeFunction();
+      │ 	       ^^^^^^^^^^^^
+    7 │ }
+    8 │ 
   
   i Use a known function instead.
   
   i See MDN web docs for more details.
-  
-
-```
-
-```block
-index.css:3:26 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-  × Expected a declaration item but instead found '}'.
-  
-  > 3 │ .brokenStyle { color: f( }
-      │                          ^
-    4 │ 
-    5 │ .style {
-  
-  i Expected a declaration item here.
-  
-  > 3 │ .brokenStyle { color: f( }
-      │                          ^
-    4 │ 
-    5 │ .style {
   
 
 ```
@@ -160,6 +142,27 @@ index.css format ━━━━━━━━━━━━━━━━━━━━━
 
   × Code formatting aborted due to parsing errors. To format code with errors, enable the 'formatter.formatWithErrors' option.
   
+
+```
+
+```block
+index.ts:4:3 lint/suspicious/noDoubleEquals  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Using == may be unsafe if you are relying on type coercion.
+  
+    2 │ import { z } from "z";
+    3 │ 
+  > 4 │ a == b;
+      │   ^^
+    5 │ a == b;
+    6 │ a == b;
+  
+  i == is only allowed when comparing against null.
+  
+  i Unsafe fix: Use === instead.
+  
+    4 │ a·===·b;
+      │     +   
 
 ```
 
@@ -187,19 +190,19 @@ index.css format ━━━━━━━━━━━━━━━━━━━━━
 ```
 
 ```block
-Skipped 32 suggested fixes.
+Skipped 64 suggested fixes.
 If you wish to apply the suggested (unsafe) fixes, use the command biome check --write --unsafe
 
 ```
 
 ```block
 The number of diagnostics exceeds the limit allowed. Use --max-diagnostics to increase it.
-Diagnostics not shown: 56.
+Diagnostics not shown: 55.
 ```
 
 ```block
 Scanned project folder in <TIME>.
 Checked 3 files in <TIME>. Fixed 2 files.
-Found 45 errors.
+Found 44 errors.
 Found 16 warnings.
 ```

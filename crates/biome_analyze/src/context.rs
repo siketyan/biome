@@ -22,7 +22,7 @@ pub struct RuleContext<'a, R: Rule> {
     jsx_runtime: Option<JsxRuntime>,
     jsx_factory: Option<&'a str>,
     jsx_fragment_factory: Option<&'a str>,
-    css_modules: bool,
+    working_directory: Option<&'a Utf8Path>,
 }
 
 impl<'a, R> RuleContext<'a, R>
@@ -43,7 +43,7 @@ where
         jsx_runtime: Option<JsxRuntime>,
         jsx_factory: Option<&'a str>,
         jsx_fragment_factory: Option<&'a str>,
-        css_modules: bool,
+        working_directory: Option<&'a Utf8Path>,
     ) -> Result<Self, Error> {
         let rule_key = RuleKey::rule::<R>();
         Ok(Self {
@@ -60,7 +60,7 @@ where
             jsx_runtime,
             jsx_factory,
             jsx_fragment_factory,
-            css_modules,
+            working_directory,
         })
     }
 
@@ -188,6 +188,10 @@ where
         self.file_path
     }
 
+    pub fn working_directory(&self) -> Option<&Utf8Path> {
+        self.working_directory
+    }
+
     /// Returns the preferred quote that should be used when providing code actions
     pub fn preferred_quote(&self) -> PreferredQuote {
         self.preferred_quote
@@ -201,10 +205,6 @@ where
     /// Returns the preferred indentation style that should be when providing code actions.
     pub fn preferred_indentation(&self) -> PreferredIndentation {
         self.preferred_indentation
-    }
-
-    pub fn is_css_modules(&self) -> bool {
-        self.css_modules
     }
 
     /// Attempts to retrieve a service from the current context

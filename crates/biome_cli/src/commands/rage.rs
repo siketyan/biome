@@ -216,11 +216,17 @@ impl Display for RageConfiguration<'_> {
                         diagnostics,
                         directory_path,
                         file_path,
+                        extended_configurations,
+                        loaded_location: _,
                     } = loaded_configuration;
                     let vcs_enabled = configuration.is_vcs_enabled();
                     let mut settings = Settings::default();
                     settings
-                        .merge_with_configuration(configuration.clone(), None)
+                        .merge_with_configuration(
+                            configuration.clone(),
+                            None,
+                            extended_configurations,
+                        )
                         .unwrap();
 
                     let status = if !diagnostics.is_empty() {
@@ -255,6 +261,7 @@ impl Display for RageConfiguration<'_> {
                         {KeyValuePair::new("Linter enabled", markup!({DebugDisplay(settings.is_linter_enabled())}))}
                         {KeyValuePair::new("Assist enabled", markup!({DebugDisplay(settings.is_assist_enabled())}))}
                         {KeyValuePair::new("VCS enabled", markup!({DebugDisplay(vcs_enabled)}))}
+                        {KeyValuePair::new("HTML full support enabled", markup!({DisplayOption(configuration.html.as_ref().and_then(|html| html.experimental_full_support_enabled))}))}
                     ).fmt(fmt)?;
 
                     // Print formatter configuration if --formatter option is true
@@ -416,10 +423,11 @@ struct BiomeServerLog;
 impl Display for BiomeServerLog {
     fn fmt(&self, fmt: &mut Formatter) -> io::Result<()> {
         if let Ok(Some(log)) = read_most_recent_log_file(
-            biome_env().biome_log_path.value().map(Utf8PathBuf::from),
             biome_env()
-                .biome_log_prefix_name
-                .value()
+                .value_for("BIOME_LOG_PATH")
+                .map(Utf8PathBuf::from),
+            biome_env()
+                .value_for("BIOME_LOG_PREFIX_NAME")
                 .unwrap_or("server.log".to_string()),
         ) {
             markup!("\n"<Emphasis><Underline>"Biome Server Log:"</Underline></Emphasis>"

@@ -3,7 +3,8 @@ source: crates/biome_js_analyze/tests/spec_tests.rs
 expression: valid.svelte
 ---
 # Input
-```js
+```svelte
+<!-- should not generate diagnostics -->
 <script>
 	export let title;
 	export let person;

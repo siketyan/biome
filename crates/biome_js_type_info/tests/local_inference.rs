@@ -1,6 +1,7 @@
 mod utils;
 
-use biome_js_type_info::{GlobalsResolver, ScopeId, TypeData};
+use biome_js_semantic::ScopeId;
+use biome_js_type_info::{GlobalsResolver, TypeData};
 
 use utils::{
     assert_type_data_snapshot, assert_typed_bindings_snapshot, get_expression,
@@ -43,6 +44,17 @@ fn infer_type_of_regex() {
     let mut resolver = GlobalsResolver::default();
     let ty = TypeData::from_any_js_expression(&mut resolver, ScopeId::GLOBAL, &expr);
     assert_type_data_snapshot(CODE, &ty, &resolver, "infer_type_of_regex");
+}
+
+#[test]
+fn infer_type_of_regex_with_flags() {
+    const CODE: &str = r#"/ab+c/gi"#;
+
+    let root = parse_ts(CODE);
+    let expr = get_expression(&root);
+    let mut resolver = GlobalsResolver::default();
+    let ty = TypeData::from_any_js_expression(&mut resolver, ScopeId::GLOBAL, &expr);
+    assert_type_data_snapshot(CODE, &ty, &resolver, "infer_type_of_regex_with_flags");
 }
 
 #[test]

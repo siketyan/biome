@@ -1,4 +1,4 @@
-use crate::{CssComplexSelector, CssCompoundSelector};
+use crate::{CssComplexSelector, CssCompoundSelector, CssPseudoClassFunctionSelector};
 
 impl CssComplexSelector {
     ///
@@ -38,6 +38,20 @@ impl Iterator for CssComplexSelectorIterator {
     }
 }
 
+impl CssPseudoClassFunctionSelector {
+    /// Returns `true` if the given pseudo-class function selector is `:global(...)`.
+    ///
+    /// This is used by CSS and HTML module visitors to skip class selectors that
+    /// are globally scoped and cannot be traced to specific `class="..."` attribute
+    /// references.
+    pub fn is_global_pseudo(&self) -> bool {
+        self.name()
+            .ok()
+            .and_then(|name| name.value_token().ok())
+            .is_some_and(|token| token.text_trimmed().eq_ignore_ascii_case("global"))
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use biome_css_factory::syntax::CssComplexSelector;
@@ -47,7 +61,7 @@ mod tests {
     #[test]
     fn test_nesting_level() {
         let source = "a { b { & & > p {} } }";
-        let parsed = parse_css(source, CssParserOptions::default());
+        let parsed = parse_css(source, Default::default(), CssParserOptions::default());
         let complex_selector = parsed
             .syntax()
             .descendants()

@@ -1,7 +1,7 @@
 use super::{
-    AnalyzerVisitorBuilder, CodeActionsParams, DocumentFileSource, EnabledForPath,
-    ExtensionHandler, FixAllParams, LintParams, LintResults, ParseResult, ProcessFixAll,
-    ProcessLint, SearchCapabilities,
+    AnalyzerVisitorBuilder, AnalyzerVisitorResult, CodeActionsParams, DocumentFileSource,
+    EnabledForPath, ExtensionHandler, FixAllParams, LintParams, LintResults, ParseResult,
+    ProcessFixAll, ProcessLint, SearchCapabilities,
 };
 use crate::WorkspaceError;
 use crate::configuration::to_analyzer_rules;
@@ -13,15 +13,18 @@ use crate::settings::{
     FormatSettings, LanguageListSettings, LanguageSettings, OverrideSettings, ServiceLanguage,
     Settings, SettingsWithEditor, check_feature_activity, check_override_feature_activity,
 };
+use crate::workspace::FixFileMode;
 use crate::workspace::{CodeAction, FixFileResult, GetSyntaxTreeResult, PullActionsResult};
-use biome_analyze::{AnalysisFilter, AnalyzerConfiguration, AnalyzerOptions, ControlFlow, Never};
+use biome_analyze::{
+    ActionFilter, AnalysisFilter, AnalyzerConfiguration, AnalyzerOptions, ControlFlow, Never,
+};
 use biome_configuration::graphql::{
     GraphqlAssistConfiguration, GraphqlAssistEnabled, GraphqlFormatterConfiguration,
     GraphqlFormatterEnabled, GraphqlLinterConfiguration, GraphqlLinterEnabled,
 };
 use biome_formatter::{
     BracketSpacing, FormatError, IndentStyle, IndentWidth, LineEnding, LineWidth, Printed,
-    QuoteStyle,
+    QuoteStyle, TrailingNewline,
 };
 use biome_fs::BiomePath;
 use biome_graphql_analyze::analyze;
@@ -46,6 +49,7 @@ pub struct GraphqlFormatterSettings {
     pub quote_style: Option<QuoteStyle>,
     pub bracket_spacing: Option<BracketSpacing>,
     pub enabled: Option<GraphqlFormatterEnabled>,
+    pub trailing_newline: Option<TrailingNewline>,
 }
 
 impl From<GraphqlFormatterConfiguration> for GraphqlFormatterSettings {
@@ -58,6 +62,7 @@ impl From<GraphqlFormatterConfiguration> for GraphqlFormatterSettings {
             quote_style: configuration.quote_style,
             bracket_spacing: configuration.bracket_spacing,
             enabled: configuration.enabled,
+            trailing_newline: configuration.trailing_newline,
         }
     }
 }
@@ -145,6 +150,10 @@ impl ServiceLanguage for GraphqlLanguage {
             .bracket_spacing
             .or(global.bracket_spacing)
             .unwrap_or_default();
+        let trailing_newline = language
+            .trailing_newline
+            .or(global.trailing_newline)
+            .unwrap_or_default();
 
         let mut options = GraphqlFormatOptions::new(
             document_file_source
@@ -156,7 +165,8 @@ impl ServiceLanguage for GraphqlLanguage {
         .with_line_width(line_width)
         .with_line_ending(line_ending)
         .with_bracket_spacing(bracket_spacing)
-        .with_quote_style(language.quote_style.unwrap_or_default());
+        .with_quote_style(language.quote_style.unwrap_or_default())
+        .with_trailing_newline(trailing_newline);
 
         overrides.apply_override_graphql_format_options(path, &mut options);
 
@@ -434,19 +444,24 @@ fn lint(params: LintParams) -> LintResults {
     let workspace_settings = &params.settings;
     let analyzer_options = workspace_settings.analyzer_options::<GraphqlLanguage>(
         params.path,
+        params.working_directory,
         &params.language,
         params.suppression_reason.as_deref(),
     );
     let tree = params.parse.tree();
 
-    let (enabled_rules, disabled_rules, analyzer_options) =
-        AnalyzerVisitorBuilder::new(params.settings.as_ref(), analyzer_options)
-            .with_only(params.only)
-            .with_skip(params.skip)
-            .with_path(params.path.as_path())
-            .with_enabled_selectors(params.enabled_selectors)
-            .with_project_layout(params.project_layout.clone())
-            .finish();
+    let AnalyzerVisitorResult {
+        enabled_rules,
+        disabled_rules,
+        analyzer_options,
+        ..
+    } = AnalyzerVisitorBuilder::new(params.settings.as_ref(), analyzer_options)
+        .with_only(params.only)
+        .with_skip(params.skip)
+        .with_path(params.path.as_path())
+        .with_enabled_selectors(params.enabled_selectors)
+        .with_project_layout(params.project_layout.clone())
+        .finish();
 
     let filter = AnalysisFilter {
         categories: params.categories,
@@ -486,6 +501,9 @@ pub(crate) fn code_actions(params: CodeActionsParams) -> PullActionsResult {
         plugins: _,
         categories,
         action_offset,
+        document_services: _,
+        working_directory,
+        compute_actions,
     } = params;
     let _ = debug_span!("Code actions GraphQL", range =? range, path =? path).entered();
     let tree = parse.tree();
@@ -499,18 +517,23 @@ pub(crate) fn code_actions(params: CodeActionsParams) -> PullActionsResult {
 
     let analyzer_options = settings.analyzer_options::<GraphqlLanguage>(
         path,
+        working_directory,
         &language,
         suppression_reason.as_deref(),
     );
     let mut actions = Vec::new();
-    let (enabled_rules, disabled_rules, analyzer_options) =
-        AnalyzerVisitorBuilder::new(settings.as_ref(), analyzer_options)
-            .with_only(only)
-            .with_skip(skip)
-            .with_path(path.as_path())
-            .with_enabled_selectors(rules)
-            .with_project_layout(project_layout)
-            .finish();
+    let AnalyzerVisitorResult {
+        enabled_rules,
+        disabled_rules,
+        analyzer_options,
+        ..
+    } = AnalyzerVisitorBuilder::new(settings.as_ref(), analyzer_options)
+        .with_only(only)
+        .with_skip(skip)
+        .with_path(path.as_path())
+        .with_enabled_selectors(rules)
+        .with_project_layout(project_layout)
+        .finish();
 
     let filter = AnalysisFilter {
         categories,
@@ -522,16 +545,34 @@ pub(crate) fn code_actions(params: CodeActionsParams) -> PullActionsResult {
     info!("GraphQL runs the analyzer");
 
     analyze(&tree, filter, &analyzer_options, |signal| {
-        actions.extend(signal.actions().into_code_action_iter().map(|item| {
-            CodeAction {
-                category: item.category.clone(),
-                rule_name: item
-                    .rule_name
-                    .map(|(group, name)| (Cow::Borrowed(group), Cow::Borrowed(name))),
-                suggestion: item.suggestion,
-                offset: action_offset,
-            }
-        }));
+        if compute_actions {
+            actions.extend(
+                signal
+                    .actions(ActionFilter::all())
+                    .into_code_action_iter()
+                    .map(|item| CodeAction {
+                        category: item.category.clone(),
+                        rule_name: item
+                            .rule_name
+                            .map(|(group, name)| (Cow::Borrowed(group), Cow::Borrowed(name))),
+                        applicability: Some(item.suggestion.applicability),
+                        suggestion: Some(item.suggestion),
+                        offset: action_offset,
+                    }),
+            );
+        } else {
+            actions.extend(signal.actions_metadata().into_iter().map(|meta| {
+                CodeAction {
+                    category: meta.category,
+                    rule_name: meta
+                        .rule_name
+                        .map(|(g, r)| (Cow::Borrowed(g), Cow::Borrowed(r))),
+                    applicability: Some(meta.applicability),
+                    suggestion: None,
+                    offset: action_offset,
+                }
+            }));
+        }
 
         ControlFlow::<Never>::Continue(())
     });
@@ -550,17 +591,22 @@ pub(crate) fn fix_all(params: FixAllParams) -> Result<FixFileResult, WorkspaceEr
         .as_linter_rules(params.biome_path.as_path());
     let analyzer_options = params.settings.analyzer_options::<GraphqlLanguage>(
         params.biome_path,
+        params.working_directory,
         &params.document_file_source,
         params.suppression_reason.as_deref(),
     );
-    let (enabled_rules, disabled_rules, analyzer_options) =
-        AnalyzerVisitorBuilder::new(params.settings.as_ref(), analyzer_options)
-            .with_only(params.only)
-            .with_skip(params.skip)
-            .with_path(params.biome_path.as_path())
-            .with_enabled_selectors(params.enabled_rules)
-            .with_project_layout(params.project_layout.clone())
-            .finish();
+    let AnalyzerVisitorResult {
+        enabled_rules,
+        disabled_rules,
+        analyzer_options,
+        fixable_rules,
+    } = AnalyzerVisitorBuilder::new(params.settings.as_ref(), analyzer_options)
+        .with_only(params.only)
+        .with_skip(params.skip)
+        .with_path(params.biome_path.as_path())
+        .with_enabled_selectors(params.enabled_rules)
+        .with_project_layout(params.project_layout.clone())
+        .finish();
 
     let filter = AnalysisFilter {
         categories: params.rule_categories,
@@ -574,12 +620,60 @@ pub(crate) fn fix_all(params: FixAllParams) -> Result<FixFileResult, WorkspaceEr
         rules,
         tree.syntax().text_range_with_trivia().len().into(),
     );
+
+    if matches!(params.fix_file_mode, FixFileMode::ApplySuppressions) {
+        loop {
+            let mut pending_actions = Vec::new();
+
+            let (_, _) = analyze(&tree, filter, &analyzer_options, |signal| {
+                process_fix_all.collect_signal(signal, &mut pending_actions)
+            });
+
+            let result = process_fix_all.process_batch_actions(pending_actions, |root| {
+                tree = match GraphqlRoot::cast(root) {
+                    Some(tree) => tree,
+                    None => return None,
+                };
+                Some(tree.syntax().text_range_with_trivia().len().into())
+            })?;
+
+            if result.is_none() {
+                return process_fix_all.finish(
+                    || {
+                        Ok(if params.should_format {
+                            Either::Left(format_node(
+                                params.settings.format_options::<GraphqlLanguage>(
+                                    params.biome_path,
+                                    &params.document_file_source,
+                                ),
+                                tree.syntax(),
+                            ))
+                        } else {
+                            Either::Right(tree.syntax().to_string())
+                        })
+                    },
+                    params.embeds_initial_indent,
+                );
+            }
+        }
+    }
+
+    // Phase 1: fix loop with fixable-only rules
+    let fixable_filter = AnalysisFilter {
+        categories: params.rule_categories,
+        enabled_rules: Some(fixable_rules.as_slice()),
+        disabled_rules: &disabled_rules,
+        range: None,
+    };
+
     loop {
-        let (action, _) = analyze(&tree, filter, &analyzer_options, |signal| {
-            process_fix_all.process_signal(signal)
+        let mut pending_actions = Vec::new();
+
+        let (_, _) = analyze(&tree, fixable_filter, &analyzer_options, |signal| {
+            process_fix_all.collect_signal_fixes_only(signal, &mut pending_actions)
         });
 
-        let result = process_fix_all.process_action(action, |root| {
+        let result = process_fix_all.process_batch_actions(pending_actions, |root| {
             tree = match GraphqlRoot::cast(root) {
                 Some(tree) => tree,
                 None => return None,
@@ -588,19 +682,31 @@ pub(crate) fn fix_all(params: FixAllParams) -> Result<FixFileResult, WorkspaceEr
         })?;
 
         if result.is_none() {
-            return process_fix_all.finish(|| {
-                Ok(if params.should_format {
-                    Either::Left(format_node(
-                        params.settings.format_options::<GraphqlLanguage>(
-                            params.biome_path,
-                            &params.document_file_source,
-                        ),
-                        tree.syntax(),
-                    ))
-                } else {
-                    Either::Right(tree.syntax().to_string())
-                })
-            });
+            break;
         }
     }
+
+    // Phase 2: all rules for final diagnostics
+    {
+        let (_, _) = analyze(&tree, filter, &analyzer_options, |signal| {
+            process_fix_all.collect_diagnostic_only(signal)
+        });
+    }
+
+    process_fix_all.finish(
+        || {
+            Ok(if params.should_format {
+                Either::Left(format_node(
+                    params.settings.format_options::<GraphqlLanguage>(
+                        params.biome_path,
+                        &params.document_file_source,
+                    ),
+                    tree.syntax(),
+                ))
+            } else {
+                Either::Right(tree.syntax().to_string())
+            })
+        },
+        params.embeds_initial_indent,
+    )
 }

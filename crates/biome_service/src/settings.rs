@@ -1,4 +1,4 @@
-use crate::workspace::{DocumentFileSource, FeatureKind};
+use crate::workspace::{DocumentFileSource, FeatureKind, ScanKind};
 use crate::{WorkspaceError, is_dir};
 use biome_analyze::{AnalyzerOptions, AnalyzerRules};
 use biome_configuration::analyzer::assist::{Actions, AssistConfiguration, AssistEnabled};
@@ -7,23 +7,24 @@ use biome_configuration::bool::Bool;
 use biome_configuration::diagnostics::InvalidIgnorePattern;
 use biome_configuration::formatter::{FormatWithErrorsEnabled, FormatterEnabled};
 use biome_configuration::html::{ExperimentalFullSupportEnabled, HtmlConfiguration};
-use biome_configuration::javascript::JsxRuntime;
+use biome_configuration::javascript::{ExperimentalEmbeddedSnippetsEnabled, JsxRuntime};
 use biome_configuration::max_size::MaxSize;
 use biome_configuration::vcs::{VcsClientKind, VcsConfiguration, VcsEnabled, VcsUseIgnoreFile};
 use biome_configuration::{
-    BiomeDiagnostic, Configuration, CssConfiguration, DEFAULT_SCANNER_IGNORE_ENTRIES,
-    FilesConfiguration, FilesIgnoreUnknownEnabled, FormatterConfiguration, GraphqlConfiguration,
-    GritConfiguration, JsConfiguration, JsonConfiguration, LinterConfiguration,
+    BiomeDiagnostic, Configuration, ConfigurationSource, CssConfiguration,
+    DEFAULT_SCANNER_IGNORE_ENTRIES, ExtendedConfigurations, FilesConfiguration,
+    FilesIgnoreUnknownEnabled, FormatterConfiguration, GraphqlConfiguration, GritConfiguration,
+    JsConfiguration, JsonConfiguration, LinterConfiguration, MarkdownConfiguration,
     OverrideAssistConfiguration, OverrideFormatterConfiguration, OverrideGlobs,
     OverrideLinterConfiguration, Overrides, Rules, push_to_analyzer_assist, push_to_analyzer_rules,
 };
 use biome_css_formatter::context::CssFormatOptions;
-use biome_css_parser::CssParserOptions;
+use biome_css_parser::{CssModulesKind, CssParserOptions};
 use biome_css_syntax::CssLanguage;
 use biome_deserialize::Merge;
 use biome_formatter::{
-    AttributePosition, BracketSameLine, BracketSpacing, Expand, IndentStyle, IndentWidth,
-    LineEnding, LineWidth,
+    AttributePosition, BracketSameLine, BracketSpacing, DelimiterSpacing, Expand, IndentStyle,
+    IndentWidth, LineEnding, LineWidth, TrailingNewline,
 };
 use biome_fs::BiomePath;
 use biome_graphql_formatter::context::GraphqlFormatOptions;
@@ -31,7 +32,7 @@ use biome_graphql_syntax::GraphqlLanguage;
 use biome_grit_formatter::context::GritFormatOptions;
 use biome_grit_syntax::GritLanguage;
 use biome_html_formatter::HtmlFormatOptions;
-use biome_html_parser::HtmlParseOptions;
+use biome_html_parser::HtmlParserOptions;
 use biome_html_syntax::HtmlLanguage;
 use biome_js_formatter::context::JsFormatOptions;
 use biome_js_parser::JsParserOptions;
@@ -39,6 +40,7 @@ use biome_js_syntax::JsLanguage;
 use biome_json_formatter::context::JsonFormatOptions;
 use biome_json_parser::JsonParserOptions;
 use biome_json_syntax::JsonLanguage;
+use biome_markdown_syntax::MarkdownLanguage;
 use biome_plugin_loader::Plugins;
 use camino::{Utf8Path, Utf8PathBuf};
 use ignore::gitignore::{Gitignore, GitignoreBuilder};
@@ -52,9 +54,9 @@ use std::sync::{Arc, RwLock};
 #[derive(Clone, Debug, Default)]
 pub struct Settings {
     /// The configuration that originated this setting, if applicable.
-    ///
-    /// It contains [Configuration] and the folder where it was found.
-    source: Option<Arc<(Configuration, Option<Utf8PathBuf>)>>,
+    source: Option<Arc<ConfigurationSource>>,
+
+    pub(crate) module_graph_resolution_kind: ModuleGraphResolutionKind,
 
     /// Formatter settings applied to all files in the project.
     pub formatter: FormatSettings,
@@ -75,6 +77,9 @@ pub struct Settings {
 
     // TODO: remove once HTML full support is stable
     pub experimental_full_html_support: Option<ExperimentalFullSupportEnabled>,
+
+    // TODO: remove once embedded snippets support is stable
+    pub experimental_js_embedded_snippets_enabled: Option<ExperimentalEmbeddedSnippetsEnabled>,
 }
 
 impl Settings {
@@ -84,18 +89,22 @@ impl Settings {
             .value()
     }
 
+    pub fn experimental_js_embedded_snippets_enabled(&self) -> bool {
+        self.experimental_js_embedded_snippets_enabled
+            .unwrap_or_default()
+            .value()
+    }
+
     pub fn source(&self) -> Option<Configuration> {
-        self.source.as_ref().map(|source| {
-            let (config, _) = source.deref().clone();
-            config
-        })
+        self.source.as_ref()?.source()
     }
 
     pub fn source_path(&self) -> Option<Utf8PathBuf> {
-        self.source.as_ref().and_then(|source| {
-            let (_, path) = source.deref().clone();
-            path
-        })
+        self.source.as_ref()?.source_path()
+    }
+
+    pub fn full_source(&self) -> Option<Arc<ConfigurationSource>> {
+        self.source.clone()
     }
 
     /// Merges the [Configuration] into the settings.
@@ -104,27 +113,51 @@ impl Settings {
         &mut self,
         configuration: Configuration,
         working_directory: Option<Utf8PathBuf>,
+        extended_configurations: Vec<(Utf8PathBuf, Configuration)>,
     ) -> Result<(), WorkspaceError> {
-        self.source = Some(Arc::new((configuration.clone(), working_directory.clone())));
+        self.source = Some(Arc::new(ConfigurationSource {
+            source: Some((configuration.clone(), working_directory.clone())),
+            extended_configurations: ExtendedConfigurations::from(extended_configurations),
+        }));
 
         // formatter part§
         if let Some(formatter) = configuration.formatter {
-            self.formatter = to_format_settings(working_directory.clone(), formatter)?;
+            self.formatter = to_format_settings(
+                working_directory
+                    .as_ref()
+                    .map(|p| p.as_path().to_path_buf()),
+                formatter,
+            )?;
         }
 
         // linter part
         if let Some(linter) = configuration.linter {
-            self.linter = to_linter_settings(working_directory.clone(), linter)?;
+            self.linter = to_linter_settings(
+                working_directory
+                    .as_ref()
+                    .map(|p| p.as_path().to_path_buf()),
+                linter,
+            )?;
         }
 
         // assist part
         if let Some(assist) = configuration.assist {
-            self.assist = to_assist_settings(working_directory.clone(), assist)?;
+            self.assist = to_assist_settings(
+                working_directory
+                    .as_ref()
+                    .map(|p| p.as_path().to_path_buf()),
+                assist,
+            )?;
         }
 
         // Filesystem settings
         if let Some(files) = configuration.files {
-            self.files = to_file_settings(working_directory.clone(), files)?;
+            self.files = to_file_settings(
+                working_directory
+                    .as_ref()
+                    .map(|p| p.as_path().to_path_buf()),
+                files,
+            )?;
         }
 
         // VCS settings
@@ -134,6 +167,8 @@ impl Settings {
 
         // javascript settings
         if let Some(javascript) = configuration.javascript {
+            self.experimental_js_embedded_snippets_enabled =
+                javascript.experimental_embedded_snippets_enabled;
             self.languages.javascript = javascript.into()
         }
         // json settings
@@ -154,6 +189,13 @@ impl Settings {
             self.languages.html = html.into();
         }
 
+        #[cfg(feature = "markdown")]
+        {
+            if let Some(markdown) = configuration.markdown {
+                self.languages.markdown = markdown.into();
+            }
+        }
+
         // plugin settings
         if let Some(plugins) = configuration.plugins {
             self.plugins = plugins;
@@ -161,7 +203,13 @@ impl Settings {
 
         // NOTE: keep this last. Computing the overrides require reading the settings computed by the parent settings.
         if let Some(overrides) = configuration.overrides {
-            self.override_settings = to_override_settings(working_directory, overrides, self)?;
+            self.override_settings = to_override_settings(
+                working_directory
+                    .as_ref()
+                    .map(|p| p.as_path().to_path_buf()),
+                overrides,
+                self,
+            )?;
         }
 
         Ok(())
@@ -326,6 +374,34 @@ impl Settings {
     }
 }
 
+#[derive(Clone, Debug, Default, PartialEq, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase")]
+pub enum ModuleGraphResolutionKind {
+    #[default]
+    None,
+    Modules,
+    ModulesAndTypes,
+}
+
+impl ModuleGraphResolutionKind {
+    pub const fn is_modules_and_types(&self) -> bool {
+        matches!(self, Self::ModulesAndTypes)
+    }
+}
+
+impl From<&ScanKind> for ModuleGraphResolutionKind {
+    fn from(value: &ScanKind) -> Self {
+        match value {
+            ScanKind::NoScanner | ScanKind::KnownFiles | ScanKind::TargetedKnownFiles { .. } => {
+                Self::None
+            }
+            ScanKind::Project => Self::Modules,
+            ScanKind::TypeAware => Self::ModulesAndTypes,
+        }
+    }
+}
+
 pub type SettingsWithEditor<'a> = SettingsHandle<'a, Option<Configuration>>;
 
 /// Handle object holding a temporary lock on the workspace settings until
@@ -352,18 +428,26 @@ impl<'a, E> AsRef<Settings> for SettingsHandle<'a, E> {
 }
 
 impl<'a> SettingsHandle<'a, Option<Configuration>> {
+    pub(crate) fn full_source(&self) -> Option<Arc<ConfigurationSource>> {
+        self.as_ref().source.clone()
+    }
+
     fn as_merged_settings(&self) -> Settings {
         self.editor
             .as_ref()
             .map(|editor| {
                 let mut settings = self.inner.read().unwrap().clone();
-                let workspace_directory = self
-                    .as_ref()
-                    .source
-                    .as_ref()
-                    .and_then(|source| source.1.clone());
+                let workspace_directory = self.as_ref().source.as_ref().and_then(|source| {
+                    source
+                        .as_ref()
+                        .source
+                        .as_ref()
+                        .and_then(|source| source.1.clone())
+                });
+
                 // TODO handle error
-                let _ = settings.merge_with_configuration(editor.clone(), workspace_directory);
+                let _ =
+                    settings.merge_with_configuration(editor.clone(), workspace_directory, vec![]);
 
                 settings
             })
@@ -403,6 +487,7 @@ impl<'a> SettingsHandle<'a, Option<Configuration>> {
     pub fn analyzer_options<L>(
         &self,
         path: &BiomePath,
+        working_directory: Option<&Utf8Path>,
         file_source: &DocumentFileSource,
         suppression_reason: Option<&str>,
     ) -> AnalyzerOptions
@@ -412,14 +497,18 @@ impl<'a> SettingsHandle<'a, Option<Configuration>> {
         let settings = self.as_merged_settings();
         let linter_settings = &L::lookup_settings(&settings.languages).linter;
         let environment = L::resolve_environment(&settings);
-        L::resolve_analyzer_options(
+        let mut options = L::resolve_analyzer_options(
             &settings,
             linter_settings,
             environment,
             path,
             file_source,
             suppression_reason,
-        )
+        );
+        if let Some(wd) = working_directory {
+            options = options.with_working_directory(wd);
+        }
+        options
     }
 
     /// Whether the linter is enabled for this file path
@@ -465,6 +554,8 @@ pub struct FormatSettings {
     pub attribute_position: Option<AttributePosition>,
     pub bracket_same_line: Option<BracketSameLine>,
     pub bracket_spacing: Option<BracketSpacing>,
+    pub delimiter_spacing: Option<DelimiterSpacing>,
+    pub trailing_newline: Option<TrailingNewline>,
     pub expand: Option<Expand>,
     /// List of included paths/files
     pub includes: Includes,
@@ -489,9 +580,11 @@ pub struct OverrideFormatSettings {
     pub line_ending: Option<LineEnding>,
     pub line_width: Option<LineWidth>,
     pub bracket_spacing: Option<BracketSpacing>,
+    pub delimiter_spacing: Option<DelimiterSpacing>,
     pub bracket_same_line: Option<BracketSameLine>,
     pub attribute_position: Option<AttributePosition>,
     pub expand: Option<Expand>,
+    pub trailing_newline: Option<TrailingNewline>,
 }
 
 impl From<OverrideFormatterConfiguration> for OverrideFormatSettings {
@@ -504,9 +597,11 @@ impl From<OverrideFormatterConfiguration> for OverrideFormatSettings {
             line_ending: conf.line_ending,
             line_width: conf.line_width,
             bracket_spacing: conf.bracket_spacing,
+            delimiter_spacing: conf.delimiter_spacing,
             bracket_same_line: conf.bracket_same_line,
             attribute_position: conf.attribute_position,
             expand: conf.expand,
+            trailing_newline: conf.trailing_newline,
         }
     }
 }
@@ -598,6 +693,7 @@ pub struct LanguageListSettings {
     pub graphql: LanguageSettings<GraphqlLanguage>,
     pub html: LanguageSettings<HtmlLanguage>,
     pub grit: LanguageSettings<GritLanguage>,
+    pub markdown: LanguageSettings<MarkdownLanguage>,
 }
 
 impl From<JsConfiguration> for LanguageSettings<JsLanguage> {
@@ -741,6 +837,17 @@ impl From<HtmlConfiguration> for LanguageSettings<HtmlLanguage> {
     }
 }
 
+impl From<MarkdownConfiguration> for LanguageSettings<MarkdownLanguage> {
+    fn from(markdown: MarkdownConfiguration) -> Self {
+        let mut language_setting: Self = Self::default();
+        if let Some(formatter) = markdown.formatter {
+            language_setting.formatter = formatter.into();
+        }
+
+        language_setting
+    }
+}
+
 pub trait ServiceLanguage: biome_rowan::Language {
     /// Formatter settings type for this language
     type FormatterSettings: Default;
@@ -862,11 +969,12 @@ impl VcsSettings {
 
     /// Returns whether the given `path` should be ignored per the VCS settings.
     #[inline]
-    pub fn is_ignored(&self, path: &Utf8Path, root_path: Option<&Utf8Path>) -> bool {
+    pub fn is_ignored(&self, path: &Utf8Path, is_dir: bool, root_path: Option<&Utf8Path>) -> bool {
         self.should_use_ignore_file()
-            && self.ignore_matches.as_ref().is_some_and(|ignored_matches| {
-                ignored_matches.is_ignored(path, is_dir(path), root_path)
-            })
+            && self
+                .ignore_matches
+                .as_ref()
+                .is_some_and(|ignored_matches| ignored_matches.is_ignored(path, is_dir, root_path))
     }
 
     #[inline]
@@ -1345,7 +1453,7 @@ impl OverrideSettings {
     pub(crate) fn apply_override_html_parser_options(
         &self,
         path: &Utf8Path,
-        options: &mut HtmlParseOptions,
+        options: &mut HtmlParserOptions,
     ) {
         for pattern in self.patterns.iter() {
             if pattern.is_file_included(path) {
@@ -1565,6 +1673,10 @@ impl OverrideSettingPattern {
         if let Some(operator_line_break) = js_formatter.operator_linebreak {
             options.set_operator_linebreak(operator_line_break);
         }
+        if let Some(trailing_newline) = js_formatter.trailing_newline.or(formatter.trailing_newline)
+        {
+            options.set_trailing_newline(trailing_newline);
+        }
     }
 
     fn apply_overrides_to_json_format_options(&self, options: &mut JsonFormatOptions) {
@@ -1593,6 +1705,12 @@ impl OverrideSettingPattern {
         {
             options.set_bracket_spacing(bracket_spacing);
         }
+        if let Some(trailing_newline) = json_formatter
+            .trailing_newline
+            .or(formatter.trailing_newline)
+        {
+            options.set_trailing_newline(trailing_newline);
+        }
     }
 
     fn apply_overrides_to_css_format_options(&self, options: &mut CssFormatOptions) {
@@ -1613,6 +1731,12 @@ impl OverrideSettingPattern {
         }
         if let Some(quote_style) = css_formatter.quote_style {
             options.set_quote_style(quote_style);
+        }
+        if let Some(trailing_newline) = css_formatter
+            .trailing_newline
+            .or(formatter.trailing_newline)
+        {
+            options.set_trailing_newline(trailing_newline);
         }
     }
 
@@ -1641,6 +1765,12 @@ impl OverrideSettingPattern {
         if let Some(quote_style) = graphql_formatter.quote_style {
             options.set_quote_style(quote_style);
         }
+        if let Some(trailing_newline) = graphql_formatter
+            .trailing_newline
+            .or(formatter.trailing_newline)
+        {
+            options.set_trailing_newline(trailing_newline);
+        }
     }
 
     fn apply_overrides_to_grit_format_options(&self, options: &mut GritFormatOptions) {
@@ -1658,6 +1788,12 @@ impl OverrideSettingPattern {
         }
         if let Some(line_width) = grit_formatter.line_width.or(formatter.line_width) {
             options.set_line_width(line_width);
+        }
+        if let Some(trailing_newline) = grit_formatter
+            .trailing_newline
+            .or(formatter.trailing_newline)
+        {
+            options.set_trailing_newline(trailing_newline);
         }
     }
 
@@ -1710,6 +1846,13 @@ impl OverrideSettingPattern {
         }
 
         // #endregion
+
+        if let Some(trailing_newline) = html_formatter
+            .trailing_newline
+            .or(formatter.trailing_newline)
+        {
+            options.set_trailing_newline(trailing_newline);
+        }
     }
 
     fn apply_overrides_to_js_parser_options(&self, options: &mut JsParserOptions) {
@@ -1733,7 +1876,7 @@ impl OverrideSettingPattern {
         }
     }
 
-    fn apply_overrides_to_html_parser_options(&self, options: &mut HtmlParseOptions) {
+    fn apply_overrides_to_html_parser_options(&self, options: &mut HtmlParserOptions) {
         let html_parser = &self.languages.html.parser;
 
         if let Some(interpolation) = html_parser.interpolation {
@@ -1748,7 +1891,11 @@ impl OverrideSettingPattern {
             options.allow_wrong_line_comments = allow_wrong_line_comments.value();
         }
         if let Some(css_modules) = css_parser.css_modules_enabled {
-            options.css_modules = css_modules.value();
+            options.css_modules = if css_modules.value() {
+                CssModulesKind::Classic
+            } else {
+                CssModulesKind::None
+            };
         }
         if let Some(tailwind_directives) = css_parser.tailwind_directives {
             options.tailwind_directives = tailwind_directives.value();
@@ -1771,7 +1918,7 @@ pub fn to_override_settings(
         let formatter = pattern
             .formatter
             .map(|formatter| OverrideFormatSettings {
-                enabled: formatter.enabled,
+                enabled: formatter.enabled.or(current_settings.formatter.enabled),
                 format_with_errors: formatter
                     .format_with_errors
                     .or(current_settings.formatter.format_with_errors),
@@ -1780,15 +1927,17 @@ pub fn to_override_settings(
                 line_ending: formatter.line_ending,
                 line_width: formatter.line_width,
                 bracket_spacing: formatter.bracket_spacing,
+                delimiter_spacing: formatter.delimiter_spacing,
                 bracket_same_line: formatter.bracket_same_line,
                 attribute_position: formatter.attribute_position,
                 expand: formatter.expand,
+                trailing_newline: formatter.trailing_newline,
             })
             .unwrap_or_default();
         let linter = pattern
             .linter
             .map(|linter| OverrideLinterSettings {
-                enabled: linter.enabled,
+                enabled: linter.enabled.or(current_settings.linter.enabled),
                 rules: linter.rules,
                 domains: linter.domains,
             })
@@ -1796,7 +1945,7 @@ pub fn to_override_settings(
         let assist = pattern
             .assist
             .map(|assist| OverrideAssistSettings {
-                enabled: assist.enabled,
+                enabled: assist.enabled.or(current_settings.assist.enabled),
                 actions: assist.actions,
             })
             .unwrap_or_default();
@@ -1984,7 +2133,9 @@ pub fn to_format_settings(
         attribute_position: conf.attribute_position,
         bracket_same_line: conf.bracket_same_line,
         bracket_spacing: conf.bracket_spacing,
+        delimiter_spacing: conf.delimiter_spacing,
         expand: conf.expand,
+        trailing_newline: conf.trailing_newline,
         includes: Includes::new(working_directory, conf.includes),
     })
 }
@@ -2009,8 +2160,10 @@ impl TryFrom<OverrideFormatterConfiguration> for FormatSettings {
             attribute_position: Some(AttributePosition::default()),
             bracket_same_line: conf.bracket_same_line,
             bracket_spacing: Some(BracketSpacing::default()),
+            delimiter_spacing: conf.delimiter_spacing,
             expand: conf.expand,
             format_with_errors: conf.format_with_errors,
+            trailing_newline: conf.trailing_newline,
             includes: Default::default(),
         })
     }

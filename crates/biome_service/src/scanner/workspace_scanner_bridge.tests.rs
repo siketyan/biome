@@ -15,15 +15,15 @@ use biome_fs::{BiomePath, MemoryFileSystem, TemporaryFs};
 use biome_glob::NormalizedGlob;
 use camino::{Utf8Path, Utf8PathBuf};
 
+use super::{ScanKind, WorkspaceScannerBridge};
 use crate::scanner::IndexTrigger;
+use crate::settings::ModuleGraphResolutionKind;
 use crate::test_utils::setup_workspace_and_open_project;
 use crate::workspace::{
     CloseFileParams, FileContent, GetFileContentParams, OpenFileParams, ScanProjectParams,
     UpdateSettingsParams,
 };
 use crate::{Workspace, WorkspaceError};
-
-use super::{ScanKind, WorkspaceScannerBridge};
 
 #[test]
 fn close_file_through_watcher_before_client() {
@@ -62,7 +62,7 @@ fn close_file_through_watcher_before_client() {
     );
 
     workspace
-        .unload_file(&file_path)
+        .unload_file(&file_path, project_key)
         .expect("can unload indexed file");
 
     assert!(
@@ -147,7 +147,7 @@ fn close_file_from_client_before_watcher() {
     );
 
     workspace
-        .unload_file(&file_path)
+        .unload_file(&file_path, project_key)
         .expect("can unload file from index");
 
     assert!(
@@ -201,6 +201,8 @@ fn should_not_index_an_ignored_file_inside_vcs_ignore_file() {
                 }),
                 ..Default::default()
             },
+            extended_configurations: Default::default(),
+            module_graph_resolution_kind: ModuleGraphResolutionKind::ModulesAndTypes,
         })
         .expect("can update settings");
 
@@ -240,6 +242,8 @@ fn should_not_index_an_ignored_file_inside_file_includes() {
                 }),
                 ..Default::default()
             },
+            extended_configurations: Default::default(),
+            module_graph_resolution_kind: ModuleGraphResolutionKind::ModulesAndTypes,
         })
         .expect("can update settings");
 
@@ -280,6 +284,8 @@ fn should_index_an_ignored_file_if_it_is_a_dependency_of_a_non_ignored_file() {
                 }),
                 ..Default::default()
             },
+            extended_configurations: Default::default(),
+            module_graph_resolution_kind: ModuleGraphResolutionKind::ModulesAndTypes,
         })
         .expect("can update settings");
 
@@ -327,6 +333,8 @@ fn should_not_index_a_force_ignored_file_even_if_it_is_a_dependency() {
                 }),
                 ..Default::default()
             },
+            extended_configurations: Default::default(),
+            module_graph_resolution_kind: ModuleGraphResolutionKind::ModulesAndTypes,
         })
         .expect("can update settings");
 
@@ -369,6 +377,8 @@ fn should_not_index_dependency_with_scan_kind_known_files() {
                 }),
                 ..Default::default()
             },
+            extended_configurations: Default::default(),
+            module_graph_resolution_kind: ModuleGraphResolutionKind::ModulesAndTypes,
         })
         .expect("can update settings");
 
@@ -409,6 +419,8 @@ fn should_not_index_inside_an_ignored_folder_inside_file_includes() {
                 }),
                 ..Default::default()
             },
+            extended_configurations: Default::default(),
+            module_graph_resolution_kind: ModuleGraphResolutionKind::ModulesAndTypes,
         })
         .expect("can update settings");
 
@@ -450,6 +462,8 @@ fn should_not_index_inside_an_ignored_folder_inside_vcs_ignore_file() {
                 }),
                 ..Default::default()
             },
+            extended_configurations: Default::default(),
+            module_graph_resolution_kind: ModuleGraphResolutionKind::ModulesAndTypes,
         })
         .expect("can update settings");
 

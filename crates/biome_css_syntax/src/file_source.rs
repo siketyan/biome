@@ -6,12 +6,92 @@ use camino::Utf8Path;
 #[derive(
     Debug, Clone, Default, Copy, Eq, PartialEq, Hash, serde::Serialize, serde::Deserialize,
 )]
-#[serde(rename_all = "camelCase")]
-pub struct CssFileSource {
-    variant: CssVariant,
+pub enum EmbeddingKind {
+    /// styled-components or Emotion embedded CSS
+    Styled,
+
+    /// The CSS is embedded inside HTML-like files
+    Html(EmbeddingHtmlKind),
+
+    #[default]
+    None,
 }
 
-/// The style of CSS contained in the file.
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[derive(
+    Debug, Clone, Default, Copy, Eq, PartialEq, Hash, serde::Serialize, serde::Deserialize,
+)]
+pub enum EmbeddingHtmlKind {
+    #[default]
+    None,
+    /// `.html` files
+    Html,
+    /// `.vue` files
+    Vue {
+        applicability: EmbeddingStyleApplicability,
+    },
+    /// `.astro` files
+    Astro {
+        applicability: EmbeddingStyleApplicability,
+    },
+    /// `.svelte` files
+    Svelte {
+        applicability: EmbeddingStyleApplicability,
+    },
+}
+
+/// How the CSS is applied inside a snippet
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[derive(
+    Debug, Clone, Default, Copy, Eq, PartialEq, Hash, serde::Serialize, serde::Deserialize,
+)]
+pub enum EmbeddingStyleApplicability {
+    /// The styles will be applied to the current component
+    Local,
+    /// The styles will be applied to the global scope
+    Global,
+    /// Unknown applicability
+    #[default]
+    Unknown,
+}
+
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[derive(
+    Debug, Clone, Default, Copy, Eq, PartialEq, Hash, serde::Serialize, serde::Deserialize,
+)]
+#[serde(rename_all = "camelCase")]
+pub struct CssFileSource {
+    language: CssFileLanguage,
+    variant: CssVariant,
+
+    /// Used to mark if the CSS is embedded inside some particular files. This affects the parsing.
+    /// For example, if inside a styled`` literal, a top-level declaration is allowed.
+    embedding_kind: EmbeddingKind,
+}
+
+/// The language of the stylesheet.
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[derive(
+    Debug, Clone, Default, Copy, Eq, PartialEq, Hash, serde::Serialize, serde::Deserialize,
+)]
+#[serde(rename_all = "camelCase")]
+pub enum CssFileLanguage {
+    #[default]
+    Css,
+    Scss,
+}
+
+impl CssFileLanguage {
+    pub const fn is_css(&self) -> bool {
+        matches!(self, Self::Css)
+    }
+
+    pub const fn is_scss(&self) -> bool {
+        matches!(self, Self::Scss)
+    }
+}
+
+/// Extra CSS features enabled for the file.
 ///
 /// Currently, Biome aims to be compatible with
 /// the latest Recommendation level standards.
@@ -34,18 +114,85 @@ pub enum CssVariant {
 impl CssFileSource {
     pub fn css() -> Self {
         Self {
+            language: CssFileLanguage::Css,
             variant: CssVariant::Standard,
+            embedding_kind: EmbeddingKind::None,
+        }
+    }
+
+    pub fn scss() -> Self {
+        Self {
+            language: CssFileLanguage::Scss,
+            variant: CssVariant::Standard,
+            embedding_kind: EmbeddingKind::None,
         }
     }
 
     pub fn tailwind_css() -> Self {
         Self {
+            language: CssFileLanguage::Css,
             variant: CssVariant::TailwindCss,
+            embedding_kind: EmbeddingKind::None,
         }
+    }
+
+    pub fn new_css_modules() -> Self {
+        Self {
+            language: CssFileLanguage::Css,
+            variant: CssVariant::CssModules,
+            embedding_kind: EmbeddingKind::None,
+        }
+    }
+
+    pub const fn with_embedding_kind(mut self, kind: EmbeddingKind) -> Self {
+        self.embedding_kind = kind;
+        self
+    }
+
+    pub const fn as_embedding_kind(&self) -> &EmbeddingKind {
+        &self.embedding_kind
+    }
+
+    pub fn with_css_modules(mut self) -> Self {
+        self.variant = CssVariant::CssModules;
+        self
+    }
+
+    pub fn with_tailwind_directives(mut self) -> Self {
+        self.variant = CssVariant::TailwindCss;
+        self
+    }
+
+    pub fn is_css(&self) -> bool {
+        self.language.is_css()
+    }
+
+    pub fn is_scss(&self) -> bool {
+        self.language.is_scss()
     }
 
     pub fn is_css_modules(&self) -> bool {
         self.variant == CssVariant::CssModules
+    }
+
+    pub fn is_vue_embedded(&self) -> bool {
+        matches!(
+            self.embedding_kind,
+            EmbeddingKind::Html(EmbeddingHtmlKind::Vue { .. })
+        )
+    }
+
+    /// Returns the applicability of this embedded CSS block.
+    pub fn embedding_applicability(&self) -> EmbeddingStyleApplicability {
+        match &self.embedding_kind {
+            EmbeddingKind::Html(EmbeddingHtmlKind::Html) => EmbeddingStyleApplicability::Global,
+            EmbeddingKind::Html(
+                EmbeddingHtmlKind::Vue { applicability }
+                | EmbeddingHtmlKind::Astro { applicability }
+                | EmbeddingHtmlKind::Svelte { applicability },
+            ) => *applicability,
+            _ => EmbeddingStyleApplicability::default(),
+        }
     }
 
     pub fn is_tailwind_css(&self) -> bool {
@@ -56,10 +203,44 @@ impl CssFileSource {
         self.variant = variant;
     }
 
+    /// If the CSS is embedded, it sets its applicability
+    pub fn set_applicability(&mut self, new_applicability: EmbeddingStyleApplicability) {
+        if let EmbeddingKind::Html(embedded_kind) = &mut self.embedding_kind {
+            match embedded_kind {
+                EmbeddingHtmlKind::None => {}
+                EmbeddingHtmlKind::Html => {}
+                EmbeddingHtmlKind::Vue { applicability } => {
+                    *applicability = new_applicability;
+                }
+                EmbeddingHtmlKind::Astro { applicability } => {
+                    *applicability = new_applicability;
+                }
+                EmbeddingHtmlKind::Svelte { applicability } => {
+                    *applicability = new_applicability;
+                }
+            }
+        }
+    }
+
+    /// Whether this CSS is applied locally. This is only `true` if the CSS is embedded in HTML files
+    /// with local (scoped) applicability, e.g. Vue `<style scoped>`, Astro or Svelte scoped blocks.
+    pub fn is_applied_locally(&self) -> bool {
+        self.embedding_applicability() == EmbeddingStyleApplicability::Local
+    }
+
     /// Try to return the CSS file source corresponding to this file name from well-known files
-    pub fn try_from_well_known(_: &Utf8Path) -> Result<Self, FileSourceError> {
-        // TODO: to be implemented
-        Err(FileSourceError::UnknownFileName)
+    pub fn try_from_well_known(path: &Utf8Path) -> Result<Self, FileSourceError> {
+        // Be careful with definition files, because `Path::extension()` only
+        // returns the extension after the _last_ dot:
+        let file_name = path.file_name().ok_or(FileSourceError::MissingFileName)?;
+        if file_name.ends_with(".module.css") {
+            return Self::try_from_extension("module.css");
+        }
+
+        match path.extension() {
+            Some(extension) => Self::try_from_extension(extension),
+            None => Err(FileSourceError::MissingFileExtension),
+        }
     }
 
     /// Try to return the CSS file source corresponding to this file extension
@@ -67,6 +248,9 @@ impl CssFileSource {
         // We assume the file extension is normalized to lowercase
         match extension {
             "css" => Ok(Self::css()),
+            #[cfg(feature = "scss")]
+            "scss" => Ok(Self::scss()),
+            "module.css" => Ok(Self::new_css_modules()),
             _ => Err(FileSourceError::UnknownExtension),
         }
     }
@@ -80,6 +264,8 @@ impl CssFileSource {
     pub fn try_from_language_id(language_id: &str) -> Result<Self, FileSourceError> {
         match language_id {
             "css" => Ok(Self::css()),
+            #[cfg(feature = "scss")]
+            "scss" => Ok(Self::scss()),
             "tailwindcss" => Ok(Self::tailwind_css()),
             _ => Err(FileSourceError::UnknownLanguageId),
         }

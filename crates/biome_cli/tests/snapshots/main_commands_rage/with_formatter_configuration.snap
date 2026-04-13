@@ -61,6 +61,7 @@ Platform:
   OS:                           **PLACEHOLDER**
 
 Environment:
+  BIOME_DISTRIBUTION:                unset
   BIOME_LOG_PATH:                    **PLACEHOLDER**
   BIOME_LOG_PREFIX_NAME:             unset
   BIOME_LOG_LEVEL:                   unset
@@ -82,6 +83,7 @@ Biome Configuration:
   Linter enabled:               true
   Assist enabled:               true
   VCS enabled:                  false
+  HTML full support enabled:    unset
 
 Formatter:
   Format with errors:           true

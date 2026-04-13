@@ -17,8 +17,11 @@ document;
 navigator;
 new ArrayBuffer();
 new AggregateError();
+Temporal.Now.instant();
 
 ```
+
+_Note: The parser emitted 2 diagnostics which are not shown here._
 
 # Diagnostics
 ```

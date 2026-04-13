@@ -96,7 +96,10 @@ pub(crate) fn analyze_and_snap(
     let root = parsed.tree();
 
     let mut diagnostics = Vec::new();
-    let options = create_analyzer_options::<JsLanguage>(input_file, &mut diagnostics);
+    // Use the parent directory as a working directory for relative paths in diagnostics
+    let working_directory = input_file.parent().unwrap_or(Utf8Path::new("."));
+    let options =
+        create_analyzer_options::<JsLanguage>(input_file, working_directory, &mut diagnostics);
 
     let mut transformations = vec![];
     let (_, errors) =
@@ -111,7 +114,8 @@ pub(crate) fn analyze_and_snap(
                 );
                 let node = transformation.mutation.commit();
 
-                let formatted = format_node(JsFormatOptions::new(source_type), &node).unwrap();
+                let formatted =
+                    format_node(JsFormatOptions::new(source_type), &node, false).unwrap();
 
                 transformations.push(formatted.print().unwrap().as_code().to_string());
             }

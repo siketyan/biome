@@ -7,15 +7,20 @@ alias r := ready
 alias l := lint
 alias qt := test-quick
 
+set windows-powershell := true
+
 # Installs the tools needed to develop
 install-tools:
 	cargo install cargo-binstall
-	cargo binstall cargo-insta taplo-cli wasm-pack wasm-tools
+	cargo binstall cargo-insta wasm-opt
+	cargo binstall wasm-bindgen-cli --version 0.2.117
+	pnpm install
 
 # Upgrades the tools needed to develop
 upgrade-tools:
 	cargo install cargo-binstall --force
-	cargo binstall cargo-insta taplo-cli wasm-pack wasm-tools --force
+	cargo binstall cargo-insta wasm-opt --force
+	cargo binstall wasm-bindgen-cli --version 0.2.117 --force
 
 # Generate all files across crates and tools. You rarely want to use it locally.
 gen-all:
@@ -49,8 +54,11 @@ gen-analyzer:
 
 # Generate and updates the files needed inside the *_analyze crates
 gen-rules:
-    cargo run -p xtask_codegen -- analyzer
+  cargo run -p xtask_codegen -- analyzer
 
+# Generates Baseline data for CSS features from web-features
+gen-css-baseline:
+  cargo run -p xtask_codegen --features xtask_codegen/external_data -- css-baseline
 
 gen-configuration:
   cargo run -p xtask_codegen --features configuration -- configuration
@@ -60,14 +68,77 @@ gen-migrate:
   cargo run -p xtask_codegen --features configuration -- migrate-eslint
 
 # Generates the initial files for all formatter crates
-gen-formatter:
-  cargo run -p xtask_codegen -- formatter
+gen-formatter *args='':
+  cargo run -p xtask_codegen -- formatter {{args}}
 
 # Generates the Tailwind CSS preset for utility class sorting
 [working-directory: 'packages/tailwindcss-config-analyzer']
 gen-tw:
   pnpm build
   pnpm execute
+
+# Build WASM for bundler target (development)
+build-wasm-bundler-dev:
+  cargo build --lib --target wasm32-unknown-unknown -p biome_wasm
+  wasm-bindgen target/wasm32-unknown-unknown/debug/biome_wasm.wasm \
+    --out-dir packages/@biomejs/wasm-bundler \
+    --target bundler \
+    --typescript
+
+# Build WASM for bundler target (release)
+build-wasm-bundler:
+  cargo build --lib --target wasm32-unknown-unknown --release -p biome_wasm
+  wasm-bindgen target/wasm32-unknown-unknown/release/biome_wasm.wasm \
+    --out-dir packages/@biomejs/wasm-bundler \
+    --no-demangle \
+    --target bundler \
+    --typescript
+  wasm-opt packages/@biomejs/wasm-bundler/biome_wasm_bg.wasm \
+    -o packages/@biomejs/wasm-bundler/biome_wasm_bg.wasm \
+    -Os \
+    -g
+
+# Build WASM for Node.js target (development)
+build-wasm-node-dev:
+  cargo build --lib --target wasm32-unknown-unknown -p biome_wasm
+  wasm-bindgen target/wasm32-unknown-unknown/debug/biome_wasm.wasm \
+    --out-dir packages/@biomejs/wasm-nodejs \
+    --target nodejs \
+    --typescript
+
+# Build WASM for Node.js target (release)
+build-wasm-node:
+  cargo build --lib --target wasm32-unknown-unknown --release -p biome_wasm
+  wasm-bindgen target/wasm32-unknown-unknown/release/biome_wasm.wasm \
+    --out-dir packages/@biomejs/wasm-nodejs \
+    --no-demangle \
+    --target nodejs \
+    --typescript
+  wasm-opt packages/@biomejs/wasm-nodejs/biome_wasm_bg.wasm \
+    -o packages/@biomejs/wasm-nodejs/biome_wasm_bg.wasm \
+    -Os \
+    -g
+
+# Build WASM for web target (development)
+build-wasm-web-dev:
+  cargo build --lib --target wasm32-unknown-unknown -p biome_wasm
+  wasm-bindgen target/wasm32-unknown-unknown/debug/biome_wasm.wasm \
+    --out-dir packages/@biomejs/wasm-web \
+    --target web \
+    --typescript
+
+# Build WASM for web target (release)
+build-wasm-web:
+  cargo build --lib --target wasm32-unknown-unknown --release -p biome_wasm
+  wasm-bindgen target/wasm32-unknown-unknown/release/biome_wasm.wasm \
+    --out-dir packages/@biomejs/wasm-web \
+    --no-demangle \
+    --target web \
+    --typescript
+  wasm-opt packages/@biomejs/wasm-web/biome_wasm_bg.wasm \
+    -o packages/@biomejs/wasm-web/biome_wasm_bg.wasm \
+    -Os \
+    -g
 
 # Generates the code of the grammars available in Biome
 gen-grammar *args='':
@@ -87,14 +158,14 @@ new-js-assistrule rulename:
   cargo run -p xtask_codegen -- new-lintrule --kind=js --category=assist --name={{rulename}}
   just gen-analyzer
 
-# Creates a new json assist rule with the given name. Name has to be camel case.
-new-json-assistrule rulename:
-  cargo run -p xtask_codegen -- new-lintrule --kind=json --category=assist --name={{rulename}}
-  just gen-analyzer
-
 # Creates a new json lint rule with the given name. Name has to be camel case.
 new-json-lintrule rulename:
   cargo run -p xtask_codegen -- new-lintrule --kind=json --category=lint --name={{rulename}}
+  just gen-analyzer
+
+# Creates a new json assist rule with the given name. Name has to be camel case.
+new-json-assistrule rulename:
+  cargo run -p xtask_codegen -- new-lintrule --kind=json --category=assist --name={{rulename}}
   just gen-analyzer
 
 # Creates a new css lint rule with the given name. Name has to be camel case.
@@ -102,14 +173,29 @@ new-css-lintrule rulename:
   cargo run -p xtask_codegen -- new-lintrule --kind=css --category=lint --name={{rulename}}
   just gen-analyzer
 
+# Creates a new css assist rule with the given name. Name has to be camel case.
+new-css-assistrule rulename:
+  cargo run -p xtask_codegen -- new-lintrule --kind=css --category=assist --name={{rulename}}
+  just gen-analyzer
+
 # Creates a new graphql lint rule with the given name. Name has to be camel case.
 new-graphql-lintrule rulename:
   cargo run -p xtask_codegen -- new-lintrule --kind=graphql --category=lint --name={{rulename}}
   just gen-analyzer
 
+# Creates a new graphql assist rule with the given name. Name has to be camel case.
+new-graphql-assistrule rulename:
+  cargo run -p xtask_codegen -- new-lintrule --kind=graphql --category=assist --name={{rulename}}
+  just gen-analyzer
+
 # Creates a new html lint rule with the given name. Name has to be camel case.
 new-html-lintrule rulename:
   cargo run -p xtask_codegen -- new-lintrule --kind=html --category=lint --name={{rulename}}
+  just gen-analyzer
+
+# Creates a new html assist rule with the given name. Name has to be camel case.
+new-html-assistrule rulename:
+  cargo run -p xtask_codegen -- new-lintrule --kind=html --category=assist --name={{rulename}}
   just gen-analyzer
 
 # Creates a new html lint rule with the given name, but targets vue. Name has to be camel case.
@@ -125,7 +211,7 @@ move-rule rulename group:
 # Format Rust files and TOML files
 format:
 	cargo format
-	taplo format
+	pnpm format
 
 [unix]
 _touch file:
@@ -137,15 +223,42 @@ _touch file:
 
 # Run tests of all crates
 test:
-	cargo test run --no-fail-fast
+	cargo test --no-fail-fast
 
-# Run tests for the crate passed as argument e.g. just test-create biome_cli
+# Run tests for the crate passed as argument e.g. just test-crate biome_cli
 test-crate name:
-	cargo test run -p {{name}} --no-fail-fast
+	cargo test -p {{name}} --no-fail-fast
 
 # Run doc tests
 test-doc:
 	cargo test --doc
+
+# Run CommonMark conformance tests for the markdown parser
+test-markdown-conformance:
+	cargo run -p xtask_coverage -- --suites=markdown/commonmark
+
+# Generate differential fuzz corpus for the markdown parser using commonmark.js
+# Requires `pnpm install` from the repo root (commonmark is a root devDependency).
+fuzz-markdown-generate count="1000" seed="42":
+	node crates/biome_markdown_parser/tests/fuzz_generate_corpus.cjs \
+		--count={{count}} --seed={{seed}} \
+		--output=crates/biome_markdown_parser/tests/fuzz_corpus/corpus.jsonl
+
+# Run differential fuzzer comparing Biome markdown output against commonmark.js
+# Runs the checked-in seed corpus plus any generated corpus.jsonl
+fuzz-markdown-differential:
+	#!/usr/bin/env bash
+	set -euo pipefail
+	CORPUS="$(pwd)/crates/biome_markdown_parser/tests/fuzz_corpus/corpus.jsonl"
+	if [ -f "$CORPUS" ]; then
+		FUZZ_CORPUS="$CORPUS" cargo test -p biome_markdown_parser --test fuzz_differential -- --ignored --nocapture
+	else
+		cargo test -p biome_markdown_parser --test fuzz_differential -- --ignored --nocapture
+	fi
+
+# Update the CommonMark spec.json to a specific version
+update-commonmark-spec version:
+	./scripts/update-commonmark-spec.sh {{version}}
 
 # Tests a lint rule. The name of the rule needs to be camel case
 test-lintrule name:
@@ -191,3 +304,11 @@ ready:
 # Creates a new changeset for the final changelog
 new-changeset:
   pnpm changeset
+
+# Creates a new changeset without interaction
+new-changeset-empty:
+  pnpm changeset --empty
+
+# Create new crate
+new-crate name:
+  cargo new crates/{{name}} --lib

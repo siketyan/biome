@@ -42,5 +42,14 @@ a::part(shadow-part) { }
 	position: absolute;
 }
 details::details-content {}
+select::picker(select) {}
+option::checkmark {}
+select::picker-icon {}
+.carousel::scroll-marker {}
+.carousel::scroll-marker-group {}
+.carousel::scroll-button(inline-start) {}
+.multicol::column {}
 
 ```
+
+_Note: The parser emitted 2 diagnostics which are not shown here._

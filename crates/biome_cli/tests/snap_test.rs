@@ -1,6 +1,10 @@
 use biome_cli::CliDiagnostic;
 use biome_console::fmt::{Formatter, Termcolor};
 use biome_console::{BufferConsole, Markup, markup};
+use biome_css_formatter::context::CssFormatOptions;
+use biome_css_formatter::format_node as format_css_node;
+use biome_css_parser::{CssParserOptions, parse_css};
+use biome_css_syntax::CssFileSource;
 use biome_diagnostics::termcolor::NoColor;
 use biome_diagnostics::{Error, print_diagnostic_to_string};
 use biome_formatter::{IndentStyle, IndentWidth};
@@ -9,6 +13,7 @@ use biome_json_formatter::context::JsonFormatOptions;
 use biome_json_formatter::format_node;
 use biome_json_parser::{JsonParserOptions, parse_json};
 use camino::{Utf8Path, Utf8PathBuf};
+use directories::ProjectDirs;
 use regex::Regex;
 use std::borrow::Cow;
 use std::collections::BTreeMap;
@@ -21,6 +26,10 @@ use std::sync::LazyLock;
 static TIME_REGEX: LazyLock<Regex> = LazyLock::new(|| Regex::new("\\s[0-9]+[mµn]?s\\.").unwrap());
 static TIME_JUNIT_REGEX: LazyLock<Regex> =
     LazyLock::new(|| Regex::new("time=\\\"[.0-9]+\\\"").unwrap());
+static DURATION_REGEX: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new("\"duration\":\\s*[0-9]+").unwrap());
+static SCANNER_DURATION_REGEX: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new("\"scannerDuration\":\\s*[0-9]+").unwrap());
 
 #[derive(Default)]
 struct InMessages {
@@ -59,8 +68,8 @@ impl CliSnapshot {
         let mut content = String::new();
 
         for (configuration, file_name) in &self.configuration_list {
+            let file_name = redact_snapshot(file_name).unwrap_or(file_name.into());
             let redacted = redact_snapshot(configuration).unwrap_or(String::new().into());
-
             let parsed = parse_json(
                 &redacted,
                 JsonParserOptions::default()
@@ -86,20 +95,46 @@ impl CliSnapshot {
         }
 
         for (name, file_content) in &self.files {
+            let name = replace_config_dir(Cow::Borrowed(name));
             if !name.starts_with("biome.json") {
                 let extension = name.split('.').next_back().unwrap();
 
-                let redacted_name = redact_snapshot(name).unwrap_or(String::new().into());
+                let redacted_name = redact_snapshot(name.as_ref()).unwrap_or(String::new().into());
                 let redacted_content =
                     redact_snapshot(file_content).unwrap_or(String::new().into());
 
                 let _ = write!(content, "## `{redacted_name}`\n\n");
-                let _ = write!(content, "```{extension}");
-                content.push('\n');
-                content.push_str(&redacted_content);
-                content.push('\n');
-                content.push_str("```");
-                content.push_str("\n\n")
+
+                if extension == "css" {
+                    // Format CSS with the same pipeline used for biome.json.
+                    let parsed = parse_css(
+                        &redacted_content,
+                        CssFileSource::css(),
+                        CssParserOptions::default(),
+                    );
+                    let formatted = format_css_node(
+                        CssFormatOptions::default()
+                            .with_indent_style(IndentStyle::Space)
+                            .with_indent_width(IndentWidth::default()),
+                        &parsed.syntax(),
+                    )
+                    .expect("formatted CSS")
+                    .print()
+                    .expect("printed CSS");
+
+                    content.push_str("```css");
+                    content.push('\n');
+                    content.push_str(formatted.as_code());
+                    content.push_str("```");
+                    content.push_str("\n\n");
+                } else {
+                    let _ = write!(content, "```{extension}");
+                    content.push('\n');
+                    content.push_str(&redacted_content);
+                    content.push('\n');
+                    content.push_str("```");
+                    content.push_str("\n\n");
+                }
             }
         }
 
@@ -166,6 +201,41 @@ fn redact_snapshot(input: &str) -> Option<Cow<'_, str>> {
         output.to_mut().replace_range(found, "time=\"<TIME>\"");
     }
 
+    // Redact duration fields in JSON output
+    while let Some(matched) = DURATION_REGEX.find(&output) {
+        let found = matched.start()..matched.end();
+        let matched_text = matched.as_str();
+        // Preserve the whitespace after the colon
+        let whitespace = matched_text
+            .split_once(':')
+            .map(|(_, after)| {
+                after
+                    .chars()
+                    .take_while(|c| c.is_whitespace())
+                    .collect::<String>()
+            })
+            .unwrap_or_default();
+        let replacement = format!("\"duration\":{whitespace}\"<TIME>\"");
+        output.to_mut().replace_range(found, &replacement);
+    }
+
+    while let Some(matched) = SCANNER_DURATION_REGEX.find(&output) {
+        let found = matched.start()..matched.end();
+        let matched_text = matched.as_str();
+        // Preserve the whitespace after the colon
+        let whitespace = matched_text
+            .split_once(':')
+            .map(|(_, after)| {
+                after
+                    .chars()
+                    .take_while(|c| c.is_whitespace())
+                    .collect::<String>()
+            })
+            .unwrap_or_default();
+        let replacement = format!("\"scannerDuration\":{whitespace}\"<TIME>\"");
+        output.to_mut().replace_range(found, &replacement);
+    }
+
     // Normalize the name of the current executable to "biome"
     let current_exe = current_exe()
         .ok()
@@ -177,6 +247,7 @@ fn redact_snapshot(input: &str) -> Option<Cow<'_, str>> {
 
     output = replace_temp_dir(output);
     output = replace_biome_dir(output);
+    output = replace_config_dir(output);
 
     // Normalize Windows-specific path separators to "/"
     if cfg!(windows) {
@@ -279,6 +350,51 @@ fn replace_biome_dir(input: Cow<str>) -> Cow<str> {
         result.push_str("<BIOME_DIR>");
 
         let after = after.split_at(temp_dir.len()).1;
+        let header_line = after.lines().next().unwrap();
+
+        match header_line.split_once('\u{2501}') {
+            Some((between_temp_and_line, _)) => {
+                // Diagnostic header line, normalize the horizontal line
+                result.push_str(between_temp_and_line);
+                result.push_str(&"\u{2501}".repeat(20));
+                rest = after.split_at(header_line.len()).1;
+            }
+            None => {
+                // Not a header line, only replace tempdir
+                rest = after;
+            }
+        }
+    }
+
+    if result.is_empty() {
+        input
+    } else {
+        result.push_str(rest);
+        Cow::Owned(result)
+    }
+}
+
+/// Replace the path to the config directory with "<CONFIG_DIR>"
+/// And normalizes the count of `-` at the end of the diagnostic
+fn replace_config_dir(input: Cow<str>) -> Cow<str> {
+    let mut result = String::new();
+    let mut rest = input.as_ref();
+
+    let config_dir = ProjectDirs::from("", "", "biome")
+        .map(|path| path.config_dir().to_path_buf())
+        .unwrap()
+        .display()
+        .to_string();
+
+    let config_dir = config_dir.trim_end_matches(MAIN_SEPARATOR);
+
+    while let Some(index) = rest.find(config_dir) {
+        let (before, after) = rest.split_at(index);
+
+        result.push_str(before);
+        result.push_str("<CONFIG_DIR>");
+
+        let after = after.split_at(config_dir.len()).1;
         let header_line = after.lines().next().unwrap();
 
         match header_line.split_once('\u{2501}') {

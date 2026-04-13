@@ -82,9 +82,6 @@ pub struct AnalyzerConfiguration {
     /// The JSX fragment factory function identifier (e.g., "Fragment")
     /// Only applies when jsx_runtime is ReactClassic.
     jsx_fragment_factory: Option<Box<str>>,
-
-    /// Whether the CSS files contain CSS Modules
-    css_modules: bool,
 }
 
 impl AnalyzerConfiguration {
@@ -132,11 +129,6 @@ impl AnalyzerConfiguration {
         self.preferred_indentation = preferred_indentation;
         self
     }
-
-    pub fn with_css_modules(mut self, css_modules: bool) -> Self {
-        self.css_modules = css_modules;
-        self
-    }
 }
 
 /// A set of information useful to the analyzer infrastructure
@@ -150,11 +142,19 @@ pub struct AnalyzerOptions {
 
     /// Suppression reason used when applying a suppression code action
     pub(crate) suppression_reason: Option<String>,
+
+    /// The working directory for the caller.
+    pub working_directory: Arc<Option<Utf8PathBuf>>,
 }
 
 impl AnalyzerOptions {
     pub fn with_file_path(mut self, file_path: impl Into<Utf8PathBuf>) -> Self {
         self.file_path = Arc::new(file_path.into());
+        self
+    }
+
+    pub fn with_working_directory(mut self, working_directory: impl Into<Utf8PathBuf>) -> Self {
+        self.working_directory = Arc::new(Some(working_directory.into()));
         self
     }
 
@@ -229,10 +229,6 @@ impl AnalyzerOptions {
 
     pub fn preferred_indentation(&self) -> PreferredIndentation {
         self.configuration.preferred_indentation
-    }
-
-    pub fn css_modules(&self) -> bool {
-        self.configuration.css_modules
     }
 }
 

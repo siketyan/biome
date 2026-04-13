@@ -6,7 +6,7 @@ use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 
 /// Global options applied to all commands
-#[derive(Debug, Clone, Bpaf)]
+#[derive(Debug, Default, Clone, Bpaf)]
 pub struct CliOptions {
     /// Set the formatting mode for markup: "off" prints everything as plain text, "force" forces the formatting of markup using ANSI even if the console output is determined to be incompatible
     #[bpaf(long("colors"), argument("off|force"))]
@@ -52,12 +52,8 @@ pub struct CliOptions {
     pub error_on_warnings: bool,
 
     /// Allows to change how diagnostics and summary are reported.
-    #[bpaf(
-        long("reporter"),
-        argument("json|json-pretty|github|junit|summary|gitlab|checkstyle|rdjson"),
-        fallback(CliReporter::default())
-    )]
-    pub reporter: CliReporter,
+    #[bpaf(external, many)]
+    pub cli_reporter: Vec<CliReporter>,
 
     /// The level of diagnostics to show. In order, from the lowest to the most important: info, warn, error. Passing `--diagnostic-level=error` will cause Biome to print only diagnostics that contain only errors.
     #[bpaf(
@@ -119,8 +115,30 @@ impl FromStr for ColorsArg {
     }
 }
 
+#[derive(Debug, Default, Clone, Eq, PartialEq, Bpaf)]
+#[bpaf(adjacent)]
+pub struct CliReporter {
+    #[bpaf(
+        long("reporter"),
+        argument(
+            "default|json|json-pretty|github|junit|summary|gitlab|checkstyle|rdjson|sarif|concise"
+        ),
+        fallback(CliReporterKind::default())
+    )]
+    pub(crate) kind: CliReporterKind,
+
+    #[bpaf(long("reporter-file"), argument("PATH"))]
+    pub(crate) destination: Option<Utf8PathBuf>,
+}
+
+impl CliReporter {
+    pub(crate) fn is_file_report(&self) -> bool {
+        self.destination.is_some()
+    }
+}
+
 #[derive(Debug, Default, Clone, Eq, PartialEq)]
-pub enum CliReporter {
+pub enum CliReporterKind {
     /// The default reporter
     #[default]
     Default,
@@ -140,19 +158,24 @@ pub enum CliReporter {
     Checkstyle,
     /// Reports diagnostics using the [Reviewdog JSON format](https://deepwiki.com/reviewdog/reviewdog/3.2-reviewdog-diagnostic-format)
     RdJson,
+    /// Reports diagnostics using the SARIF format
+    Sarif,
+    /// Reports diagnostics in a concise one-line-per-diagnostic format, with formatter diagnostics aggregated
+    Concise,
 }
 
 impl CliReporter {
     pub(crate) const fn is_default(&self) -> bool {
-        matches!(self, Self::Default)
+        matches!(self.kind, CliReporterKind::Default)
     }
 }
 
-impl FromStr for CliReporter {
+impl FromStr for CliReporterKind {
     type Err = String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
+            "default" => Ok(Self::Default),
             "json" => Ok(Self::Json),
             "json-pretty" => Ok(Self::JsonPretty),
             "summary" => Ok(Self::Summary),
@@ -161,6 +184,8 @@ impl FromStr for CliReporter {
             "gitlab" => Ok(Self::GitLab),
             "checkstyle" => Ok(Self::Checkstyle),
             "rdjson" => Ok(Self::RdJson),
+            "sarif" => Ok(Self::Sarif),
+            "concise" => Ok(Self::Concise),
             _ => Err(format!(
                 "value {s:?} is not valid for the --reporter argument"
             )),
@@ -168,18 +193,20 @@ impl FromStr for CliReporter {
     }
 }
 
-impl Display for CliReporter {
+impl Display for CliReporterKind {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Default => f.write_str("default"),
-            Self::Json => f.write_str("json"),
-            Self::JsonPretty => f.write_str("json-pretty"),
-            Self::Summary => f.write_str("summary"),
-            Self::GitHub => f.write_str("github"),
-            Self::Junit => f.write_str("junit"),
-            Self::GitLab => f.write_str("gitlab"),
-            Self::Checkstyle => f.write_str("checkstyle"),
-            Self::RdJson => f.write_str("rdjson"),
+            Self::Default { .. } => f.write_str("default"),
+            Self::Json { .. } => f.write_str("json"),
+            Self::JsonPretty { .. } => f.write_str("json-pretty"),
+            Self::Summary { .. } => f.write_str("summary"),
+            Self::GitHub { .. } => f.write_str("github"),
+            Self::Junit { .. } => f.write_str("junit"),
+            Self::GitLab { .. } => f.write_str("gitlab"),
+            Self::Checkstyle { .. } => f.write_str("checkstyle"),
+            Self::RdJson { .. } => f.write_str("rdjson"),
+            Self::Sarif { .. } => f.write_str("sarif"),
+            Self::Concise { .. } => f.write_str("concise"),
         }
     }
 }
