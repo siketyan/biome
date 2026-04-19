@@ -1811,6 +1811,11 @@ pub fn config_side_rule_options_types() -> Vec<(&'static str, &'static str, Type
         TypeId::of::<biome_rule_options::use_iframe_sandbox::UseIframeSandboxOptions>(),
     ));
     result.push((
+        "nursery",
+        "noComposingEnterKey",
+        TypeId::of::<biome_rule_options::no_composing_enter_key::NoComposingEnterKeyOptions>(),
+    ));
+    result.push((
         "a11y",
         "useIframeTitle",
         TypeId::of::<biome_rule_options::use_iframe_title::UseIframeTitleOptions>(),

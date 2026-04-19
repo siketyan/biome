@@ -6597,6 +6597,13 @@
 						{ "type": "null" }
 					]
 				},
+				"noComposingEnterKey": {
+					"description": "Disallow handling Enter during IME composition without a guard.\nSee https://biomejs.dev/linter/rules/no-composing-enter-key",
+					"anyOf": [
+						{ "$ref": "#/$defs/NoComposingEnterKeyConfiguration" },
+						{ "type": "null" }
+					]
+				},
 				"useImportsFirst": {
 					"description": "Enforce that all imports appear at the top of the module.\nSee https://biomejs.dev/linter/rules/use-imports-first",
 					"anyOf": [
@@ -11000,6 +11007,15 @@
 			"additionalProperties": false,
 			"required": ["level"]
 		},
+		"RuleWithNoComposingEnterKeyOptions": {
+			"type": "object",
+			"properties": {
+				"level": { "$ref": "#/$defs/RulePlainConfiguration" },
+				"options": { "$ref": "#/$defs/NoComposingEnterKeyOptions" }
+			},
+			"additionalProperties": false,
+			"required": ["level"]
+		},
 		"RuleWithUseIframeTitleOptions": {
 			"type": "object",
 			"properties": {
@@ -14396,6 +14412,16 @@
 				{ "$ref": "#/$defs/RulePlainConfiguration" },
 				{ "$ref": "#/$defs/RuleWithUseIframeSandboxOptions" }
 			]
+		},
+		"NoComposingEnterKeyConfiguration": {
+			"oneOf": [
+				{ "$ref": "#/$defs/RulePlainConfiguration" },
+				{ "$ref": "#/$defs/RuleWithNoComposingEnterKeyOptions" }
+			]
+		},
+		"NoComposingEnterKeyOptions": {
+			"type": "object",
+			"additionalProperties": false
 		},
 		"UseIframeSandboxOptions": {
 			"type": "object",

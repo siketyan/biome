@@ -2486,6 +2486,11 @@ See https://biomejs.dev/linter/rules/use-iframe-sandbox
 	 */
 	useIframeSandbox?: UseIframeSandboxConfiguration;
 	/**
+	* Disallow handling Enter during IME composition without a guard.
+See https://biomejs.dev/linter/rules/no-composing-enter-key
+	 */
+	noComposingEnterKey?: NoComposingEnterKeyConfiguration;
+	/**
 	* Enforce that all imports appear at the top of the module.
 See https://biomejs.dev/linter/rules/use-imports-first 
 	 */
@@ -4455,6 +4460,9 @@ export type UseGlobalThisConfiguration =
 export type UseIframeSandboxConfiguration =
 	| RulePlainConfiguration
 	| RuleWithUseIframeSandboxOptions;
+export type NoComposingEnterKeyConfiguration =
+	| RulePlainConfiguration
+	| RuleWithNoComposingEnterKeyOptions;
 export type UseImportsFirstConfiguration =
 	| RulePlainConfiguration
 	| RuleWithUseImportsFirstOptions;
@@ -6264,6 +6272,10 @@ export interface RuleWithUseIframeSandboxOptions {
 	level: RulePlainConfiguration;
 	options?: UseIframeSandboxOptions;
 }
+export interface RuleWithNoComposingEnterKeyOptions {
+	level: RulePlainConfiguration;
+	options?: NoComposingEnterKeyOptions;
+}
 export interface RuleWithUseImportsFirstOptions {
 	level: RulePlainConfiguration;
 	options?: UseImportsFirstOptions;
@@ -7889,6 +7901,7 @@ export type UseExplicitTypeOptions = {};
 export type UseFindOptions = {};
 export type UseGlobalThisOptions = {};
 export type UseIframeSandboxOptions = {};
+export type NoComposingEnterKeyOptions = {};
 export type UseImportsFirstOptions = {};
 export type UseInlineScriptIdOptions = {};
 export interface UseInputNameOptions {
@@ -8928,6 +8941,7 @@ export type Category =
 	| "lint/nursery/useFind"
 	| "lint/nursery/useGlobalThis"
 	| "lint/nursery/useIframeSandbox"
+	| "lint/nursery/noComposingEnterKey"
 	| "lint/nursery/useImportRestrictions"
 	| "lint/nursery/useImportsFirst"
 	| "lint/nursery/useInlineScriptId"
