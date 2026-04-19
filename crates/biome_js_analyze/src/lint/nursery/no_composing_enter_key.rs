@@ -1,6 +1,7 @@
 use biome_analyze::{Ast, Rule, RuleDiagnostic, context::RuleContext, declare_lint_rule};
 use biome_console::markup;
 use biome_diagnostics::Severity;
+use biome_string_case::StrLikeExtension;
 use biome_js_syntax::{
     AnyJsExpression, AnyJsName, JsArrowFunctionExpression, JsAssignmentExpression,
     JsBinaryExpression, JsBinaryOperator, JsCallExpression, JsFunctionDeclaration,
@@ -246,18 +247,18 @@ fn listener_handler(call_expression: &JsCallExpression) -> Option<Handler> {
     let [_event_argument, handler_argument] = arguments.get_arguments_by_index([0, 1]);
     let handler_argument = handler_argument?;
     let handler_expression = handler_argument.as_any_js_expression()?;
-    inline_handler(&handler_expression)
+    inline_handler(handler_expression)
 }
 
 fn assignment_event_name(assignment_expression: &JsAssignmentExpression) -> Option<(Box<str>, TextRange)> {
     let left = assignment_expression.left().ok()?;
     let assignment = left.as_any_js_assignment()?.as_js_static_member_assignment()?;
     let member_name = js_name_text(&assignment.member().ok()?)?;
-    let normalized = member_name.to_lowercase();
+    let normalized = member_name.to_ascii_lowercase_cow();
 
-    match normalized.as_str() {
+    match normalized.as_ref() {
         "onkeydown" | "onkeyup" | "onkeypress" => {
-            Some((normalized.into_boxed_str(), assignment.range()))
+            Some((normalized.into_owned().into_boxed_str(), assignment.range()))
         }
         _ => None,
     }
