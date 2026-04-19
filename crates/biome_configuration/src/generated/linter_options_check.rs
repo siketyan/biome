@@ -145,6 +145,11 @@ pub fn config_side_rule_options_types() -> Vec<(&'static str, &'static str, Type
     ));
     result.push((
         "nursery",
+        "noComposingEnterKey",
+        TypeId::of::<biome_rule_options::no_composing_enter_key::NoComposingEnterKeyOptions>(),
+    ));
+    result.push((
+        "nursery",
         "noConditionalExpect",
         TypeId::of::<biome_rule_options::no_conditional_expect::NoConditionalExpectOptions>(),
     ));
@@ -1809,11 +1814,6 @@ pub fn config_side_rule_options_types() -> Vec<(&'static str, &'static str, Type
         "nursery",
         "useIframeSandbox",
         TypeId::of::<biome_rule_options::use_iframe_sandbox::UseIframeSandboxOptions>(),
-    ));
-    result.push((
-        "nursery",
-        "noComposingEnterKey",
-        TypeId::of::<biome_rule_options::no_composing_enter_key::NoComposingEnterKeyOptions>(),
     ));
     result.push((
         "a11y",

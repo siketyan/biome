@@ -2052,6 +2052,11 @@ See https://biomejs.dev/linter/rules/no-component-hook-factories
 	 */
 	noComponentHookFactories?: NoComponentHookFactoriesConfiguration;
 	/**
+	* Enforce IME-safe Enter handling in keyboard event callbacks.
+See https://biomejs.dev/linter/rules/no-composing-enter-key 
+	 */
+	noComposingEnterKey?: NoComposingEnterKeyConfiguration;
+	/**
 	* Disallow conditional expect() calls inside tests.
 See https://biomejs.dev/linter/rules/no-conditional-expect 
 	 */
@@ -2485,11 +2490,6 @@ See https://biomejs.dev/linter/rules/use-global-this
 See https://biomejs.dev/linter/rules/use-iframe-sandbox 
 	 */
 	useIframeSandbox?: UseIframeSandboxConfiguration;
-	/**
-	* Disallow handling Enter during IME composition without a guard.
-See https://biomejs.dev/linter/rules/no-composing-enter-key
-	 */
-	noComposingEnterKey?: NoComposingEnterKeyConfiguration;
 	/**
 	* Enforce that all imports appear at the top of the module.
 See https://biomejs.dev/linter/rules/use-imports-first 
@@ -4202,6 +4202,9 @@ export type NoBeforeInteractiveScriptOutsideDocumentConfiguration =
 export type NoComponentHookFactoriesConfiguration =
 	| RulePlainConfiguration
 	| RuleWithNoComponentHookFactoriesOptions;
+export type NoComposingEnterKeyConfiguration =
+	| RulePlainConfiguration
+	| RuleWithNoComposingEnterKeyOptions;
 export type NoConditionalExpectConfiguration =
 	| RulePlainConfiguration
 	| RuleWithNoConditionalExpectOptions;
@@ -4460,9 +4463,6 @@ export type UseGlobalThisConfiguration =
 export type UseIframeSandboxConfiguration =
 	| RulePlainConfiguration
 	| RuleWithUseIframeSandboxOptions;
-export type NoComposingEnterKeyConfiguration =
-	| RulePlainConfiguration
-	| RuleWithNoComposingEnterKeyOptions;
 export type UseImportsFirstConfiguration =
 	| RulePlainConfiguration
 	| RuleWithUseImportsFirstOptions;
@@ -5911,6 +5911,10 @@ export interface RuleWithNoComponentHookFactoriesOptions {
 	level: RulePlainConfiguration;
 	options?: NoComponentHookFactoriesOptions;
 }
+export interface RuleWithNoComposingEnterKeyOptions {
+	level: RulePlainConfiguration;
+	options?: NoComposingEnterKeyOptions;
+}
 export interface RuleWithNoConditionalExpectOptions {
 	level: RulePlainConfiguration;
 	options?: NoConditionalExpectOptions;
@@ -6271,10 +6275,6 @@ export interface RuleWithUseGlobalThisOptions {
 export interface RuleWithUseIframeSandboxOptions {
 	level: RulePlainConfiguration;
 	options?: UseIframeSandboxOptions;
-}
-export interface RuleWithNoComposingEnterKeyOptions {
-	level: RulePlainConfiguration;
-	options?: NoComposingEnterKeyOptions;
 }
 export interface RuleWithUseImportsFirstOptions {
 	level: RulePlainConfiguration;
@@ -7638,6 +7638,10 @@ export interface NoAmbiguousAnchorTextOptions {
 }
 export type NoBeforeInteractiveScriptOutsideDocumentOptions = {};
 export type NoComponentHookFactoriesOptions = {};
+export interface NoComposingEnterKeyOptions {
+	checkKeyCodeForSafari?: boolean;
+	guardFunctions?: string[];
+}
 export type NoConditionalExpectOptions = {};
 export type NoContinueOptions = {};
 export interface NoDeprecatedMediaTypeOptions {
@@ -7901,7 +7905,6 @@ export type UseExplicitTypeOptions = {};
 export type UseFindOptions = {};
 export type UseGlobalThisOptions = {};
 export type UseIframeSandboxOptions = {};
-export type NoComposingEnterKeyOptions = {};
 export type UseImportsFirstOptions = {};
 export type UseInlineScriptIdOptions = {};
 export interface UseInputNameOptions {
