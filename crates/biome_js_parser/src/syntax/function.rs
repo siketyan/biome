@@ -922,15 +922,40 @@ fn parse_arrow_body(
         parse_function_body(p, flags)
     } else {
         p.with_state(EnterFunction(flags), |p| {
+            let body_context = context.and_in_conditional_consequent(false);
             if context.is_in_conditional_consequent()
-                && matches!(p.cur(), T!['('])
-                && matches!(p.nth(1), T!['{'] | T!['['])
+                && is_parenthesized_object_or_array_expression_followed_by_colon(p)
             {
-                parse_assignment_expression_or_higher_no_arrow(p, context)
+                parse_assignment_expression_or_higher_no_arrow(p, body_context)
             } else {
-                parse_assignment_expression_or_higher(p, context)
+                parse_assignment_expression_or_higher(p, body_context)
             }
         })
+    }
+}
+
+fn is_parenthesized_object_or_array_expression_followed_by_colon(p: &mut JsParser) -> bool {
+    if !matches!(p.cur(), T!['(']) || !matches!(p.nth(1), T!['{'] | T!['[']) {
+        return false;
+    }
+
+    let mut paren_depth = 0;
+    let mut offset = 0;
+
+    loop {
+        match p.nth(offset) {
+            T!['('] => paren_depth += 1,
+            T![')'] => {
+                paren_depth -= 1;
+                if paren_depth == 0 {
+                    return matches!(p.nth(offset + 1), T![:]);
+                }
+            }
+            EOF => return false,
+            _ => {}
+        }
+
+        offset += 1;
     }
 }
 

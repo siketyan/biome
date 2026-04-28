@@ -1,0 +1,42 @@
+---
+source: crates/biome_formatter_test/src/snapshot_builder.rs
+info: ts/arrow/issue_10131.ts
+---
+
+# Input
+
+```ts
+const handleClick = onClick
+	? (offset: number) =>
+			({ photo, index, event }: ClickHandlerProps<TPhoto>) => {
+				onClick({ photos: photosArray, index: offset + index, photo, event });
+			}
+	: undefined;
+
+```
+
+
+# Options
+
+```json
+{
+  "$schema": "../../../../../../packages/@biomejs/biome/configuration_schema.json",
+  "javascript": {
+    "formatter": {
+      "arrowParentheses": "asNeeded"
+    }
+  }
+}
+```
+
+# Formatted
+
+```ts
+const handleClick = onClick
+	? (offset: number) =>
+			({ photo, index, event }: ClickHandlerProps<TPhoto>) => {
+				onClick({ photos: photosArray, index: offset + index, photo, event });
+			}
+	: undefined;
+
+```
