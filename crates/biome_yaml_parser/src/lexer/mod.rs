@@ -186,9 +186,10 @@ impl<'src> YamlLexer<'src> {
         tokens.push_back(style_token);
 
         let mut headers = self.consume_block_header_tokens();
+        let keep_trailing_blank_lines = headers.iter().any(|token| token.kind == T![+]);
         tokens.append(&mut headers);
 
-        tokens.push_back(self.lex_block_content());
+        tokens.push_back(self.lex_block_content(keep_trailing_blank_lines));
 
         tokens
     }
@@ -254,15 +255,14 @@ impl<'src> YamlLexer<'src> {
     /// A syntax analyzer rule can then be used to identify erroneous blocks.
     /// Start with the newline followed the header, to handle cases where the block content is
     /// empty
-    fn lex_block_content(&mut self) -> LexToken {
+    fn lex_block_content(&mut self, keep_trailing_blank_lines: bool) -> LexToken {
         debug_assert!(self.current_byte().is_none_or(is_break));
         let start = self.current_coordinate;
 
         while let Some(current) = self.current_byte() {
             if is_break(current) {
-                let might_be_token_end = self.current_coordinate;
-                if !self.is_scalar_continuation() {
-                    return LexToken::new(BLOCK_CONTENT_LITERAL, start, might_be_token_end);
+                if !self.is_scalar_continuation(keep_trailing_blank_lines, false) {
+                    return LexToken::new(BLOCK_CONTENT_LITERAL, start, self.current_coordinate);
                 }
             } else {
                 self.advance(1);
@@ -458,7 +458,7 @@ impl<'src> YamlLexer<'src> {
                 self.consume_whitespaces();
             } else if is_break(c) {
                 let might_be_token_end = self.current_coordinate;
-                if !self.is_scalar_continuation() {
+                if !self.is_scalar_continuation(false, true) {
                     return LexToken::new(PLAIN_LITERAL, start, might_be_token_end);
                 }
             } else {
@@ -490,7 +490,7 @@ impl<'src> YamlLexer<'src> {
                 Some(c) if is_space(c) => self.consume_whitespaces(),
                 Some(c) if is_break(c) => {
                     let might_be_token_end = self.current_coordinate;
-                    if !self.is_scalar_continuation() {
+                    if !self.is_scalar_continuation(false, false) {
                         break might_be_token_end;
                     }
                 }
@@ -529,7 +529,7 @@ impl<'src> YamlLexer<'src> {
                 }
                 Some(current) if is_break(current) => {
                     let might_be_token_end = self.current_coordinate;
-                    if !self.is_scalar_continuation() {
+                    if !self.is_scalar_continuation(false, false) {
                         break might_be_token_end;
                     }
                 }
@@ -654,21 +654,34 @@ impl<'src> YamlLexer<'src> {
         trivia
     }
 
-    fn is_scalar_continuation(&mut self) -> bool {
+    fn is_scalar_continuation(
+        &mut self,
+        keep_trailing_blank_lines: bool,
+        stop_at_comment: bool,
+    ) -> bool {
         debug_assert!(self.current_byte().is_some_and(is_break));
         let start = self.current_coordinate;
         let mut trivia = LinkedList::new();
+        let mut newline_count = 0;
         while let Some(current) = self.current_byte() {
             if is_space(current) {
                 trivia.push_back(self.consume_whitespace_token());
             } else if is_break(current) {
                 trivia.push_back(self.consume_newline_token());
+                newline_count += 1;
             } else {
                 break;
             }
         }
-        if self.breach_parent_scope() {
+        if stop_at_comment && self.current_byte() == Some(b'#') {
             self.current_coordinate = start;
+            false
+        } else if self.is_at_doc_end() || self.is_at_directive_end() {
+            false
+        } else if self.breach_parent_scope() {
+            if !keep_trailing_blank_lines || newline_count <= 1 {
+                self.current_coordinate = start;
+            }
             false
         } else {
             true
@@ -764,11 +777,6 @@ impl<'src> YamlLexer<'src> {
             // properties of flow collection/scalar that could be a mapping key
             self.consume_potential_mapping_start(current, properties, start_coordinate)
         } else if maybe_at_mapping_start(current, self.peek_byte())
-            && self.current_coordinate.column == start_column
-        {
-            // Multi-line properties of flow collection/scalar that could be a mapping key
-            self.consume_potential_mapping_start(current, properties, start_coordinate)
-        } else if maybe_at_mapping_start(current, self.peek_byte())
             && self
                 .scopes
                 .last()
@@ -795,6 +803,11 @@ impl<'src> YamlLexer<'src> {
                 properties.push_back(LexToken::pseudo(FLOW_END, self.current_coordinate));
                 properties
             }
+        } else if maybe_at_mapping_start(current, self.peek_byte())
+            && self.current_coordinate.column == start_column
+        {
+            // Multi-line properties of flow collection/scalar that could be a mapping key
+            self.consume_potential_mapping_start(current, properties, start_coordinate)
         } else {
             properties
         }
@@ -806,7 +819,7 @@ impl<'src> YamlLexer<'src> {
         self.advance(1);
 
         while let Some(c) = self.current_byte() {
-            if is_anchor_char(c) && c != b':' {
+            if is_anchor_char(c) {
                 self.advance(1);
             } else {
                 break;

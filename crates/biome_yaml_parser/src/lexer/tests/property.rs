@@ -404,6 +404,38 @@ fn alias_as_mapping_key() {
 }
 
 #[test]
+fn alias_allows_colon() {
+    assert_lex!("*:@*!$\"<foo>:",
+        FLOW_START:0,
+        ALIAS_LITERAL:13,
+        FLOW_END:0
+    );
+}
+
+#[test]
+fn block_property_before_nested_mapping_in_sequence() {
+    assert_lex!(
+        "- !!map\n  key: value\n",
+        SEQUENCE_START:0,
+        DASH:1,
+        WHITESPACE:1,
+        TAG_PROPERTY_LITERAL:5,
+        NEWLINE:1,
+        WHITESPACE:2,
+        MAPPING_START:0,
+        PLAIN_LITERAL:3,
+        COLON:1,
+        WHITESPACE:1,
+        FLOW_START:0,
+        PLAIN_LITERAL:5,
+        FLOW_END:0,
+        MAPPING_END:0,
+        SEQUENCE_END:0,
+        NEWLINE:1,
+    );
+}
+
+#[test]
 fn quoted_key_with_space_before_colon() {
     assert_lex!(r#""key" : value"#,
         MAPPING_START:0,

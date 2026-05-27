@@ -57,6 +57,16 @@ fn lex_directive_end() {
 }
 
 #[test]
+fn lex_directive_end_followed_by_trivia() {
+    assert_lex!(
+        "--- # trivia",
+        DIRECTIVE_END:3,
+        WHITESPACE:1,
+        COMMENT:8,
+    );
+}
+
+#[test]
 fn lex_directive_end_with_scalar() {
     assert_lex!(
         "--- foo",

@@ -469,6 +469,31 @@ fn lex_basic_block_scalar() {
 }
 
 #[test]
+fn lex_plain_scalar_stops_before_own_line_comment() {
+    assert_lex!(
+        "a: 123\n  # comment\nb: 456",
+        MAPPING_START:0,
+        PLAIN_LITERAL:1,
+        COLON:1,
+        WHITESPACE:1,
+        FLOW_START:0,
+        PLAIN_LITERAL:3,
+        FLOW_END:0,
+        NEWLINE:1,
+        WHITESPACE:2,
+        COMMENT:9,
+        NEWLINE:1,
+        PLAIN_LITERAL:1,
+        COLON:1,
+        WHITESPACE:1,
+        FLOW_START:0,
+        PLAIN_LITERAL:3,
+        FLOW_END:0,
+        MAPPING_END:0,
+    );
+}
+
+#[test]
 fn lex_block_scalar_with_chomping_indicator() {
     assert_lex!(
         "|+",
@@ -579,6 +604,40 @@ fn lex_block_scalar_with_empty_content() {
         ">\n    \n ",
         R_ANGLE:1,
         BLOCK_CONTENT_LITERAL:7,
+    );
+}
+
+#[test]
+fn lex_block_scalar_stops_at_document_markers() {
+    assert_lex!(
+        "--- >+\n ab\n...\n",
+        DIRECTIVE_END:3,
+        WHITESPACE:1,
+        R_ANGLE:1,
+        PLUS:1,
+        BLOCK_CONTENT_LITERAL:5,
+        DOC_END:3,
+        NEWLINE:1,
+    );
+}
+
+#[test]
+fn lex_block_scalar_keep_preserves_trailing_blank_lines() {
+    assert_lex!(
+        "- |+\n  a\n\n\n- b\n",
+        SEQUENCE_START:0,
+        DASH:1,
+        WHITESPACE:1,
+        PIPE:1,
+        PLUS:1,
+        BLOCK_CONTENT_LITERAL:7,
+        DASH:1,
+        WHITESPACE:1,
+        FLOW_START:0,
+        PLAIN_LITERAL:1,
+        FLOW_END:0,
+        SEQUENCE_END:0,
+        NEWLINE:1,
     );
 }
 

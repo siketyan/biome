@@ -1,5 +1,4 @@
 use crate::prelude::*;
-use biome_rowan::AstNode;
 use biome_yaml_syntax::YamlIndentationIndicator;
 #[derive(Debug, Clone, Default)]
 pub(crate) struct FormatYamlIndentationIndicator;
@@ -9,6 +8,6 @@ impl FormatNodeRule<YamlIndentationIndicator> for FormatYamlIndentationIndicator
         node: &YamlIndentationIndicator,
         f: &mut YamlFormatter,
     ) -> FormatResult<()> {
-        format_verbatim_node(node.syntax()).fmt(f)
+        format_trimmed_token(&node.indentation_indicator_token()?).fmt(f)
     }
 }
