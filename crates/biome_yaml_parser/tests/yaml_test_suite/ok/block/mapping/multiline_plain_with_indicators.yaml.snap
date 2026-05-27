@@ -1,0 +1,187 @@
+---
+source: crates/biome_yaml_parser/tests/spec_test.rs
+assertion_line: 122
+expression: snapshot
+---
+## Input
+```yaml
+safe: a!"#$%&'()*+,-./09:;<=>?@AZ[\]^_`az{|}~
+     !"#$%&'()*+,-./09:;<=>?@AZ[\]^_`az{|}~
+safe question mark: ?foo
+safe colon: :foo
+safe dash: -foo
+
+```
+
+## AST
+
+```
+YamlRoot {
+    documents: YamlDocumentList [
+        YamlDocument {
+            bom_token: missing (optional),
+            directives: YamlDirectiveList [],
+            dashdashdash_token: missing (optional),
+            node: YamlBlockInBlockNode {
+                properties: YamlPropertyList [],
+                content: YamlBlockMapping {
+                    mapping_start_token: MAPPING_START@0..0 "" [] [],
+                    entries: YamlBlockMapEntryList [
+                        YamlBlockMapImplicitEntry {
+                            key: YamlFlowYamlNode {
+                                properties: YamlPropertyList [],
+                                content: YamlPlainScalar {
+                                    value_token: PLAIN_LITERAL@0..4 "safe" [] [],
+                                },
+                            },
+                            colon_token: COLON@4..6 ":" [] [Whitespace(" ")],
+                            value: YamlFlowInBlockNode {
+                                flow_start_token: FLOW_START@6..6 "" [] [],
+                                flow: YamlFlowYamlNode {
+                                    properties: YamlPropertyList [],
+                                    content: YamlPlainScalar {
+                                        value_token: PLAIN_LITERAL@6..89 "a!\"#$%&'()*+,-./09:;<=>?@AZ[\\]^_`az{|}~\n     !\"#$%&'()*+,-./09:;<=>?@AZ[\\]^_`az{|}~" [] [],
+                                    },
+                                },
+                                flow_end_token: FLOW_END@89..89 "" [] [],
+                            },
+                        },
+                        YamlBlockMapImplicitEntry {
+                            key: YamlFlowYamlNode {
+                                properties: YamlPropertyList [],
+                                content: YamlPlainScalar {
+                                    value_token: PLAIN_LITERAL@89..108 "safe question mark" [Newline("\n")] [],
+                                },
+                            },
+                            colon_token: COLON@108..110 ":" [] [Whitespace(" ")],
+                            value: YamlFlowInBlockNode {
+                                flow_start_token: FLOW_START@110..110 "" [] [],
+                                flow: YamlFlowYamlNode {
+                                    properties: YamlPropertyList [],
+                                    content: YamlPlainScalar {
+                                        value_token: PLAIN_LITERAL@110..114 "?foo" [] [],
+                                    },
+                                },
+                                flow_end_token: FLOW_END@114..114 "" [] [],
+                            },
+                        },
+                        YamlBlockMapImplicitEntry {
+                            key: YamlFlowYamlNode {
+                                properties: YamlPropertyList [],
+                                content: YamlPlainScalar {
+                                    value_token: PLAIN_LITERAL@114..125 "safe colon" [Newline("\n")] [],
+                                },
+                            },
+                            colon_token: COLON@125..127 ":" [] [Whitespace(" ")],
+                            value: YamlFlowInBlockNode {
+                                flow_start_token: FLOW_START@127..127 "" [] [],
+                                flow: YamlFlowYamlNode {
+                                    properties: YamlPropertyList [],
+                                    content: YamlPlainScalar {
+                                        value_token: PLAIN_LITERAL@127..131 ":foo" [] [],
+                                    },
+                                },
+                                flow_end_token: FLOW_END@131..131 "" [] [],
+                            },
+                        },
+                        YamlBlockMapImplicitEntry {
+                            key: YamlFlowYamlNode {
+                                properties: YamlPropertyList [],
+                                content: YamlPlainScalar {
+                                    value_token: PLAIN_LITERAL@131..141 "safe dash" [Newline("\n")] [],
+                                },
+                            },
+                            colon_token: COLON@141..143 ":" [] [Whitespace(" ")],
+                            value: YamlFlowInBlockNode {
+                                flow_start_token: FLOW_START@143..143 "" [] [],
+                                flow: YamlFlowYamlNode {
+                                    properties: YamlPropertyList [],
+                                    content: YamlPlainScalar {
+                                        value_token: PLAIN_LITERAL@143..147 "-foo" [] [],
+                                    },
+                                },
+                                flow_end_token: FLOW_END@147..147 "" [] [],
+                            },
+                        },
+                    ],
+                    mapping_end_token: MAPPING_END@147..148 "" [Newline("\n")] [],
+                },
+            },
+            dotdotdot_token: missing (optional),
+        },
+    ],
+    eof_token: EOF@148..148 "" [] [],
+}
+```
+
+## CST
+
+```
+0: YAML_ROOT@0..148
+  0: YAML_DOCUMENT_LIST@0..148
+    0: YAML_DOCUMENT@0..148
+      0: (empty)
+      1: YAML_DIRECTIVE_LIST@0..0
+      2: (empty)
+      3: YAML_BLOCK_IN_BLOCK_NODE@0..148
+        0: YAML_PROPERTY_LIST@0..0
+        1: YAML_BLOCK_MAPPING@0..148
+          0: MAPPING_START@0..0 "" [] []
+          1: YAML_BLOCK_MAP_ENTRY_LIST@0..147
+            0: YAML_BLOCK_MAP_IMPLICIT_ENTRY@0..89
+              0: YAML_FLOW_YAML_NODE@0..4
+                0: YAML_PROPERTY_LIST@0..0
+                1: YAML_PLAIN_SCALAR@0..4
+                  0: PLAIN_LITERAL@0..4 "safe" [] []
+              1: COLON@4..6 ":" [] [Whitespace(" ")]
+              2: YAML_FLOW_IN_BLOCK_NODE@6..89
+                0: FLOW_START@6..6 "" [] []
+                1: YAML_FLOW_YAML_NODE@6..89
+                  0: YAML_PROPERTY_LIST@6..6
+                  1: YAML_PLAIN_SCALAR@6..89
+                    0: PLAIN_LITERAL@6..89 "a!\"#$%&'()*+,-./09:;<=>?@AZ[\\]^_`az{|}~\n     !\"#$%&'()*+,-./09:;<=>?@AZ[\\]^_`az{|}~" [] []
+                2: FLOW_END@89..89 "" [] []
+            1: YAML_BLOCK_MAP_IMPLICIT_ENTRY@89..114
+              0: YAML_FLOW_YAML_NODE@89..108
+                0: YAML_PROPERTY_LIST@89..89
+                1: YAML_PLAIN_SCALAR@89..108
+                  0: PLAIN_LITERAL@89..108 "safe question mark" [Newline("\n")] []
+              1: COLON@108..110 ":" [] [Whitespace(" ")]
+              2: YAML_FLOW_IN_BLOCK_NODE@110..114
+                0: FLOW_START@110..110 "" [] []
+                1: YAML_FLOW_YAML_NODE@110..114
+                  0: YAML_PROPERTY_LIST@110..110
+                  1: YAML_PLAIN_SCALAR@110..114
+                    0: PLAIN_LITERAL@110..114 "?foo" [] []
+                2: FLOW_END@114..114 "" [] []
+            2: YAML_BLOCK_MAP_IMPLICIT_ENTRY@114..131
+              0: YAML_FLOW_YAML_NODE@114..125
+                0: YAML_PROPERTY_LIST@114..114
+                1: YAML_PLAIN_SCALAR@114..125
+                  0: PLAIN_LITERAL@114..125 "safe colon" [Newline("\n")] []
+              1: COLON@125..127 ":" [] [Whitespace(" ")]
+              2: YAML_FLOW_IN_BLOCK_NODE@127..131
+                0: FLOW_START@127..127 "" [] []
+                1: YAML_FLOW_YAML_NODE@127..131
+                  0: YAML_PROPERTY_LIST@127..127
+                  1: YAML_PLAIN_SCALAR@127..131
+                    0: PLAIN_LITERAL@127..131 ":foo" [] []
+                2: FLOW_END@131..131 "" [] []
+            3: YAML_BLOCK_MAP_IMPLICIT_ENTRY@131..147
+              0: YAML_FLOW_YAML_NODE@131..141
+                0: YAML_PROPERTY_LIST@131..131
+                1: YAML_PLAIN_SCALAR@131..141
+                  0: PLAIN_LITERAL@131..141 "safe dash" [Newline("\n")] []
+              1: COLON@141..143 ":" [] [Whitespace(" ")]
+              2: YAML_FLOW_IN_BLOCK_NODE@143..147
+                0: FLOW_START@143..143 "" [] []
+                1: YAML_FLOW_YAML_NODE@143..147
+                  0: YAML_PROPERTY_LIST@143..143
+                  1: YAML_PLAIN_SCALAR@143..147
+                    0: PLAIN_LITERAL@143..147 "-foo" [] []
+                2: FLOW_END@147..147 "" [] []
+          2: MAPPING_END@147..148 "" [Newline("\n")] []
+      4: (empty)
+  1: EOF@148..148 "" [] []
+
+```

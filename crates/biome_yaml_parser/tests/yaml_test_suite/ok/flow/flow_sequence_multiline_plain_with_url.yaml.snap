@@ -1,0 +1,144 @@
+---
+source: crates/biome_yaml_parser/tests/spec_test.rs
+assertion_line: 122
+expression: snapshot
+---
+## Input
+```yaml
+- [ ::vector,
+  ": - ()",
+  "Up, up and away!",
+  -123,
+  http://example.com/foo#bar ]
+
+```
+
+## AST
+
+```
+YamlRoot {
+    documents: YamlDocumentList [
+        YamlDocument {
+            bom_token: missing (optional),
+            directives: YamlDirectiveList [],
+            dashdashdash_token: missing (optional),
+            node: YamlBlockInBlockNode {
+                properties: YamlPropertyList [],
+                content: YamlBlockSequence {
+                    sequence_start_token: SEQUENCE_START@0..0 "" [] [],
+                    entries: YamlBlockSequenceEntryList [
+                        YamlBlockSequenceEntry {
+                            minus_token: DASH@0..2 "-" [] [Whitespace(" ")],
+                            value: YamlFlowInBlockNode {
+                                flow_start_token: FLOW_START@2..2 "" [] [],
+                                flow: YamlFlowJsonNode {
+                                    properties: YamlPropertyList [],
+                                    content: YamlFlowSequence {
+                                        l_brack_token: L_BRACK@2..4 "[" [] [Whitespace(" ")],
+                                        entries: YamlFlowSequenceEntryList [
+                                            YamlFlowYamlNode {
+                                                properties: YamlPropertyList [],
+                                                content: YamlPlainScalar {
+                                                    value_token: PLAIN_LITERAL@4..12 "::vector" [] [],
+                                                },
+                                            },
+                                            COMMA@12..13 "," [] [],
+                                            YamlFlowJsonNode {
+                                                properties: YamlPropertyList [],
+                                                content: YamlDoubleQuotedScalar {
+                                                    value_token: DOUBLE_QUOTED_LITERAL@13..24 "\": - ()\"" [Newline("\n"), Whitespace("  ")] [],
+                                                },
+                                            },
+                                            COMMA@24..25 "," [] [],
+                                            YamlFlowJsonNode {
+                                                properties: YamlPropertyList [],
+                                                content: YamlDoubleQuotedScalar {
+                                                    value_token: DOUBLE_QUOTED_LITERAL@25..46 "\"Up, up and away!\"" [Newline("\n"), Whitespace("  ")] [],
+                                                },
+                                            },
+                                            COMMA@46..47 "," [] [],
+                                            YamlFlowYamlNode {
+                                                properties: YamlPropertyList [],
+                                                content: YamlPlainScalar {
+                                                    value_token: PLAIN_LITERAL@47..54 "-123" [Newline("\n"), Whitespace("  ")] [],
+                                                },
+                                            },
+                                            COMMA@54..55 "," [] [],
+                                            YamlFlowYamlNode {
+                                                properties: YamlPropertyList [],
+                                                content: YamlPlainScalar {
+                                                    value_token: PLAIN_LITERAL@55..85 "http://example.com/foo#bar " [Newline("\n"), Whitespace("  ")] [],
+                                                },
+                                            },
+                                        ],
+                                        r_brack_token: R_BRACK@85..86 "]" [] [],
+                                    },
+                                },
+                                flow_end_token: FLOW_END@86..86 "" [] [],
+                            },
+                        },
+                    ],
+                    sequence_end_token: SEQUENCE_END@86..86 "" [] [],
+                },
+            },
+            dotdotdot_token: missing (optional),
+        },
+    ],
+    eof_token: EOF@86..87 "" [Newline("\n")] [],
+}
+```
+
+## CST
+
+```
+0: YAML_ROOT@0..87
+  0: YAML_DOCUMENT_LIST@0..86
+    0: YAML_DOCUMENT@0..86
+      0: (empty)
+      1: YAML_DIRECTIVE_LIST@0..0
+      2: (empty)
+      3: YAML_BLOCK_IN_BLOCK_NODE@0..86
+        0: YAML_PROPERTY_LIST@0..0
+        1: YAML_BLOCK_SEQUENCE@0..86
+          0: SEQUENCE_START@0..0 "" [] []
+          1: YAML_BLOCK_SEQUENCE_ENTRY_LIST@0..86
+            0: YAML_BLOCK_SEQUENCE_ENTRY@0..86
+              0: DASH@0..2 "-" [] [Whitespace(" ")]
+              1: YAML_FLOW_IN_BLOCK_NODE@2..86
+                0: FLOW_START@2..2 "" [] []
+                1: YAML_FLOW_JSON_NODE@2..86
+                  0: YAML_PROPERTY_LIST@2..2
+                  1: YAML_FLOW_SEQUENCE@2..86
+                    0: L_BRACK@2..4 "[" [] [Whitespace(" ")]
+                    1: YAML_FLOW_SEQUENCE_ENTRY_LIST@4..85
+                      0: YAML_FLOW_YAML_NODE@4..12
+                        0: YAML_PROPERTY_LIST@4..4
+                        1: YAML_PLAIN_SCALAR@4..12
+                          0: PLAIN_LITERAL@4..12 "::vector" [] []
+                      1: COMMA@12..13 "," [] []
+                      2: YAML_FLOW_JSON_NODE@13..24
+                        0: YAML_PROPERTY_LIST@13..13
+                        1: YAML_DOUBLE_QUOTED_SCALAR@13..24
+                          0: DOUBLE_QUOTED_LITERAL@13..24 "\": - ()\"" [Newline("\n"), Whitespace("  ")] []
+                      3: COMMA@24..25 "," [] []
+                      4: YAML_FLOW_JSON_NODE@25..46
+                        0: YAML_PROPERTY_LIST@25..25
+                        1: YAML_DOUBLE_QUOTED_SCALAR@25..46
+                          0: DOUBLE_QUOTED_LITERAL@25..46 "\"Up, up and away!\"" [Newline("\n"), Whitespace("  ")] []
+                      5: COMMA@46..47 "," [] []
+                      6: YAML_FLOW_YAML_NODE@47..54
+                        0: YAML_PROPERTY_LIST@47..47
+                        1: YAML_PLAIN_SCALAR@47..54
+                          0: PLAIN_LITERAL@47..54 "-123" [Newline("\n"), Whitespace("  ")] []
+                      7: COMMA@54..55 "," [] []
+                      8: YAML_FLOW_YAML_NODE@55..85
+                        0: YAML_PROPERTY_LIST@55..55
+                        1: YAML_PLAIN_SCALAR@55..85
+                          0: PLAIN_LITERAL@55..85 "http://example.com/foo#bar " [Newline("\n"), Whitespace("  ")] []
+                    2: R_BRACK@85..86 "]" [] []
+                2: FLOW_END@86..86 "" [] []
+          2: SEQUENCE_END@86..86 "" [] []
+      4: (empty)
+  1: EOF@86..87 "" [Newline("\n")] []
+
+```

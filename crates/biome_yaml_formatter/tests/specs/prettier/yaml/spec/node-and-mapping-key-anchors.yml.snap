@@ -73,34 +73,3 @@ top6: &val6
 top7:
   &val7 seven
 ```
-
-# Errors
-```
-node-and-mapping-key-anchors.yml:15:3 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-  × Expected a block mapping entry but instead found 'six
-    top7:
-      &val7 seven'.
-  
-    13 │   key5: five
-    14 │ top6: &val6
-  > 15 │   six
-       │   ^^^
-  > 16 │ top7:
-  > 17 │   &val7 seven
-       │   ^^^^^^^^^^^
-    18 │ 
-  
-  i Expected a block mapping entry here.
-  
-    13 │   key5: five
-    14 │ top6: &val6
-  > 15 │   six
-       │   ^^^
-  > 16 │ top7:
-  > 17 │   &val7 seven
-       │   ^^^^^^^^^^^
-    18 │ 
-  
-
-```

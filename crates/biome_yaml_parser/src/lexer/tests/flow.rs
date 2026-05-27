@@ -235,6 +235,16 @@ fn lex_plain_with_colon_in_flow_mapping() {
 }
 
 #[test]
+fn lex_plain_with_hash() {
+    assert_lex!(
+        "foo#bar",
+        FLOW_START:0,
+        PLAIN_LITERAL:7,
+        FLOW_END:0,
+    );
+}
+
+#[test]
 fn lex_multiline_plain() {
     assert_lex!(
         r#"

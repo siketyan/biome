@@ -55,17 +55,3 @@ info: yaml/spec/spec-example-7-10-plain-characters.yml
   -123,
   http://example.com/foo#bar ]
 ```
-
-# Errors
-```
-spec-example-7-10-plain-characters.yml:13:1 parse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-  × Insufficient indentation in flow collection
-  
-    11 │   -123,
-    12 │   http://example.com/foo#bar ]
-  > 13 │ 
-       │ 
-  
-
-```

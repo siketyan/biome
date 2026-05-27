@@ -442,11 +442,9 @@ impl<'src> YamlLexer<'src> {
             if is_plain_safe(c, in_flow_collection) && c != b':' && c != b'#' {
                 self.advance_char_unchecked();
             }
-            // Technically this should have been (current == b'#' &&
-            // is_non_blank_char(self.last_byte())), but this is simpler
-            else if is_non_blank_char(c) && self.peek_byte().is_some_and(|c| c == b'#') {
-                self.advance_char_unchecked();
-                self.advance(1); // '#'
+            // A `#` starts a comment only when preceded by a blank character.
+            else if c == b'#' && self.prev_byte().is_some_and(is_non_blank_char) {
+                self.advance(1);
             } else if c == b':'
                 && self
                     .peek_byte()
@@ -708,6 +706,7 @@ impl<'src> YamlLexer<'src> {
 
         let start_coordinate = self.current_coordinate;
         let mut start_column = self.current_coordinate.column;
+        let mut contains_line_break = false;
         let mut properties = LinkedList::new();
 
         // Lex all properties until we find a non-property
@@ -724,6 +723,7 @@ impl<'src> YamlLexer<'src> {
                 c if is_space(c) => properties.push_back(self.consume_whitespace_token()),
                 b'#' => properties.push_back(self.consume_comment()),
                 c if is_break(c) => {
+                    contains_line_break = true;
                     // Check if we would breach parent scope before consuming trivia
                     let start = self.current_coordinate;
                     let mut trivia = self.consume_trivia(false);
@@ -760,11 +760,41 @@ impl<'src> YamlLexer<'src> {
             return properties;
         }
 
-        if maybe_at_mapping_start(current, self.peek_byte())
-            && self.current_coordinate.column >= start_column
-        {
+        if maybe_at_mapping_start(current, self.peek_byte()) && !contains_line_break {
             // properties of flow collection/scalar that could be a mapping key
             self.consume_potential_mapping_start(current, properties, start_coordinate)
+        } else if maybe_at_mapping_start(current, self.peek_byte())
+            && self.current_coordinate.column == start_column
+        {
+            // Multi-line properties of flow collection/scalar that could be a mapping key
+            self.consume_potential_mapping_start(current, properties, start_coordinate)
+        } else if maybe_at_mapping_start(current, self.peek_byte())
+            && self
+                .scopes
+                .last()
+                .is_none_or(|scope| scope.indent(self.current_coordinate))
+        {
+            let content_start = self.current_coordinate;
+            let mut content = self.consume_potential_mapping_key(current);
+            let mut trailing_trivia = self.consume_trivia(true);
+
+            if self.is_at_mapping_indicator() {
+                let indicator = self.consume_byte_as_token(T![:]);
+                let mut tokens = properties;
+                tokens.push_back(LexToken::pseudo(MAPPING_START, content_start));
+                tokens.append(&mut content);
+                tokens.append(&mut trailing_trivia);
+                tokens.push_back(indicator);
+                self.scopes
+                    .push(BlockScope::new_mapping_scope(content_start));
+                tokens
+            } else {
+                properties.push_front(LexToken::pseudo(FLOW_START, start_coordinate));
+                properties.append(&mut content);
+                properties.append(&mut trailing_trivia);
+                properties.push_back(LexToken::pseudo(FLOW_END, self.current_coordinate));
+                properties
+            }
         } else {
             properties
         }

@@ -317,6 +317,50 @@ fn multi_property_in_block_map_value() {
 }
 
 #[test]
+fn multiline_properties_before_block_map_value() {
+    assert_lex!("key: &anchor\n !!map\n  a: b",
+        MAPPING_START:0,
+        PLAIN_LITERAL:3,
+        COLON:1,
+        WHITESPACE:1,
+        ANCHOR_PROPERTY_LITERAL:7,
+        NEWLINE:1,
+        WHITESPACE:1,
+        TAG_PROPERTY_LITERAL:5,
+        NEWLINE:1,
+        WHITESPACE:2,
+        MAPPING_START:0,
+        PLAIN_LITERAL:1,
+        COLON:1,
+        WHITESPACE:1,
+        FLOW_START:0,
+        PLAIN_LITERAL:1,
+        FLOW_END:0,
+        MAPPING_END:0,
+        MAPPING_END:0
+    );
+}
+
+#[test]
+fn multiline_property_before_plain_value() {
+    assert_lex!("key: !!str # comment\n   value",
+        MAPPING_START:0,
+        PLAIN_LITERAL:3,
+        COLON:1,
+        WHITESPACE:1,
+        FLOW_START:0,
+        TAG_PROPERTY_LITERAL:5,
+        WHITESPACE:1,
+        COMMENT:9,
+        NEWLINE:1,
+        WHITESPACE:3,
+        PLAIN_LITERAL:5,
+        FLOW_END:0,
+        MAPPING_END:0
+    );
+}
+
+#[test]
 fn property_for_empty_map_value() {
     assert_lex!("outer: &anchor\nnext: value",
         MAPPING_START:0,
