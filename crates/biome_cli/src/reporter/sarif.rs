@@ -10,7 +10,6 @@ use biome_html_syntax::HtmlLanguage;
 use biome_js_syntax::JsLanguage;
 use biome_json_syntax::JsonLanguage;
 use biome_markdown_syntax::MarkdownLanguage;
-use biome_rowan::Language;
 use camino::{Utf8Path, Utf8PathBuf};
 use serde::Serialize;
 use std::collections::{BTreeMap, HashSet};
@@ -59,19 +58,15 @@ impl<'a> SarifReporterVisitor<'a> {
         visitor
     }
 
-    fn store_rule<R, L>(&mut self)
-    where
-        L: Language,
-        R: Rule<Options: Default, Query: Queryable<Language = L, Output: Clone>> + 'static,
-    {
-        let category = <R::Group as RuleGroup>::Category::CATEGORY;
+    /// Non-generic: the rule is passed as its category, name, and docs, so the
+    /// body is compiled once instead of once per rule.
+    fn store_rule(&mut self, category: RuleCategory, rule_name: &'static str, docs: &'static str) {
         if matches!(
             category,
             RuleCategory::Syntax | RuleCategory::Lint | RuleCategory::Action
         ) {
-            let first_line: &'static str =
-                R::METADATA.docs.lines().next().unwrap_or_default().trim();
-            self.rule_descriptions.insert(R::METADATA.name, first_line);
+            let first_line = docs.lines().next().unwrap_or_default().trim();
+            self.rule_descriptions.insert(rule_name, first_line);
         }
     }
 }
@@ -81,7 +76,11 @@ impl RegistryVisitor<JsLanguage> for SarifReporterVisitor<'_> {
     where
         R: Rule<Options: Default, Query: Queryable<Language = JsLanguage, Output: Clone>> + 'static,
     {
-        self.store_rule::<R, JsLanguage>();
+        self.store_rule(
+            <R::Group as RuleGroup>::Category::CATEGORY,
+            R::METADATA.name,
+            R::METADATA.docs,
+        );
     }
 }
 
@@ -91,7 +90,11 @@ impl RegistryVisitor<JsonLanguage> for SarifReporterVisitor<'_> {
         R: Rule<Options: Default, Query: Queryable<Language = JsonLanguage, Output: Clone>>
             + 'static,
     {
-        self.store_rule::<R, JsonLanguage>();
+        self.store_rule(
+            <R::Group as RuleGroup>::Category::CATEGORY,
+            R::METADATA.name,
+            R::METADATA.docs,
+        );
     }
 }
 
@@ -101,7 +104,11 @@ impl RegistryVisitor<CssLanguage> for SarifReporterVisitor<'_> {
         R: Rule<Options: Default, Query: Queryable<Language = CssLanguage, Output: Clone>>
             + 'static,
     {
-        self.store_rule::<R, CssLanguage>();
+        self.store_rule(
+            <R::Group as RuleGroup>::Category::CATEGORY,
+            R::METADATA.name,
+            R::METADATA.docs,
+        );
     }
 }
 
@@ -111,7 +118,11 @@ impl RegistryVisitor<GraphqlLanguage> for SarifReporterVisitor<'_> {
         R: Rule<Options: Default, Query: Queryable<Language = GraphqlLanguage, Output: Clone>>
             + 'static,
     {
-        self.store_rule::<R, GraphqlLanguage>();
+        self.store_rule(
+            <R::Group as RuleGroup>::Category::CATEGORY,
+            R::METADATA.name,
+            R::METADATA.docs,
+        );
     }
 }
 
@@ -121,7 +132,11 @@ impl RegistryVisitor<HtmlLanguage> for SarifReporterVisitor<'_> {
         R: Rule<Options: Default, Query: Queryable<Language = HtmlLanguage, Output: Clone>>
             + 'static,
     {
-        self.store_rule::<R, HtmlLanguage>();
+        self.store_rule(
+            <R::Group as RuleGroup>::Category::CATEGORY,
+            R::METADATA.name,
+            R::METADATA.docs,
+        );
     }
 }
 
@@ -131,7 +146,11 @@ impl RegistryVisitor<MarkdownLanguage> for SarifReporterVisitor<'_> {
         R: Rule<Options: Default, Query: Queryable<Language = MarkdownLanguage, Output: Clone>>
             + 'static,
     {
-        self.store_rule::<R, MarkdownLanguage>();
+        self.store_rule(
+            <R::Group as RuleGroup>::Category::CATEGORY,
+            R::METADATA.name,
+            R::METADATA.docs,
+        );
     }
 }
 
