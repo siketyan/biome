@@ -3,6 +3,7 @@ use crate::settings::Settings;
 use crate::workspace::ScanKind;
 use biome_analyze::{
     AnalyzerRules, Queryable, RegistryVisitor, Rule, RuleDomain, RuleFilter, RuleGroup,
+    RuleMetadata,
 };
 use biome_configuration::analyzer::{AnalyzerSelector, RuleDomainValue};
 use biome_configuration::diagnostics::{
@@ -41,7 +42,6 @@ use biome_markdown_analyze::METADATA as md_lint_metadata;
 #[cfg(feature = "lang_md")]
 use biome_markdown_syntax::MarkdownLanguage;
 use biome_resolver::{FsWithResolverProxy, ResolveOptions, is_relative_specifier, resolve};
-use biome_rowan::Language;
 use camino::{Utf8Path, Utf8PathBuf};
 use rustc_hash::FxHashSet;
 use std::fmt::Debug;
@@ -899,26 +899,27 @@ impl<'a> ProjectScanComputer<'a> {
         }
     }
 
-    fn check_rule<R, L>(&mut self)
-    where
-        L: Language,
-        R: Rule<Options: Default, Query: Queryable<Language = L, Output: Clone>> + 'static,
-    {
-        let filter = RuleFilter::Rule(<R::Group as RuleGroup>::NAME, R::METADATA.name);
+    /// Non-generic: the rule is passed as its group name and metadata, so the
+    /// body is compiled once instead of once per rule.
+    fn check_rule(&mut self, group_name: &'static str, metadata: &RuleMetadata) {
+        let filter = RuleFilter::Rule(group_name, metadata.name);
 
         if !self.only.is_empty() {
             for selector in self.only.iter() {
-                if selector.match_rule::<R>() {
-                    let domains = R::METADATA.domains;
+                if selector.match_rule_name(group_name, metadata.name) {
+                    let domains = metadata.domains;
                     self.requires_project_scan |= domains.contains(&RuleDomain::Project);
                     self.requires_types |= domains.contains(&RuleDomain::Types);
                     break;
                 }
             }
-        } else if !self.skip.iter().any(|s| s.match_rule::<R>())
+        } else if !self
+            .skip
+            .iter()
+            .any(|s| s.match_rule_name(group_name, metadata.name))
             && self.enabled_rules.contains(&filter)
         {
-            let domains = R::METADATA.domains;
+            let domains = metadata.domains;
             self.requires_project_scan |= domains.contains(&RuleDomain::Project);
             self.requires_types |= domains.contains(&RuleDomain::Types);
         }
@@ -931,7 +932,7 @@ impl RegistryVisitor<JsLanguage> for ProjectScanComputer<'_> {
     where
         R: Rule<Options: Default, Query: Queryable<Language = JsLanguage, Output: Clone>> + 'static,
     {
-        self.check_rule::<R, JsLanguage>();
+        self.check_rule(<R::Group as RuleGroup>::NAME, &R::METADATA);
     }
 }
 
@@ -941,7 +942,7 @@ impl RegistryVisitor<JsonLanguage> for ProjectScanComputer<'_> {
         R: Rule<Options: Default, Query: Queryable<Language = JsonLanguage, Output: Clone>>
             + 'static,
     {
-        self.check_rule::<R, JsonLanguage>();
+        self.check_rule(<R::Group as RuleGroup>::NAME, &R::METADATA);
     }
 }
 
@@ -952,7 +953,7 @@ impl RegistryVisitor<CssLanguage> for ProjectScanComputer<'_> {
         R: Rule<Options: Default, Query: Queryable<Language = CssLanguage, Output: Clone>>
             + 'static,
     {
-        self.check_rule::<R, CssLanguage>();
+        self.check_rule(<R::Group as RuleGroup>::NAME, &R::METADATA);
     }
 }
 #[cfg(feature = "lang_graphql")]
@@ -962,7 +963,7 @@ impl RegistryVisitor<GraphqlLanguage> for ProjectScanComputer<'_> {
         R: Rule<Options: Default, Query: Queryable<Language = GraphqlLanguage, Output: Clone>>
             + 'static,
     {
-        self.check_rule::<R, GraphqlLanguage>();
+        self.check_rule(<R::Group as RuleGroup>::NAME, &R::METADATA);
     }
 }
 
@@ -973,7 +974,7 @@ impl RegistryVisitor<HtmlLanguage> for ProjectScanComputer<'_> {
         R: Rule<Options: Default, Query: Queryable<Language = HtmlLanguage, Output: Clone>>
             + 'static,
     {
-        self.check_rule::<R, HtmlLanguage>();
+        self.check_rule(<R::Group as RuleGroup>::NAME, &R::METADATA);
     }
 }
 

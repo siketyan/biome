@@ -579,9 +579,18 @@ impl AnalyzerSelector {
     where
         R: Rule,
     {
+        self.match_rule_name(
+            <R::Group as biome_analyze::RuleGroup>::NAME,
+            R::METADATA.name,
+        )
+    }
+
+    /// Non-generic core of [Self::match_rule], so callers monomorphized per
+    /// rule only contribute the name lookup.
+    pub fn match_rule_name(&self, group_name: &str, rule_name: &str) -> bool {
         match self {
-            Self::Rule(rule) => rule.match_rule::<R>(),
-            Self::Domain(domain) => domain.match_rule::<R>(),
+            Self::Rule(rule) => rule.match_rule_name(group_name, rule_name),
+            Self::Domain(domain) => domain.match_rule_name(group_name, rule_name),
             Self::Plugin => false,
         }
     }
@@ -761,7 +770,16 @@ impl RuleSelector {
     where
         R: Rule,
     {
-        RuleFilter::from(*self).match_rule::<R>()
+        self.match_rule_name(
+            <R::Group as biome_analyze::RuleGroup>::NAME,
+            R::METADATA.name,
+        )
+    }
+
+    /// Non-generic core of [Self::match_rule], so callers monomorphized per
+    /// rule only contribute the name lookup.
+    pub fn match_rule_name(&self, group_name: &str, rule_name: &str) -> bool {
+        RuleFilter::from(*self).match_rule_name(group_name, rule_name)
     }
 }
 
