@@ -171,10 +171,21 @@ impl<L: Language + Default + 'static> RegistryVisitor<L> for RuleRegistryBuilder
         let phase = &mut self.registry.phase_rules[phase];
 
         let rule = RegistryRule::new::<R>(phase.rule_states.len());
+        phase.insert_rule(<R::Query as Queryable>::key(), rule);
 
-        match <R::Query as Queryable>::key() {
+        <R::Query as Queryable>::build_visitor(&mut self.visitors, self.root);
+    }
+}
+
+impl<L: Language + Default + 'static> PhaseRules<L> {
+    /// Inserts a rule under the given query key, together with its state.
+    ///
+    /// Kept out of [RegistryVisitor::record_rule] so it is monomorphized once
+    /// per language instead of once per rule.
+    fn insert_rule(&mut self, key: QueryKey<L>, rule: RegistryRule<L>) {
+        match key {
             QueryKey::Syntax(key) => {
-                let TypeRules::SyntaxRules { rules } = phase
+                let TypeRules::SyntaxRules { rules } = self
                     .type_rules
                     .entry(TypeId::of::<SyntaxNode<L>>())
                     .or_insert_with(|| TypeRules::SyntaxRules { rules: Vec::new() })
@@ -197,14 +208,14 @@ impl<L: Language + Default + 'static> RegistryVisitor<L> for RuleRegistryBuilder
                         rules.resize_with(index + 1, SyntaxKindRules::new);
                     }
 
-                    // Insert a handle to the rule `R` into the `SyntaxKindRules` entry
+                    // Insert a handle to the rule into the `SyntaxKindRules` entry
                     // corresponding to the SyntaxKind index
                     let node = &mut rules[index];
                     node.rules.push(rule);
                 }
             }
             QueryKey::TypeId(key) => {
-                let TypeRules::TypeRules { rules } = phase
+                let TypeRules::TypeRules { rules } = self
                     .type_rules
                     .entry(key)
                     .or_insert_with(|| TypeRules::TypeRules { rules: Vec::new() })
@@ -218,9 +229,7 @@ impl<L: Language + Default + 'static> RegistryVisitor<L> for RuleRegistryBuilder
             }
         }
 
-        phase.rule_states.push(RuleState::default());
-
-        <R::Query as Queryable>::build_visitor(&mut self.visitors, self.root);
+        self.rule_states.push(RuleState::default());
     }
 }
 
