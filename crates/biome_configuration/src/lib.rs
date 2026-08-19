@@ -265,7 +265,7 @@ pub struct Configuration {
 impl DeserializableValidator for Configuration {
     fn validate(
         &mut self,
-        ctx: &mut impl DeserializationContext,
+        ctx: &mut dyn DeserializationContext,
         _name: &str,
         range: TextRange,
     ) -> bool {
@@ -540,7 +540,7 @@ static SCHEMA_REGEX: LazyLock<Regex> =
 
 impl Deserializable for Schema {
     fn deserialize(
-        ctx: &mut impl DeserializationContext,
+        ctx: &mut dyn DeserializationContext,
         value: &impl DeserializableValue,
         name: &str,
     ) -> Option<Self> {
@@ -551,7 +551,7 @@ impl Deserializable for Schema {
 
             fn visit_str(
                 self,
-                ctx: &mut impl DeserializationContext,
+                ctx: &mut dyn DeserializationContext,
                 value: Text,
                 range: TextRange,
                 _name: &str,
@@ -675,7 +675,7 @@ pub struct FilesConfiguration {
 impl FilesConfiguration {
     fn deserialize_field(
         &mut self,
-        ctx: &mut impl DeserializationContext,
+        ctx: &mut dyn DeserializationContext,
         name: &str,
         value: &impl DeserializableValue,
         range: TextRange,
@@ -743,7 +743,7 @@ impl FilesConfiguration {
 
 impl biome_deserialize::Deserializable for FilesConfiguration {
     fn deserialize(
-        ctx: &mut impl DeserializationContext,
+        ctx: &mut dyn DeserializationContext,
         value: &impl DeserializableValue,
         name: &str,
     ) -> Option<Self> {
@@ -753,10 +753,8 @@ impl biome_deserialize::Deserializable for FilesConfiguration {
             const EXPECTED_TYPE: DeserializableTypes = DeserializableTypes::MAP;
             fn visit_map(
                 self,
-                ctx: &mut impl DeserializationContext,
-                members: impl Iterator<
-                    Item = Option<(impl DeserializableValue, impl DeserializableValue)>,
-                >,
+                ctx: &mut dyn DeserializationContext,
+                members: &mut dyn ExactSizeIterator<Item = Option<(Box<dyn DeserializableValue>, Box<dyn DeserializableValue>)>>,
                 _range: TextRange,
                 _name: &str,
             ) -> Option<Self::Output> {

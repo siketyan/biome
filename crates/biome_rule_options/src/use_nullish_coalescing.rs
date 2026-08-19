@@ -133,7 +133,7 @@ impl biome_deserialize::Merge for IgnorePrimitives {
 
 impl Deserializable for IgnorePrimitives {
     fn deserialize(
-        ctx: &mut impl DeserializationContext,
+        ctx: &mut dyn DeserializationContext,
         value: &impl DeserializableValue,
         name: &str,
     ) -> Option<Self> {
