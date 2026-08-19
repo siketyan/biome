@@ -912,16 +912,25 @@ impl RuleMetadata {
     }
 
     pub fn action_category(&self, category: RuleCategory, group: &'static str) -> ActionCategory {
-        match category {
-            RuleCategory::Lint => {
-                ActionCategory::QuickFix(Cow::Owned(format!("{}.{}", group, self.name)))
-            }
-            RuleCategory::Action => match self.name {
-                "organizeImports" => ActionCategory::Source(SourceActionKind::OrganizeImports),
-                other => ActionCategory::Source(SourceActionKind::Other(Cow::Borrowed(other))),
-            },
-            RuleCategory::Syntax | RuleCategory::Transformation => unimplemented!(""),
-        }
+        build_action_category(category, group, self.name)
+    }
+}
+
+/// [RuleMetadata::action_category] for callers that hold the rule's names as
+/// values: taking `&RuleMetadata` would materialize the whole metadata struct
+/// as a static at every monomorphized call site.
+pub(crate) fn build_action_category(
+    category: RuleCategory,
+    group: &str,
+    name: &'static str,
+) -> ActionCategory {
+    match category {
+        RuleCategory::Lint => ActionCategory::QuickFix(Cow::Owned(format!("{group}.{name}"))),
+        RuleCategory::Action => match name {
+            "organizeImports" => ActionCategory::Source(SourceActionKind::OrganizeImports),
+            other => ActionCategory::Source(SourceActionKind::Other(Cow::Borrowed(other))),
+        },
+        RuleCategory::Syntax | RuleCategory::Transformation => unimplemented!(""),
     }
 }
 

@@ -3,7 +3,6 @@ use crate::settings::Settings;
 use crate::workspace::ScanKind;
 use biome_analyze::{
     AnalyzerRules, Queryable, RegistryVisitor, Rule, RuleDomain, RuleFilter, RuleGroup,
-    RuleMetadata,
 };
 use biome_configuration::analyzer::{AnalyzerSelector, RuleDomainValue};
 use biome_configuration::diagnostics::{
@@ -901,13 +900,17 @@ impl<'a> ProjectScanComputer<'a> {
 
     /// Non-generic: the rule is passed as its group name and metadata, so the
     /// body is compiled once instead of once per rule.
-    fn check_rule(&mut self, group_name: &'static str, metadata: &RuleMetadata) {
-        let filter = RuleFilter::Rule(group_name, metadata.name);
+    fn check_rule(
+        &mut self,
+        group_name: &'static str,
+        rule_name: &'static str,
+        domains: &'static [RuleDomain],
+    ) {
+        let filter = RuleFilter::Rule(group_name, rule_name);
 
         if !self.only.is_empty() {
             for selector in self.only.iter() {
-                if selector.match_rule_name(group_name, metadata.name) {
-                    let domains = metadata.domains;
+                if selector.match_rule_name(group_name, rule_name) {
                     self.requires_project_scan |= domains.contains(&RuleDomain::Project);
                     self.requires_types |= domains.contains(&RuleDomain::Types);
                     break;
@@ -916,10 +919,9 @@ impl<'a> ProjectScanComputer<'a> {
         } else if !self
             .skip
             .iter()
-            .any(|s| s.match_rule_name(group_name, metadata.name))
+            .any(|s| s.match_rule_name(group_name, rule_name))
             && self.enabled_rules.contains(&filter)
         {
-            let domains = metadata.domains;
             self.requires_project_scan |= domains.contains(&RuleDomain::Project);
             self.requires_types |= domains.contains(&RuleDomain::Types);
         }
@@ -932,7 +934,11 @@ impl RegistryVisitor<JsLanguage> for ProjectScanComputer<'_> {
     where
         R: Rule<Options: Default, Query: Queryable<Language = JsLanguage, Output: Clone>> + 'static,
     {
-        self.check_rule(<R::Group as RuleGroup>::NAME, &R::METADATA);
+        self.check_rule(
+            <R::Group as RuleGroup>::NAME,
+            R::METADATA.name,
+            R::METADATA.domains,
+        );
     }
 }
 
@@ -942,7 +948,11 @@ impl RegistryVisitor<JsonLanguage> for ProjectScanComputer<'_> {
         R: Rule<Options: Default, Query: Queryable<Language = JsonLanguage, Output: Clone>>
             + 'static,
     {
-        self.check_rule(<R::Group as RuleGroup>::NAME, &R::METADATA);
+        self.check_rule(
+            <R::Group as RuleGroup>::NAME,
+            R::METADATA.name,
+            R::METADATA.domains,
+        );
     }
 }
 
@@ -953,7 +963,11 @@ impl RegistryVisitor<CssLanguage> for ProjectScanComputer<'_> {
         R: Rule<Options: Default, Query: Queryable<Language = CssLanguage, Output: Clone>>
             + 'static,
     {
-        self.check_rule(<R::Group as RuleGroup>::NAME, &R::METADATA);
+        self.check_rule(
+            <R::Group as RuleGroup>::NAME,
+            R::METADATA.name,
+            R::METADATA.domains,
+        );
     }
 }
 #[cfg(feature = "lang_graphql")]
@@ -963,7 +977,11 @@ impl RegistryVisitor<GraphqlLanguage> for ProjectScanComputer<'_> {
         R: Rule<Options: Default, Query: Queryable<Language = GraphqlLanguage, Output: Clone>>
             + 'static,
     {
-        self.check_rule(<R::Group as RuleGroup>::NAME, &R::METADATA);
+        self.check_rule(
+            <R::Group as RuleGroup>::NAME,
+            R::METADATA.name,
+            R::METADATA.domains,
+        );
     }
 }
 
@@ -974,7 +992,11 @@ impl RegistryVisitor<HtmlLanguage> for ProjectScanComputer<'_> {
         R: Rule<Options: Default, Query: Queryable<Language = HtmlLanguage, Output: Clone>>
             + 'static,
     {
-        self.check_rule(<R::Group as RuleGroup>::NAME, &R::METADATA);
+        self.check_rule(
+            <R::Group as RuleGroup>::NAME,
+            R::METADATA.name,
+            R::METADATA.domains,
+        );
     }
 }
 

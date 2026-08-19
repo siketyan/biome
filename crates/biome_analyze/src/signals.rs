@@ -8,10 +8,12 @@ use crate::{
     categories::ActionCategory,
     context::RuleContext,
     registry::{RuleLanguage, RuleRoot},
-    rule::{Rule, RuleAction, RuleMetadata, SuppressAction},
+    rule::{Rule, RuleAction, SuppressAction},
 };
 use biome_console::{MarkupBuf, markup};
-use biome_diagnostics::{Applicability, CodeSuggestion, Error, advice::CodeSuggestionAdvice};
+use biome_diagnostics::{
+    Applicability, CodeSuggestion, Error, Severity, advice::CodeSuggestionAdvice,
+};
 use biome_rowan::{BatchMutation, Language, SyntaxNode, TextRange};
 use biome_text_edit::TextEdit;
 use enumflags2::{BitFlag, BitFlags, bitflags};
@@ -533,7 +535,12 @@ where
         .ok()?;
 
         R::diagnostic(&ctx, &self.state).map(|diagnostic| {
-            build_analyzer_diagnostic(diagnostic, ctx.metadata(), <R::Group as RuleGroup>::NAME)
+            build_analyzer_diagnostic(
+                diagnostic,
+                R::METADATA.severity,
+                R::METADATA.issue_number,
+                <R::Group as RuleGroup>::NAME,
+            )
         })
     }
 
@@ -619,7 +626,7 @@ where
             (<R::Group as RuleGroup>::NAME, R::METADATA.name),
             <<R::Group as RuleGroup>::Category as GroupCategory>::CATEGORY,
             self.options.rule_fix_kind::<R>(),
-            &R::METADATA,
+            R::METADATA.fix_kind,
         )
     }
 
@@ -660,12 +667,13 @@ where
 /// of the generic method so it is compiled once instead of once per rule.
 fn build_analyzer_diagnostic(
     mut diagnostic: RuleDiagnostic,
-    metadata: &RuleMetadata,
+    severity: Severity,
+    issue_number: Option<&'static str>,
     group_name: &'static str,
 ) -> AnalyzerDiagnostic {
-    diagnostic.severity = metadata.severity;
+    diagnostic.severity = severity;
 
-    if let Some(issue_number) = metadata.issue_number {
+    if let Some(issue_number) = issue_number {
         let url = format!("https://github.com/biomejs/biome/issues/{issue_number}");
         diagnostic = diagnostic.note(markup! {
          "This rule is still being actively worked on, so it may be missing features or have rough edges. Visit "<Hyperlink href={url.as_str()}>{url.as_str()}</Hyperlink>" for more information or to report possible bugs."
@@ -728,9 +736,9 @@ fn build_actions_metadata(
     rule_name: (&'static str, &'static str),
     rule_category: RuleCategory,
     configured_fix_kind: Option<FixKind>,
-    metadata: &RuleMetadata,
+    metadata_fix_kind: FixKind,
 ) -> Vec<ActionMetadata> {
-    let (group_name, _) = rule_name;
+    let (group_name, name) = rule_name;
     let rule_name = Some(rule_name);
     let has_suppression = matches!(
         rule_category,
@@ -741,16 +749,16 @@ fn build_actions_metadata(
 
     // Rule fix metadata — only if the rule declares a fix
     let is_disabled = matches!(configured_fix_kind, Some(FixKind::None));
-    if !is_disabled && metadata.fix_kind != FixKind::None {
+    if !is_disabled && metadata_fix_kind != FixKind::None {
         let applicability = match configured_fix_kind {
             Some(FixKind::Safe) => Applicability::Always,
             Some(FixKind::Unsafe) => Applicability::MaybeIncorrect,
-            _ => match metadata.fix_kind {
+            _ => match metadata_fix_kind {
                 FixKind::Safe => Applicability::Always,
                 _ => Applicability::MaybeIncorrect,
             },
         };
-        let action_category = metadata.action_category(rule_category, group_name);
+        let action_category = crate::rule::build_action_category(rule_category, group_name, name);
         actions_metadata.push(ActionMetadata {
             rule_name,
             category: action_category,
