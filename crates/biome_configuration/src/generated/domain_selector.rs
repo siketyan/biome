@@ -1,7 +1,7 @@
 //! Generated file, do not edit by hand, see `xtask/codegen`
 
 use crate::analyzer::DomainSelector;
-use biome_analyze::{Rule, RuleFilter};
+use biome_analyze::{Rule, RuleFilter, RuleGroup};
 use std::sync::LazyLock;
 static DRIZZLE_FILTERS: LazyLock<Vec<RuleFilter<'static>>> = LazyLock::new(|| {
     vec![
@@ -197,33 +197,54 @@ impl DomainSelector {
     where
         R: Rule,
     {
+        self.match_rule_name(<R::Group as RuleGroup>::NAME, R::METADATA.name)
+    }
+    #[doc = r" Non-generic core of [Self::match_rule], so callers monomorphized"]
+    #[doc = r" per rule only contribute the name lookup."]
+    pub fn match_rule_name(&self, group_name: &str, rule_name: &str) -> bool {
         match self.0 {
             "drizzle" => DRIZZLE_FILTERS
                 .iter()
-                .any(|filter| filter.match_rule::<R>()),
-            "next" => NEXT_FILTERS.iter().any(|filter| filter.match_rule::<R>()),
+                .any(|filter| filter.match_rule_name(group_name, rule_name)),
+            "next" => NEXT_FILTERS
+                .iter()
+                .any(|filter| filter.match_rule_name(group_name, rule_name)),
             "playwright" => PLAYWRIGHT_FILTERS
                 .iter()
-                .any(|filter| filter.match_rule::<R>()),
+                .any(|filter| filter.match_rule_name(group_name, rule_name)),
             "project" => PROJECT_FILTERS
                 .iter()
-                .any(|filter| filter.match_rule::<R>()),
-            "qwik" => QWIK_FILTERS.iter().any(|filter| filter.match_rule::<R>()),
-            "react" => REACT_FILTERS.iter().any(|filter| filter.match_rule::<R>()),
+                .any(|filter| filter.match_rule_name(group_name, rule_name)),
+            "qwik" => QWIK_FILTERS
+                .iter()
+                .any(|filter| filter.match_rule_name(group_name, rule_name)),
+            "react" => REACT_FILTERS
+                .iter()
+                .any(|filter| filter.match_rule_name(group_name, rule_name)),
             "reactNative" => REACTNATIVE_FILTERS
                 .iter()
-                .any(|filter| filter.match_rule::<R>()),
-            "solid" => SOLID_FILTERS.iter().any(|filter| filter.match_rule::<R>()),
-            "svelte" => SVELTE_FILTERS.iter().any(|filter| filter.match_rule::<R>()),
+                .any(|filter| filter.match_rule_name(group_name, rule_name)),
+            "solid" => SOLID_FILTERS
+                .iter()
+                .any(|filter| filter.match_rule_name(group_name, rule_name)),
+            "svelte" => SVELTE_FILTERS
+                .iter()
+                .any(|filter| filter.match_rule_name(group_name, rule_name)),
             "tailwind" => TAILWIND_FILTERS
                 .iter()
-                .any(|filter| filter.match_rule::<R>()),
-            "test" => TEST_FILTERS.iter().any(|filter| filter.match_rule::<R>()),
+                .any(|filter| filter.match_rule_name(group_name, rule_name)),
+            "test" => TEST_FILTERS
+                .iter()
+                .any(|filter| filter.match_rule_name(group_name, rule_name)),
             "turborepo" => TURBOREPO_FILTERS
                 .iter()
-                .any(|filter| filter.match_rule::<R>()),
-            "types" => TYPES_FILTERS.iter().any(|filter| filter.match_rule::<R>()),
-            "vue" => VUE_FILTERS.iter().any(|filter| filter.match_rule::<R>()),
+                .any(|filter| filter.match_rule_name(group_name, rule_name)),
+            "types" => TYPES_FILTERS
+                .iter()
+                .any(|filter| filter.match_rule_name(group_name, rule_name)),
+            "vue" => VUE_FILTERS
+                .iter()
+                .any(|filter| filter.match_rule_name(group_name, rule_name)),
             _ => false,
         }
     }
