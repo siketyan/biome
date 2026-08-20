@@ -421,11 +421,7 @@ fn generate_deserializable_struct(
             let seen_ident = format_ident!("seen_{}", ident);
             quote! {
                 if !#seen_ident {
-                    ctx.report(DeserializationDiagnostic::new_missing_key(
-                        #key,
-                        range,
-                        REQUIRED_KEYS,
-                    ))
+                    biome_deserialize::report_missing_key(ctx, #key, range, REQUIRED_KEYS)
                 }
             }
         });
@@ -456,19 +452,21 @@ fn generate_deserializable_struct(
     } else {
         match data.unknown_fields {
             UnknownFields::Warn | UnknownFields::Deny => {
-                let with_customseverity = if data.unknown_fields == UnknownFields::Warn {
-                    quote! { .with_custom_severity(biome_diagnostics::Severity::Warning) }
+                let severity = if data.unknown_fields == UnknownFields::Warn {
+                    quote! { Some(biome_diagnostics::Severity::Warning) }
                 } else {
-                    quote! {}
+                    quote! { None }
                 };
                 quote! {
                     unknown_key => {
                         const ALLOWED_KEYS: &[&str] = &[#(#allowed_keys),*];
-                        ctx.report(DeserializationDiagnostic::new_unknown_key(
+                        biome_deserialize::report_unknown_key(
+                            ctx,
                             unknown_key,
                             key.range(),
                             ALLOWED_KEYS,
-                        )#with_customseverity)
+                            #severity,
+                        )
                     }
                 }
             }
