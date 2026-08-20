@@ -15,13 +15,15 @@ use biome_diagnostics::Severity;
 use rustc_hash::FxHashSet;
 #[cfg(feature = "schema")]
 use schemars::JsonSchema;
-use serde::{Deserialize, Serialize};
+use serde::de::value::{MapAccessDeserializer, StrDeserializer};
+use serde::de::{MapAccess, Visitor};
+use serde::{Deserialize, Deserializer, Serialize};
 use std::fmt::{Debug, Display, Formatter};
 use std::ops::Deref;
 use std::str::FromStr;
 
-#[derive(Clone, Debug, Eq, PartialEq, serde::Deserialize, serde::Serialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields, untagged)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize)]
+#[serde(rename_all = "camelCase", untagged)]
 pub enum RuleConfiguration<T: Default + Merge> {
     Plain(RulePlainConfiguration),
     WithOptions(RuleWithOptions<T>),
@@ -124,8 +126,8 @@ where
     }
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, serde::Deserialize, serde::Serialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields, untagged)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize)]
+#[serde(rename_all = "camelCase", untagged)]
 pub enum RuleFixConfiguration<T: Default + Merge> {
     Plain(RulePlainConfiguration),
     WithOptions(RuleWithFixOptions<T>),
@@ -297,8 +299,8 @@ pub enum RulePlainConfiguration {
     Error,
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, serde::Deserialize, serde::Serialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields, untagged)]
+#[derive(Clone, Debug, Eq, PartialEq, serde::Serialize)]
+#[serde(rename_all = "camelCase", untagged)]
 pub enum RuleAssistConfiguration<T: Default> {
     Plain(RuleAssistPlainConfiguration),
     WithOptions(RuleAssistWithOptions<T>),
@@ -1012,8 +1014,8 @@ pub trait RuleGroupExt: Default + Merge + Debug + From<GroupPlainConfiguration> 
     fn set_recommended(&mut self, value: Option<bool>);
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields, untagged)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase", untagged)]
 pub enum SeverityOrGroup<G> {
     Plain(GroupPlainConfiguration),
     Group(G),
@@ -1328,5 +1330,97 @@ mod test {
             AnalyzerSelector::from_str("plugin/foo"),
             Err("Per-plugin selection is not supported. Use `plugin` to target all plugins.")
         );
+    }
+}
+
+/// Deserializes an enum whose value is either a severity string or an object.
+///
+/// `#[serde(untagged)]` would buffer the input into `serde::private::de::Content`
+/// and retry each variant against it, expanding that machinery once per
+/// generic argument — roughly a thousand times across the rule options. These
+/// enums are simply "a string, or else an object", so they dispatch on the
+/// input directly instead.
+macro_rules! impl_deserialize_severity_or_object {
+    ($name:ident<$param:ident>, [$($bound:path),*], $plain:ty, $with_options:ty, $expecting:literal) => {
+        impl<'de, $param> Deserialize<'de> for $name<$param>
+        where
+            $param: Deserialize<'de> $(+ $bound)*,
+        {
+            fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+                struct V<$param>(std::marker::PhantomData<$param>);
+
+                impl<'de, $param> Visitor<'de> for V<$param>
+                where
+                    $param: Deserialize<'de> $(+ $bound)*,
+                {
+                    type Value = $name<$param>;
+
+                    fn expecting(&self, formatter: &mut Formatter) -> std::fmt::Result {
+                        formatter.write_str($expecting)
+                    }
+
+                    fn visit_str<E: serde::de::Error>(self, value: &str) -> Result<Self::Value, E> {
+                        <$plain as Deserialize>::deserialize(StrDeserializer::new(value)).map($name::Plain)
+                    }
+
+                    fn visit_map<M: MapAccess<'de>>(self, map: M) -> Result<Self::Value, M::Error> {
+                        <$with_options as Deserialize>::deserialize(MapAccessDeserializer::new(
+                            map,
+                        ))
+                        .map($name::WithOptions)
+                    }
+                }
+
+                deserializer.deserialize_any(V(std::marker::PhantomData))
+            }
+        }
+    };
+}
+
+impl_deserialize_severity_or_object!(
+    RuleConfiguration<T>,
+    [Default, Merge],
+    RulePlainConfiguration,
+    RuleWithOptions<T>,
+    "a severity or a rule configuration object"
+);
+impl_deserialize_severity_or_object!(
+    RuleFixConfiguration<T>,
+    [Default, Merge],
+    RulePlainConfiguration,
+    RuleWithFixOptions<T>,
+    "a severity or a rule configuration object"
+);
+impl_deserialize_severity_or_object!(
+    RuleAssistConfiguration<T>,
+    [Default],
+    RuleAssistPlainConfiguration,
+    RuleAssistWithOptions<T>,
+    "a severity or an assist configuration object"
+);
+
+impl<'de, G: Deserialize<'de>> Deserialize<'de> for SeverityOrGroup<G> {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        struct V<G>(std::marker::PhantomData<G>);
+
+        impl<'de, G: Deserialize<'de>> Visitor<'de> for V<G> {
+            type Value = SeverityOrGroup<G>;
+
+            fn expecting(&self, formatter: &mut Formatter) -> std::fmt::Result {
+                formatter.write_str("a severity or a group configuration object")
+            }
+
+            fn visit_str<E: serde::de::Error>(self, value: &str) -> Result<Self::Value, E> {
+                <GroupPlainConfiguration as Deserialize>::deserialize(StrDeserializer::new(value))
+                    .map(SeverityOrGroup::Plain)
+            }
+
+            fn visit_map<M: MapAccess<'de>>(self, map: M) -> Result<Self::Value, M::Error> {
+                <G as Deserialize>::deserialize(MapAccessDeserializer::new(map))
+                    .map(SeverityOrGroup::Group)
+            }
+        }
+
+        deserializer.deserialize_any(V(std::marker::PhantomData))
     }
 }
