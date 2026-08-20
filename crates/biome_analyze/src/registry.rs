@@ -1,13 +1,13 @@
 use crate::{
-    AddVisitor, AnalysisFilter, GroupCategory, QueryMatcher, Rule, RuleGroup, RuleKey,
-    RuleMetadata, ServiceBag, SignalEntry, Visitor,
-    context::RuleContext,
+    AddVisitor, AnalysisFilter, AnalyzerSignal, GroupCategory, QueryMatcher, Rule, RuleCategory,
+    RuleGroup, RuleKey, RuleMetadata, ServiceBag, SignalEntry, SignalRuleKey, Visitor,
+    context::{RuleContext, RuleContextEnv},
     matcher::{GroupKey, MatchQueryParams},
     query::{QueryKey, Queryable},
     signals::RuleSignal,
 };
 use biome_diagnostics::Error;
-use biome_rowan::{AstNode, Language, RawSyntaxKind, SyntaxKind, SyntaxNode};
+use biome_rowan::{AstNode, Language, RawSyntaxKind, SyntaxKind, SyntaxNode, TextRange};
 use rustc_hash::{FxHashMap, FxHashSet};
 use std::{
     any::TypeId,
@@ -387,6 +387,42 @@ impl<L: Language> RuleSuppressions<L> {
 /// Executor for rule as a generic function pointer
 type RuleExecutor<L> = fn(&mut MatchQueryParams<L>, &mut RuleState<L>) -> Result<(), Error>;
 
+/// Whether the queried node has been suppressed by an earlier signal of the
+/// same rule.
+///
+/// Only depends on the language, so it is kept out of the per-rule executor.
+fn is_suppressed<L: Language + 'static>(
+    params: &MatchQueryParams<L>,
+    state: &RuleState<L>,
+) -> bool {
+    params
+        .query
+        .downcast_ref::<SyntaxNode<L>>()
+        .is_some_and(|node| state.suppressions.inner.contains(node))
+}
+
+/// Queues a signal emitted by a rule.
+///
+/// Only depends on the language, so it is kept out of the per-rule executor;
+/// inlining it there would expand the heap insertion once per rule.
+#[inline(never)]
+fn push_signal<'phase, L: Language>(
+    params: &mut MatchQueryParams<'phase, '_, L>,
+    signal: Box<dyn AnalyzerSignal<L> + 'phase>,
+    rule: SignalRuleKey,
+    instances: Box<[Box<str>]>,
+    text_range: TextRange,
+    category: RuleCategory,
+) {
+    params.signal_queue.push(SignalEntry {
+        signal,
+        rule,
+        instances,
+        text_range,
+        category,
+    });
+}
+
 impl<L: Language + Default> RegistryRule<L> {
     fn new<R>(state_index: usize) -> Self
     where
@@ -400,9 +436,7 @@ impl<L: Language + Default> RegistryRule<L> {
         where
             R: Rule<Options: Default, Query: Queryable<Output: Clone>> + 'static,
         {
-            if let Some(node) = params.query.downcast_ref::<SyntaxNode<RuleLanguage<R>>>()
-                && state.suppressions.inner.contains(node)
-            {
+            if is_suppressed(params, state) {
                 return Ok(());
             }
 
@@ -410,29 +444,13 @@ impl<L: Language + Default> RegistryRule<L> {
             // if the query doesn't match
             let query_result = params.query.downcast_ref().unwrap();
             let query_result = <R::Query as Queryable>::unwrap_match(params.services, query_result);
-            let globals = params.options.globals();
-            let preferred_quote = params.options.preferred_quote();
-            let preferred_jsx_quote = params.options.preferred_jsx_quote();
-            let preferred_indentation = params.options.preferred_indentation();
-            let jsx_runtime = params.options.jsx_runtime();
-            let jsx_factory = params.options.jsx_factory();
-            let jsx_fragment_factory = params.options.jsx_fragment_factory();
             let options = params.options.rule_options::<R>().unwrap_or_default();
-            let working_directory = params.options.working_directory.as_deref();
             let ctx = RuleContext::new(
                 &query_result,
                 params.root,
                 params.services,
-                globals,
-                params.options.file_path.as_path(),
                 &options,
-                preferred_quote,
-                preferred_jsx_quote,
-                preferred_indentation,
-                jsx_runtime,
-                jsx_factory,
-                jsx_fragment_factory,
-                working_directory,
+                RuleContextEnv::from_options(params.options),
             )?;
 
             let rule_timer = crate::profiling::start_rule::<R>();
@@ -455,13 +473,14 @@ impl<L: Language + Default> RegistryRule<L> {
                     params.options,
                 ));
 
-                params.signal_queue.push(SignalEntry {
+                push_signal(
+                    params,
                     signal,
-                    rule: RuleKey::rule::<R>().into(),
+                    RuleKey::rule::<R>().into(),
                     instances,
                     text_range,
-                    category: <R::Group as RuleGroup>::Category::CATEGORY,
-                });
+                    <R::Group as RuleGroup>::Category::CATEGORY,
+                );
             }
 
             Ok(())

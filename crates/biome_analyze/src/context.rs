@@ -1,5 +1,7 @@
 use crate::options::{JsxRuntime, PreferredIndentation, PreferredQuote};
-use crate::{FromServices, Queryable, Rule, RuleKey, ServiceBag, registry::RuleRoot};
+use crate::{
+    AnalyzerOptions, FromServices, Queryable, Rule, RuleKey, ServiceBag, registry::RuleRoot,
+};
 use crate::{GroupCategory, RuleCategory, RuleGroup, RuleMetadata};
 use biome_diagnostics::{Error, Result};
 use camino::Utf8Path;
@@ -8,14 +10,15 @@ use std::ops::Deref;
 type RuleQueryResult<R> = <<R as Rule>::Query as Queryable>::Output;
 type RuleServiceBag<R> = <<R as Rule>::Query as Queryable>::Services;
 
-pub struct RuleContext<'a, R: Rule> {
-    query_result: &'a RuleQueryResult<R>,
-    root: &'a RuleRoot<R>,
-    bag: &'a ServiceBag,
-    services: RuleServiceBag<R>,
+/// The parts of a [RuleContext] that do not depend on the rule.
+///
+/// Bundling them keeps [RuleContext::new] down to a handful of arguments, so
+/// that reading them out of the [crate::AnalyzerOptions] is compiled once
+/// instead of once per rule.
+#[derive(Clone, Copy)]
+pub struct RuleContextEnv<'a> {
     globals: &'a [Box<str>],
     file_path: &'a Utf8Path,
-    options: &'a R::Options,
     preferred_quote: PreferredQuote,
     preferred_jsx_quote: PreferredQuote,
     preferred_indentation: PreferredIndentation,
@@ -25,25 +28,41 @@ pub struct RuleContext<'a, R: Rule> {
     working_directory: Option<&'a Utf8Path>,
 }
 
+impl<'a> RuleContextEnv<'a> {
+    pub fn from_options(options: &'a AnalyzerOptions) -> Self {
+        Self {
+            globals: options.globals(),
+            file_path: options.file_path.as_path(),
+            preferred_quote: options.preferred_quote(),
+            preferred_jsx_quote: options.preferred_jsx_quote(),
+            preferred_indentation: options.preferred_indentation(),
+            jsx_runtime: options.jsx_runtime(),
+            jsx_factory: options.jsx_factory(),
+            jsx_fragment_factory: options.jsx_fragment_factory(),
+            working_directory: options.working_directory.as_deref(),
+        }
+    }
+}
+
+pub struct RuleContext<'a, R: Rule> {
+    query_result: &'a RuleQueryResult<R>,
+    root: &'a RuleRoot<R>,
+    bag: &'a ServiceBag,
+    services: RuleServiceBag<R>,
+    options: &'a R::Options,
+    env: RuleContextEnv<'a>,
+}
+
 impl<'a, R> RuleContext<'a, R>
 where
     R: Rule + Sized + 'static,
 {
-    #[expect(clippy::too_many_arguments)]
     pub fn new(
         query_result: &'a RuleQueryResult<R>,
         root: &'a RuleRoot<R>,
         services: &'a ServiceBag,
-        globals: &'a [Box<str>],
-        file_path: &'a Utf8Path,
         options: &'a R::Options,
-        preferred_quote: PreferredQuote,
-        preferred_jsx_quote: PreferredQuote,
-        preferred_indentation: PreferredIndentation,
-        jsx_runtime: Option<JsxRuntime>,
-        jsx_factory: Option<&'a str>,
-        jsx_fragment_factory: Option<&'a str>,
-        working_directory: Option<&'a Utf8Path>,
+        env: RuleContextEnv<'a>,
     ) -> Result<Self, Error> {
         let rule_key = RuleKey::rule::<R>();
         Ok(Self {
@@ -51,16 +70,8 @@ where
             root,
             bag: services,
             services: FromServices::from_services(&rule_key, &R::METADATA, services)?,
-            globals,
-            file_path,
             options,
-            preferred_quote,
-            preferred_jsx_quote,
-            preferred_indentation,
-            jsx_runtime,
-            jsx_factory,
-            jsx_fragment_factory,
-            working_directory,
+            env,
         })
     }
 
@@ -158,22 +169,27 @@ where
 
     /// Returns the JSX runtime in use.
     pub fn jsx_runtime(&self) -> JsxRuntime {
-        self.jsx_runtime.expect("jsx_runtime should be provided")
+        self.env
+            .jsx_runtime
+            .expect("jsx_runtime should be provided")
     }
 
     /// Returns the JSX factory identifier (e.g., "h" or "React")
     pub fn jsx_factory(&self) -> Option<&str> {
-        self.jsx_factory
+        self.env.jsx_factory
     }
 
     /// Returns the JSX fragment factory identifier (e.g., "Fragment")
     pub fn jsx_fragment_factory(&self) -> Option<&str> {
-        self.jsx_fragment_factory
+        self.env.jsx_fragment_factory
     }
 
     /// Checks whether the provided text belongs to globals
     pub fn is_global(&self, text: &str) -> bool {
-        self.globals.iter().any(|global| global.as_ref() == text)
+        self.env
+            .globals
+            .iter()
+            .any(|global| global.as_ref() == text)
     }
 
     /// Returns the source type of the current file
@@ -185,26 +201,26 @@ where
 
     /// The file path of the current file
     pub fn file_path(&self) -> &Utf8Path {
-        self.file_path
+        self.env.file_path
     }
 
     pub fn working_directory(&self) -> Option<&Utf8Path> {
-        self.working_directory
+        self.env.working_directory
     }
 
     /// Returns the preferred quote that should be used when providing code actions
     pub fn preferred_quote(&self) -> PreferredQuote {
-        self.preferred_quote
+        self.env.preferred_quote
     }
 
     /// Returns the preferred JSX quote that should be used when providing code actions
     pub fn preferred_jsx_quote(&self) -> PreferredQuote {
-        self.preferred_jsx_quote
+        self.env.preferred_jsx_quote
     }
 
     /// Returns the preferred indentation style that should be when providing code actions.
     pub fn preferred_indentation(&self) -> PreferredIndentation {
-        self.preferred_indentation
+        self.env.preferred_indentation
     }
 
     /// Attempts to retrieve a service from the current context

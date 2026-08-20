@@ -6,7 +6,7 @@ use crate::{
     PluginActionData, Queryable, RuleCategory, RuleDiagnostic, RuleGroup, ServiceBag,
     SuppressionAction,
     categories::ActionCategory,
-    context::RuleContext,
+    context::{RuleContext, RuleContextEnv},
     registry::{RuleLanguage, RuleRoot},
     rule::{Rule, RuleAction, SuppressAction},
 };
@@ -512,25 +512,13 @@ where
     R: Rule<Options: Default> + 'static,
 {
     fn diagnostic(&self) -> Option<AnalyzerDiagnostic> {
-        let globals = self.options.globals();
-        let preferred_quote = self.options.preferred_quote();
-        let preferred_jsx_quote = self.options.preferred_jsx_quote();
-        let preferred_indentation = self.options.preferred_indentation();
         let options = self.options.rule_options::<R>().unwrap_or_default();
         let ctx = RuleContext::new(
             &self.query_result,
             self.root,
             self.services,
-            globals,
-            self.options.file_path.as_path(),
             &options,
-            preferred_quote,
-            preferred_jsx_quote,
-            preferred_indentation,
-            self.options.jsx_runtime(),
-            self.options.jsx_factory(),
-            self.options.jsx_fragment_factory(),
-            self.options.working_directory.as_deref(),
+            RuleContextEnv::from_options(self.options),
         )
         .ok()?;
 
@@ -545,8 +533,6 @@ where
     }
 
     fn actions(&self, filter: ActionFilter) -> AnalyzerActionIter<RuleLanguage<R>> {
-        let globals = self.options.globals();
-
         let configured_fix_kind = self.options.rule_fix_kind::<R>();
         // When fix is set to "none", disable the rule fix but still allow
         // suppression actions.
@@ -561,16 +547,8 @@ where
             &self.query_result,
             self.root,
             self.services,
-            globals,
-            self.options.file_path.as_path(),
             &options,
-            self.options.preferred_quote(),
-            self.options.preferred_jsx_quote(),
-            self.options.preferred_indentation(),
-            self.options.jsx_runtime(),
-            self.options.jsx_factory(),
-            self.options.jsx_fragment_factory(),
-            self.options.working_directory.as_deref(),
+            RuleContextEnv::from_options(self.options),
         )
         .ok();
         let mut actions = Vec::new();
@@ -631,22 +609,13 @@ where
     }
 
     fn transformations(&self) -> AnalyzerTransformationIter<RuleLanguage<R>> {
-        let globals = self.options.globals();
         let options = self.options.rule_options::<R>().unwrap_or_default();
         let ctx = RuleContext::new(
             &self.query_result,
             self.root,
             self.services,
-            globals,
-            self.options.file_path.as_path(),
             &options,
-            self.options.preferred_quote(),
-            self.options.preferred_jsx_quote(),
-            self.options.preferred_indentation(),
-            self.options.jsx_runtime(),
-            self.options.jsx_factory(),
-            self.options.jsx_fragment_factory(),
-            self.options.working_directory.as_deref(),
+            RuleContextEnv::from_options(self.options),
         )
         .ok();
         if let Some(ctx) = ctx {
