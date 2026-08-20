@@ -36,6 +36,7 @@ mod diagnostics;
 mod impls;
 pub mod json;
 mod merge;
+mod struct_support;
 mod validator;
 
 use biome_diagnostics::{Error, Severity};
@@ -46,6 +47,10 @@ pub use diagnostics::{
 pub use impls::*;
 pub use merge::Merge;
 use std::fmt::Debug;
+pub use struct_support::{
+    DeserializableFieldDeprecation, DeserializableStructField, UnknownKeyPolicy,
+    deserialize_struct_fields,
+};
 pub use validator::*;
 
 /// Implemented by data structures that can deserialize any [DeserializableValue].

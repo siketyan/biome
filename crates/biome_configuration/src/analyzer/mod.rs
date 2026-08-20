@@ -26,7 +26,7 @@ pub enum RuleConfiguration<T: Default + Merge> {
     Plain(RulePlainConfiguration),
     WithOptions(RuleWithOptions<T>),
 }
-impl<T: Default + Merge + Deserializable> Deserializable for RuleConfiguration<T> {
+impl<T: Default + Merge + Deserializable + 'static> Deserializable for RuleConfiguration<T> {
     fn deserialize(
         ctx: &mut dyn DeserializationContext,
         value: &impl DeserializableValue,
@@ -135,7 +135,7 @@ impl<T: Default + Merge> Default for RuleFixConfiguration<T> {
         Self::Plain(RulePlainConfiguration::Off)
     }
 }
-impl<T: Default + Merge + Deserializable> Deserializable for RuleFixConfiguration<T> {
+impl<T: Default + Merge + Deserializable + 'static> Deserializable for RuleFixConfiguration<T> {
     fn deserialize(
         ctx: &mut dyn DeserializationContext,
         value: &impl DeserializableValue,
@@ -303,7 +303,7 @@ pub enum RuleAssistConfiguration<T: Default> {
     Plain(RuleAssistPlainConfiguration),
     WithOptions(RuleAssistWithOptions<T>),
 }
-impl<T: Default + Deserializable> Deserializable for RuleAssistConfiguration<T> {
+impl<T: Default + Deserializable + 'static> Deserializable for RuleAssistConfiguration<T> {
     fn deserialize(
         ctx: &mut dyn DeserializationContext,
         value: &impl DeserializableValue,

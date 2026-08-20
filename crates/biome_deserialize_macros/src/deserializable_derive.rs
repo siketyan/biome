@@ -9,7 +9,7 @@ use crate::deserializable_derive::struct_field_attrs::StructFieldAttrs;
 use biome_string_case::Case;
 use proc_macro_error2::*;
 use proc_macro2::{Ident, TokenStream};
-use quote::{format_ident, quote};
+use quote::quote;
 use syn::{Data, GenericParam, Generics, Path};
 
 pub(crate) struct DeriveInput {
@@ -343,142 +343,114 @@ fn generate_deserializable_struct(
         .cloned()
         .collect();
 
-    let deserialize_fields: Vec<_> = data
+    assert!(
+        required_fields.len() <= 64,
+        "Deserializable derive supports at most 64 required fields"
+    );
+    let required_keys: Vec<_> = required_fields
+        .iter()
+        .map(|field_data| {
+            let key = &field_data.key;
+            quote! { #key }
+        })
+        .collect();
+
+    let tuple_type = generate_generics_tuple(&generics);
+    let trait_bounds = generate_trait_bounds(&generics);
+    let generics = generate_generics_without_trait_bounds(&generics);
+
+    let mut required_index = 0u8;
+    let field_entries: Vec<_> = data
         .fields
         .into_iter()
         .map(|field_data| {
             let is_required = field_data.required;
+            let bail_on_error = field_data.bail_on_error || is_required;
             let DeserializableFieldData {
                 ident: field_ident,
                 key,
                 ..
             } = field_data;
-            let mark_seen = if is_required {
-                let seen_ident = format_ident!("seen_{}", field_ident);
-                quote! { #seen_ident = true; }
-            } else {
-                quote! {}
-            };
-            let deprecation_notice = field_data.deprecated.map(|deprecated| match deprecated {
-                DeprecatedField::Message(message) => quote! {
-                    ctx.report(DeserializationDiagnostic::new_deprecated(
-                        key_text.text(),
-                        value.range()
-                    ).with_note(#message));
-                },
-                DeprecatedField::UseInstead(path) => quote! {
-                    ctx.report(DeserializationDiagnostic::new_deprecated_use_instead(
-                        &key_text,
-                        key.range(),
-                        #path,
-                    ));
-                },
-            });
 
+            let required_index_tokens = if is_required {
+                let index = required_index;
+                required_index += 1;
+                quote! { Some(#index) }
+            } else {
+                quote! { None }
+            };
+            let deprecation = match field_data.deprecated {
+                Some(DeprecatedField::Message(message)) => quote! {
+                    Some(biome_deserialize::DeserializableFieldDeprecation::Message(#message))
+                },
+                Some(DeprecatedField::UseInstead(path)) => quote! {
+                    Some(biome_deserialize::DeserializableFieldDeprecation::UseInstead(#path))
+                },
+                None => quote! { None },
+            };
             let validate = field_data.validate.map(|path| {
                 quote! {
                     .filter(|v| #path(ctx, v, #key, value.range()))
                 }
             });
 
-            let error_result = if field_data.bail_on_error || field_data.required {
-                quote! { return None, }
-            } else {
-                quote! { {} }
-            };
-
             quote! {
-                #key => {
-                    #mark_seen
-                    match Deserializable::deserialize(ctx, &value, &key_text)#validate {
-                        Some(value) => {
-                            #deprecation_notice
-                            result.#field_ident = value;
+                biome_deserialize::DeserializableStructField {
+                    key: #key,
+                    bail_on_error: #bail_on_error,
+                    required_index: #required_index_tokens,
+                    deprecation: #deprecation,
+                    deserialize: |ctx, value, key_text, target| {
+                        let result: &mut #ident #generics = target
+                            .downcast_mut()
+                            .expect("field table used with another struct");
+                        match Deserializable::deserialize(ctx, value, key_text)#validate {
+                            Some(value) => {
+                                result.#field_ident = value;
+                                true
+                            }
+                            None => false,
                         }
-                        None => #error_result
-                    }
+                    },
                 }
             }
         })
         .collect();
 
-    let seen_declarations: Vec<_> = required_fields
-        .iter()
-        .map(|field_data| {
-            let seen_ident = format_ident!("seen_{}", field_data.ident);
-            quote! { let mut #seen_ident = false; }
-        })
-        .collect();
-    let validator = if required_fields.is_empty() {
-        quote! {}
-    } else {
-        let required_keys: Vec<_> = required_fields
-            .iter()
-            .map(|field_data| &field_data.key)
-            .collect();
-        let required_fields = required_fields.iter().map(|field_data| {
-            let DeserializableFieldData { ident, key, .. } = field_data;
-            let seen_ident = format_ident!("seen_{}", ident);
-            quote! {
-                if !#seen_ident {
-                    ctx.report(DeserializationDiagnostic::new_missing_key(
-                        #key,
-                        range,
-                        REQUIRED_KEYS,
-                    ))
-                }
-            }
-        });
-        quote! {
-            const REQUIRED_KEYS: &[&str] = &[#(#required_keys),*];
-            #(#required_fields)*
-        }
-    };
     let validator = if data.with_validator {
         quote! {
-            #validator
-            if !biome_deserialize::DeserializableValidator::validate(&mut result, ctx, name, range) {
-                return None;
-            }
+            Some(|ctx, target, name, range| {
+                let result: &mut #ident #generics = target
+                    .downcast_mut()
+                    .expect("field table used with another struct");
+                biome_deserialize::DeserializableValidator::validate(result, ctx, name, range)
+            })
         }
     } else {
-        validator
+        quote! { None }
     };
-    let unknown_key_handler = if let Some(rest_field) = data.rest_field {
+    let unknown_key_policy = if let Some(rest_field) = data.rest_field {
         quote! {
-            unknown_key => {
-                let key_text = Text::deserialize(ctx, &key, "")?;
-                if let Some(value) = Deserializable::deserialize(ctx, &value, key_text.text()) {
+            biome_deserialize::UnknownKeyPolicy::Rest(|ctx, key_text, value, target| {
+                let result: &mut #ident #generics = target
+                    .downcast_mut()
+                    .expect("field table used with another struct");
+                if let Some(value) = Deserializable::deserialize(ctx, value, key_text.text()) {
                     std::iter::Extend::extend(&mut result.#rest_field, [(key_text, value)]);
                 }
-            }
+            })
         }
     } else {
         match data.unknown_fields {
-            UnknownFields::Warn | UnknownFields::Deny => {
-                let with_customseverity = if data.unknown_fields == UnknownFields::Warn {
-                    quote! { .with_custom_severity(biome_diagnostics::Severity::Warning) }
-                } else {
-                    quote! {}
-                };
-                quote! {
-                    unknown_key => {
-                        const ALLOWED_KEYS: &[&str] = &[#(#allowed_keys),*];
-                        ctx.report(DeserializationDiagnostic::new_unknown_key(
-                            unknown_key,
-                            key.range(),
-                            ALLOWED_KEYS,
-                        )#with_customseverity)
-                    }
-                }
-            }
-            UnknownFields::Allow => quote! { _ => {} },
+            UnknownFields::Deny => quote! {
+                biome_deserialize::UnknownKeyPolicy::Deny(&[#(#allowed_keys),*])
+            },
+            UnknownFields::Warn => quote! {
+                biome_deserialize::UnknownKeyPolicy::Warn(&[#(#allowed_keys),*])
+            },
+            UnknownFields::Allow => quote! { biome_deserialize::UnknownKeyPolicy::Allow },
         }
     };
-
-    let tuple_type = generate_generics_tuple(&generics);
-    let trait_bounds = generate_trait_bounds(&generics);
-    let generics = generate_generics_without_trait_bounds(&generics);
 
     quote! {
         impl #generics biome_deserialize::Deserializable for #ident #generics #trait_bounds {
@@ -501,20 +473,27 @@ fn generate_deserializable_struct(
                         range: biome_deserialize::TextRange,
                         name: &str,
                     ) -> Option<Self::Output> {
-                        use biome_deserialize::{Deserializable, DeserializationDiagnostic, Text};
+                        use biome_deserialize::Deserializable;
+                        const REQUIRED_KEYS: &[&str] = &[#(#required_keys),*];
+                        let fields: &[biome_deserialize::DeserializableStructField] = &[
+                            #(#field_entries),*
+                        ];
                         let mut result: Self::Output = Self::Output::default();
-                        #(#seen_declarations)*
-                        for (key, value) in members.flatten() {
-                            let Some(key_text) = Text::deserialize(ctx, &key, "") else {
-                                continue;
-                            };
-                            match key_text.text() {
-                                #(#deserialize_fields)*
-                                #unknown_key_handler
-                            }
+                        if biome_deserialize::deserialize_struct_fields(
+                            ctx,
+                            members,
+                            range,
+                            name,
+                            &mut result,
+                            fields,
+                            REQUIRED_KEYS,
+                            #unknown_key_policy,
+                            #validator,
+                        ) {
+                            Some(result)
+                        } else {
+                            None
                         }
-                        #validator
-                        Some(result)
                     }
                 }
 
@@ -628,10 +607,12 @@ fn generate_trait_bounds(generics: &Generics) -> TokenStream {
             GenericParam::Type(ty) => {
                 let ident = &ty.ident;
                 let bounds = &ty.bounds;
+                // `'static` is required by the `dyn Any` used in the
+                // field tables of derived structs.
                 if bounds.is_empty() {
-                    quote! { #ident: biome_deserialize::Deserializable }
+                    quote! { #ident: biome_deserialize::Deserializable + 'static }
                 } else {
-                    quote! { #ident: #bounds + biome_deserialize::Deserializable }
+                    quote! { #ident: #bounds + biome_deserialize::Deserializable + 'static }
                 }
             }
             _ => abort!(generics, "Unsupported generic parameter"),

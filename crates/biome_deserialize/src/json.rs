@@ -1,8 +1,9 @@
 //! Implementation of [DeserializableValue] for the JSON data format.
+#[cfg(feature = "serde")]
+use crate::DeserializationVisitor;
 use crate::{
     DefaultDeserializationContext, Deserializable, DeserializableValue, DeserializationContext,
-    DeserializationVisitor, Deserialized, ErasedDeserializationVisitor, TextNumber,
-    diagnostics::DeserializableType,
+    Deserialized, ErasedDeserializationVisitor, TextNumber, diagnostics::DeserializableType,
 };
 use biome_diagnostics::{DiagnosticExt, Error};
 use biome_json_parser::{JsonParserOptions, parse_json};
