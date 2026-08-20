@@ -465,6 +465,29 @@ impl<V: DeserializationVisitor> ErasedDeserializationVisitor for ErasedVisitor<V
 /// assert!(!deserialized.has_errors());
 /// assert_eq!(deserialized.into_deserialized(), Some(Union::Bool(true)));
 /// ```
+/// Reports that a value of `actual_type` was found where `expected_type` was
+/// expected.
+///
+/// This is the body of every defaulted [DeserializationVisitor] method. It is
+/// kept out of line so that the diagnostic — which is the same for every
+/// visitor — is built once instead of once per visitor type.
+#[cold]
+#[inline(never)]
+pub fn report_incorrect_type(
+    ctx: &mut dyn DeserializationContext,
+    actual_type: DeserializableType,
+    expected_type: DeserializableTypes,
+    name: &str,
+    range: TextRange,
+) {
+    ctx.report(DeserializationDiagnostic::new_incorrect_type_with_name(
+        actual_type,
+        expected_type,
+        name,
+        range,
+    ));
+}
+
 pub trait DeserializationVisitor: Sized {
     /// The type of the deserialized form of the visited value.
     type Output;
@@ -486,12 +509,13 @@ pub trait DeserializationVisitor: Sized {
             !Self::EXPECTED_TYPE.contains(DeserializableTypes::NULL),
             "This method should be implemented because the expected type is null."
         );
-        ctx.report(DeserializationDiagnostic::new_incorrect_type_with_name(
+        report_incorrect_type(
+            ctx,
             DeserializableType::Null,
             Self::EXPECTED_TYPE,
             name,
             range,
-        ));
+        );
         None
     }
 
@@ -510,12 +534,13 @@ pub trait DeserializationVisitor: Sized {
             !Self::EXPECTED_TYPE.contains(DeserializableTypes::BOOL),
             "This method should be implemented because the expected type is bool."
         );
-        ctx.report(DeserializationDiagnostic::new_incorrect_type_with_name(
+        report_incorrect_type(
+            ctx,
             DeserializableType::Bool,
             Self::EXPECTED_TYPE,
             name,
             range,
-        ));
+        );
         None
     }
 
@@ -535,12 +560,13 @@ pub trait DeserializationVisitor: Sized {
             !Self::EXPECTED_TYPE.contains(DeserializableTypes::NUMBER),
             "This method should be implemented because the expected type is number."
         );
-        ctx.report(DeserializationDiagnostic::new_incorrect_type_with_name(
+        report_incorrect_type(
+            ctx,
             DeserializableType::Number,
             Self::EXPECTED_TYPE,
             name,
             range,
-        ));
+        );
         None
     }
 
@@ -559,12 +585,13 @@ pub trait DeserializationVisitor: Sized {
             !Self::EXPECTED_TYPE.contains(DeserializableTypes::STR),
             "This method should be implemented because the expected type is str."
         );
-        ctx.report(DeserializationDiagnostic::new_incorrect_type_with_name(
+        report_incorrect_type(
+            ctx,
             DeserializableType::Str,
             Self::EXPECTED_TYPE,
             name,
             range,
-        ));
+        );
         None
     }
 
@@ -583,12 +610,13 @@ pub trait DeserializationVisitor: Sized {
             !Self::EXPECTED_TYPE.contains(DeserializableTypes::ARRAY),
             "This method should be implemented because the expected type is array."
         );
-        ctx.report(DeserializationDiagnostic::new_incorrect_type_with_name(
+        report_incorrect_type(
+            ctx,
             DeserializableType::Array,
             Self::EXPECTED_TYPE,
             name,
             range,
-        ));
+        );
         None
     }
 
@@ -607,12 +635,13 @@ pub trait DeserializationVisitor: Sized {
             !Self::EXPECTED_TYPE.contains(DeserializableTypes::MAP),
             "This method should be implemented because the expected type is map."
         );
-        ctx.report(DeserializationDiagnostic::new_incorrect_type_with_name(
+        report_incorrect_type(
+            ctx,
             DeserializableType::Map,
             Self::EXPECTED_TYPE,
             name,
             range,
-        ));
+        );
         None
     }
 }
