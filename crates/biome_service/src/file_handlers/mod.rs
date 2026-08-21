@@ -54,7 +54,8 @@ use biome_analyze::options::JsxRuntime;
 use biome_analyze::{
     ActionFilter, AnalyzerAction, AnalyzerDiagnostic, AnalyzerOptions, AnalyzerPluginVec,
     AnalyzerSignal, ControlFlow, FixKind, GroupCategory, Never, PLUGIN_GROUP, Queryable,
-    RegistryVisitor, Rule, RuleCategories, RuleCategory, RuleError, RuleFilter, RuleGroup,
+    RegistryVisitor, Rule, RuleCategories, RuleCategory, RuleDomain, RuleError, RuleFilter,
+    RuleGroup,
 };
 use biome_configuration::Rules;
 use biome_configuration::analyzer::assist::Actions;
@@ -1556,12 +1557,16 @@ impl<'a, 'b> LintVisitor<'a, 'b> {
     /// Global recommended presets exclude rules with domains. A matching domain
     /// set to `all` enables the rule, `recommended` enables it only when the rule
     /// is recommended, and `none` disables it.
-    fn record_rule_from_domains<R, L>(&mut self, rule_filter: RuleFilter<'static>)
-    where
-        L: biome_rowan::Language,
-        R: Rule<Query: Queryable<Language = L, Output: Clone>> + 'static,
-    {
-        let group = <R::Group as RuleGroup>::NAME;
+    ///
+    /// Non-generic: the rule is passed as its group name and metadata fields,
+    /// so the body is compiled once instead of once per rule.
+    fn record_rule_from_domains(
+        &mut self,
+        group: &'static str,
+        recommended: bool,
+        rule_domains: &'static [RuleDomain],
+        rule_filter: RuleFilter<'static>,
+    ) {
         // Nursery rules must be enabled only when they are enabled from the group
         if group == "nursery" {
             return;
@@ -1571,7 +1576,7 @@ impl<'a, 'b> LintVisitor<'a, 'b> {
             return;
         }
 
-        for rule_domain in R::METADATA.domains {
+        for rule_domain in rule_domains {
             if let Some((configured_domain, configured_domain_value)) = self
                 .domains
                 .and_then(|domains| domains.get_key_value(rule_domain))
@@ -1586,7 +1591,7 @@ impl<'a, 'b> LintVisitor<'a, 'b> {
                         self.disabled_rules.insert(rule_filter);
                     }
                     RuleDomainValue::Recommended => {
-                        if R::METADATA.recommended {
+                        if recommended {
                             self.enabled_rules.insert(rule_filter);
                             self.globals.extend(
                                 configured_domain.globals().iter().copied().map(Into::into),
@@ -1611,19 +1616,26 @@ impl<'a, 'b> LintVisitor<'a, 'b> {
         (self.enabled_rules, self.disabled_rules, self.rules_with_fix)
     }
 
-    fn push_rule<R, L>(&mut self, rule_filter: Option<RuleFilter<'static>>)
-    where
-        R: Rule<Options: Default, Query: Queryable<Language = L, Output: Clone>> + 'static,
-        L: biome_rowan::Language,
-    {
-        let Some(rule_filter) = rule_filter.filter(|rule_filter| rule_filter.match_rule::<R>())
+    /// Non-generic: the rule is passed as its group name and metadata fields,
+    /// so the body is compiled once instead of once per rule.
+    fn push_rule(
+        &mut self,
+        group: &'static str,
+        rule_name: &'static str,
+        recommended: bool,
+        fix_kind: FixKind,
+        rule_domains: &'static [RuleDomain],
+        rule_filter: Option<RuleFilter<'static>>,
+    ) {
+        let Some(rule_filter) =
+            rule_filter.filter(|rule_filter| rule_filter.match_rule_name(group, rule_name))
         else {
             return;
         };
 
-        self.record_rule_from_domains::<R, L>(rule_filter);
+        self.record_rule_from_domains(group, recommended, rule_domains, rule_filter);
 
-        if R::METADATA.fix_kind != FixKind::None {
+        if fix_kind != FixKind::None {
             self.rules_with_fix.insert(rule_filter);
         }
     }
@@ -1645,7 +1657,12 @@ impl RegistryVisitor<JsLanguage> for LintVisitor<'_, '_> {
     where
         R: Rule<Options: Default, Query: Queryable<Language = JsLanguage, Output: Clone>> + 'static,
     {
-        self.push_rule::<R, <R::Query as Queryable>::Language>(
+        self.push_rule(
+            R::Group::NAME,
+            R::METADATA.name,
+            R::METADATA.recommended,
+            R::METADATA.fix_kind,
+            R::METADATA.domains,
             js_metadata
                 .find_rule(R::Group::NAME, R::METADATA.name)
                 .map(RuleFilter::from),
@@ -1668,7 +1685,12 @@ impl RegistryVisitor<JsonLanguage> for LintVisitor<'_, '_> {
         R: Rule<Options: Default, Query: Queryable<Language = JsonLanguage, Output: Clone>>
             + 'static,
     {
-        self.push_rule::<R, <R::Query as Queryable>::Language>(
+        self.push_rule(
+            R::Group::NAME,
+            R::METADATA.name,
+            R::METADATA.recommended,
+            R::METADATA.fix_kind,
+            R::METADATA.domains,
             json_metadata
                 .find_rule(R::Group::NAME, R::METADATA.name)
                 .map(RuleFilter::from),
@@ -1693,7 +1715,12 @@ impl RegistryVisitor<CssLanguage> for LintVisitor<'_, '_> {
         R: Rule<Options: Default, Query: Queryable<Language = CssLanguage, Output: Clone>>
             + 'static,
     {
-        self.push_rule::<R, <R::Query as Queryable>::Language>(
+        self.push_rule(
+            R::Group::NAME,
+            R::METADATA.name,
+            R::METADATA.recommended,
+            R::METADATA.fix_kind,
+            R::METADATA.domains,
             css_metadata
                 .find_rule(R::Group::NAME, R::METADATA.name)
                 .map(RuleFilter::from),
@@ -1718,7 +1745,12 @@ impl RegistryVisitor<GraphqlLanguage> for LintVisitor<'_, '_> {
         R: Rule<Options: Default, Query: Queryable<Language = GraphqlLanguage, Output: Clone>>
             + 'static,
     {
-        self.push_rule::<R, <R::Query as Queryable>::Language>(
+        self.push_rule(
+            R::Group::NAME,
+            R::METADATA.name,
+            R::METADATA.recommended,
+            R::METADATA.fix_kind,
+            R::METADATA.domains,
             graphql_metadata
                 .find_rule(R::Group::NAME, R::METADATA.name)
                 .map(RuleFilter::from),
@@ -1743,7 +1775,12 @@ impl RegistryVisitor<HtmlLanguage> for LintVisitor<'_, '_> {
         R: Rule<Options: Default, Query: Queryable<Language = HtmlLanguage, Output: Clone>>
             + 'static,
     {
-        self.push_rule::<R, <R::Query as Queryable>::Language>(
+        self.push_rule(
+            R::Group::NAME,
+            R::METADATA.name,
+            R::METADATA.recommended,
+            R::METADATA.fix_kind,
+            R::METADATA.domains,
             biome_html_analyze::METADATA
                 .find_rule(R::Group::NAME, R::METADATA.name)
                 .map(RuleFilter::from),
@@ -1854,23 +1891,27 @@ impl<'a> ManifestVisitor<'a> {
         }
     }
 
-    fn push_rule<R, L>(&mut self, rule_filter: Option<RuleFilter<'static>>)
-    where
-        R: Rule<Options: Default, Query: Queryable<Language = L, Output: Clone>> + 'static,
-        L: biome_rowan::Language,
-    {
-        let Some(rule_filter) = rule_filter.filter(|rule_filter| rule_filter.match_rule::<R>())
+    /// Non-generic: the rule is passed as its group name and metadata fields,
+    /// so the body is compiled once instead of once per rule.
+    fn push_rule(
+        &mut self,
+        group: &'static str,
+        rule_name: &'static str,
+        recommended: bool,
+        fix_kind: FixKind,
+        rule_domains: &'static [RuleDomain],
+        rule_filter: Option<RuleFilter<'static>>,
+    ) {
+        let Some(rule_filter) =
+            rule_filter.filter(|rule_filter| rule_filter.match_rule_name(group, rule_name))
         else {
             return;
         };
-        if <R::Group as RuleGroup>::NAME == "nursery"
-            || !R::METADATA.recommended
-            || !self.recommended_enabled
-        {
+        if group == "nursery" || !recommended || !self.recommended_enabled {
             return;
         }
 
-        for domain in R::METADATA.domains {
+        for domain in rule_domains {
             if self
                 .domains
                 .is_some_and(|domains| domains.contains_key(domain))
@@ -1883,7 +1924,7 @@ impl<'a> ManifestVisitor<'a> {
                 .any(|(dependency, range)| self.manifest.matches_dependency(dependency, range))
             {
                 self.enabled_rules.insert(rule_filter);
-                if R::METADATA.fix_kind != FixKind::None {
+                if fix_kind != FixKind::None {
                     self.fixable_rules.insert(rule_filter);
                 }
                 self.globals
@@ -1917,7 +1958,12 @@ impl RegistryVisitor<JsLanguage> for ManifestVisitor<'_> {
     where
         R: Rule<Options: Default, Query: Queryable<Language = JsLanguage, Output: Clone>> + 'static,
     {
-        self.push_rule::<R, <R::Query as Queryable>::Language>(
+        self.push_rule(
+            R::Group::NAME,
+            R::METADATA.name,
+            R::METADATA.recommended,
+            R::METADATA.fix_kind,
+            R::METADATA.domains,
             js_metadata
                 .find_rule(R::Group::NAME, R::METADATA.name)
                 .map(RuleFilter::from),
@@ -1941,7 +1987,12 @@ impl RegistryVisitor<JsonLanguage> for ManifestVisitor<'_> {
         R: Rule<Options: Default, Query: Queryable<Language = JsonLanguage, Output: Clone>>
             + 'static,
     {
-        self.push_rule::<R, <R::Query as Queryable>::Language>(
+        self.push_rule(
+            R::Group::NAME,
+            R::METADATA.name,
+            R::METADATA.recommended,
+            R::METADATA.fix_kind,
+            R::METADATA.domains,
             json_metadata
                 .find_rule(R::Group::NAME, R::METADATA.name)
                 .map(RuleFilter::from),
@@ -1966,7 +2017,12 @@ impl RegistryVisitor<CssLanguage> for ManifestVisitor<'_> {
         R: Rule<Options: Default, Query: Queryable<Language = CssLanguage, Output: Clone>>
             + 'static,
     {
-        self.push_rule::<R, <R::Query as Queryable>::Language>(
+        self.push_rule(
+            R::Group::NAME,
+            R::METADATA.name,
+            R::METADATA.recommended,
+            R::METADATA.fix_kind,
+            R::METADATA.domains,
             css_metadata
                 .find_rule(R::Group::NAME, R::METADATA.name)
                 .map(RuleFilter::from),
@@ -1991,7 +2047,12 @@ impl RegistryVisitor<GraphqlLanguage> for ManifestVisitor<'_> {
         R: Rule<Options: Default, Query: Queryable<Language = GraphqlLanguage, Output: Clone>>
             + 'static,
     {
-        self.push_rule::<R, <R::Query as Queryable>::Language>(
+        self.push_rule(
+            R::Group::NAME,
+            R::METADATA.name,
+            R::METADATA.recommended,
+            R::METADATA.fix_kind,
+            R::METADATA.domains,
             graphql_metadata
                 .find_rule(R::Group::NAME, R::METADATA.name)
                 .map(RuleFilter::from),
@@ -2016,7 +2077,12 @@ impl RegistryVisitor<HtmlLanguage> for ManifestVisitor<'_> {
         R: Rule<Options: Default, Query: Queryable<Language = HtmlLanguage, Output: Clone>>
             + 'static,
     {
-        self.push_rule::<R, <R::Query as Queryable>::Language>(
+        self.push_rule(
+            R::Group::NAME,
+            R::METADATA.name,
+            R::METADATA.recommended,
+            R::METADATA.fix_kind,
+            R::METADATA.domains,
             biome_html_analyze::METADATA
                 .find_rule(R::Group::NAME, R::METADATA.name)
                 .map(RuleFilter::from),
@@ -2043,20 +2109,22 @@ impl<'a, 'b> AssistsVisitor<'a, 'b> {
         }
     }
 
-    pub(crate) fn push_rule<R, L>(&mut self)
-    where
-        R: Rule<Options: Default, Query: Queryable<Language = L, Output: Clone>> + 'static,
-    {
+    /// Non-generic: the rule is passed as its group name and metadata fields,
+    /// so the body is compiled once instead of once per rule.
+    pub(crate) fn push_rule(
+        &mut self,
+        group: &'static str,
+        rule_name: &'static str,
+        fix_kind: FixKind,
+    ) {
         // We deem refactors **safe**, other assists aren't safe
-        if R::Group::NAME != "source" {
+        if group != "source" {
             return;
         }
 
-        if R::METADATA.fix_kind != FixKind::None {
-            self.rules_with_fix.insert(RuleFilter::Rule(
-                <R::Group as RuleGroup>::NAME,
-                R::METADATA.name,
-            ));
+        if fix_kind != FixKind::None {
+            self.rules_with_fix
+                .insert(RuleFilter::Rule(group, rule_name));
         }
     }
 
@@ -2086,7 +2154,7 @@ impl RegistryVisitor<JsLanguage> for AssistsVisitor<'_, '_> {
     where
         R: Rule<Options: Default, Query: Queryable<Language = JsLanguage, Output: Clone>> + 'static,
     {
-        self.push_rule::<R, <R::Query as Queryable>::Language>();
+        self.push_rule(R::Group::NAME, R::METADATA.name, R::METADATA.fix_kind);
     }
 }
 
@@ -2102,7 +2170,7 @@ impl RegistryVisitor<JsonLanguage> for AssistsVisitor<'_, '_> {
         R: Rule<Options: Default, Query: Queryable<Language = JsonLanguage, Output: Clone>>
             + 'static,
     {
-        self.push_rule::<R, <R::Query as Queryable>::Language>();
+        self.push_rule(R::Group::NAME, R::METADATA.name, R::METADATA.fix_kind);
     }
 }
 
@@ -2119,7 +2187,7 @@ impl RegistryVisitor<CssLanguage> for AssistsVisitor<'_, '_> {
         R: Rule<Options: Default, Query: Queryable<Language = CssLanguage, Output: Clone>>
             + 'static,
     {
-        self.push_rule::<R, <R::Query as Queryable>::Language>();
+        self.push_rule(R::Group::NAME, R::METADATA.name, R::METADATA.fix_kind);
     }
 }
 
@@ -2136,7 +2204,7 @@ impl RegistryVisitor<GraphqlLanguage> for AssistsVisitor<'_, '_> {
         R: Rule<Options: Default, Query: Queryable<Language = GraphqlLanguage, Output: Clone>>
             + 'static,
     {
-        self.push_rule::<R, <R::Query as Queryable>::Language>();
+        self.push_rule(R::Group::NAME, R::METADATA.name, R::METADATA.fix_kind);
     }
 }
 
@@ -2153,7 +2221,7 @@ impl RegistryVisitor<HtmlLanguage> for AssistsVisitor<'_, '_> {
         R: Rule<Options: Default, Query: Queryable<Language = HtmlLanguage, Output: Clone>>
             + 'static,
     {
-        self.push_rule::<R, <R::Query as Queryable>::Language>();
+        self.push_rule(R::Group::NAME, R::METADATA.name, R::METADATA.fix_kind);
     }
 }
 

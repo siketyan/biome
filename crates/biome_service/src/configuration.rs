@@ -1007,7 +1007,11 @@ impl RegistryVisitor<MarkdownLanguage> for ProjectScanComputer<'_> {
         R: Rule<Options: Default, Query: Queryable<Language = MarkdownLanguage, Output: Clone>>
             + 'static,
     {
-        self.check_rule::<R, MarkdownLanguage>();
+        self.check_rule(
+            <R::Group as RuleGroup>::NAME,
+            R::METADATA.name,
+            R::METADATA.domains,
+        );
     }
 }
 #[cfg(test)]
