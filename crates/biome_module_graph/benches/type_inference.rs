@@ -234,6 +234,28 @@ fn bench_cyclic_declaration_promise_lookup(bencher: Bencher) {
         });
 }
 
+#[divan::bench(name = "bench_expression_lookup_behind_import_cycle")]
+fn bench_expression_lookup_behind_import_cycle(bencher: Bencher) {
+    let (db, module, range) = import_cycle_expression_lookup_input();
+    let input = ExpressionTypeInput::new(&db, module, range);
+    let ty = infer_expression_type(&db, input).expect("expression must have a type");
+    let ty = normalize_type(&db, NormalizeTypeInput::new(&db, module, ty));
+    assert!(
+        ty == InferredTypeData::String,
+        "member reached through the import cycle must be a string, got {ty:?}"
+    );
+
+    bencher
+        .with_inputs(import_cycle_expression_lookup_input)
+        .bench_local_values(|(db, module, range)| {
+            let input = ExpressionTypeInput::new(&db, module, range);
+            let ty = infer_expression_type(&db, input).expect("expression must have a type");
+            let input = NormalizeTypeInput::new(&db, module, ty);
+            divan::black_box(normalize_type(&db, input));
+            db
+        });
+}
+
 #[divan::bench(name = "bench_distinct_local_type_lookup_queries")]
 fn bench_distinct_local_type_lookup_queries(bencher: Bencher) {
     bencher
@@ -652,6 +674,101 @@ fn cyclic_declaration_promise_lookup_input() -> (WorkspaceDb, ModuleInfo, TextRa
                 == Some("load().then(() => {})")
         })
         .expect("Promise chain must be collected");
+    (db, consumer, range)
+}
+
+const IMPORT_CYCLE_MODULE_COUNT: usize = 16;
+
+/// Builds a package-like layout in which declaration files import each other.
+///
+/// Every `node{i}.ts` refers to two other modules through namespace imports,
+/// so all of them form one import cycle, while none of the declarations
+/// depends on itself. `index.ts` re-exports each module as a namespace and
+/// `consumer.ts` reaches a member through that index from outside the cycle,
+/// which mirrors how packages such as Zod expose their types.
+fn import_cycle_expression_lookup_input() -> (WorkspaceDb, ModuleInfo, TextRange) {
+    const CONSUMER_SOURCE: &str = r#"
+        import { node0 } from "./lib/index.ts";
+        node0.make0("value").next().skip().value;
+    "#;
+
+    let fs = MemoryFileSystem::default();
+    let mut index = String::new();
+    for i in 0..IMPORT_CYCLE_MODULE_COUNT {
+        let next = (i + 1) % IMPORT_CYCLE_MODULE_COUNT;
+        let skip = (i + 3) % IMPORT_CYCLE_MODULE_COUNT;
+        fs.insert(
+            format!("/src/lib/node{i}.ts").into(),
+            format!(
+                r#"
+                import * as next from "./node{next}.ts";
+                import * as skip from "./node{skip}.ts";
+                export interface Node{i} {{
+                    value: string;
+                    next(): next.Node{next};
+                    skip(): skip.Node{skip};
+                }}
+                export declare function make{i}(value: string): Node{i};
+                export const shared{i} = {{
+                    next: next.make{next}("a"),
+                    skip: skip.make{skip}("b"),
+                }};
+                "#
+            ),
+        );
+        index.push_str(&format!("export * as node{i} from \"./node{i}.ts\";\n"));
+    }
+    fs.insert("/src/lib/index.ts".into(), index);
+    fs.insert("/src/consumer.ts".into(), CONSUMER_SOURCE);
+
+    let db = WorkspaceDb::default();
+    let path_info_cache = PathInfoCache::default();
+    let mut consumer = None;
+    let paths = (0..IMPORT_CYCLE_MODULE_COUNT)
+        .map(|i| format!("/src/lib/node{i}.ts"))
+        .chain([
+            "/src/lib/index.ts".to_string(),
+            "/src/consumer.ts".to_string(),
+        ]);
+    for name in paths {
+        let path = BiomePath::new(&name);
+        let root = get_js_root(&fs, &path);
+        let semantic_model = Arc::new(semantic_model(&root, SemanticModelOptions::default()));
+        let (module_info, _, _) = resolve_js_module_with_inference_mode(
+            root,
+            &path,
+            &fs,
+            &ProjectLayout::default(),
+            semantic_model,
+            &path_info_cache,
+            TypeInferenceMode::RawTypesOnly,
+        );
+        let module = ModuleInfo::new(
+            &db,
+            path.as_path().to_path_buf(),
+            ModuleInfoKind::Js(module_info),
+        );
+        db.modules
+            .pin()
+            .insert(path.as_path().to_path_buf(), module);
+        if name == "/src/consumer.ts" {
+            consumer = Some(module);
+        }
+    }
+
+    let consumer = consumer.expect("consumer module must exist");
+    let ModuleInfoKind::Js(info) = consumer.kind(&db) else {
+        panic!("consumer module must contain JavaScript information");
+    };
+    let range = info
+        .raw_expressions
+        .keys()
+        .copied()
+        .find(|range| {
+            CONSUMER_SOURCE.get(usize::from(range.start())..usize::from(range.end()))
+                == Some(r#"node0.make0("value").next().skip().value"#)
+        })
+        .expect("member expression must be collected");
     (db, consumer, range)
 }
 
