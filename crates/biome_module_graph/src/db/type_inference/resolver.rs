@@ -211,7 +211,12 @@ pub(in crate::db) struct ResolutionCtx<'db, 'a> {
     pub(in crate::db::type_inference) resolved: FxHashMap<TypeId, InferredTypeData<'db>>,
     pub(in crate::db::type_inference) in_progress: FxHashSet<TypeId>,
     pub(in crate::db::type_inference) resolution_depth: Cell<usize>,
-    encountered_inference_cycle: Rc<Cell<bool>>,
+    encountered_inference_cycle: Cell<bool>,
+    /// The cycle flag of the root context this context was derived from.
+    ///
+    /// A nested context reports cycles to its root so the root lookup can
+    /// decide whether to retry with a declaration evaluator.
+    root_inference_cycle: Option<&'a Cell<bool>>,
     on_demand_declarations: Option<SharedOnDemandDeclarationEvaluator<'db>>,
 }
 
@@ -293,7 +298,7 @@ impl<'db, 'a> ResolutionCtx<'db, 'a> {
         js_info: &'a JsModuleInfo,
         import_resolution: ImportResolution<'a>,
         on_demand_declarations: Option<SharedOnDemandDeclarationEvaluator<'db>>,
-        encountered_inference_cycle: Option<Rc<Cell<bool>>>,
+        root_inference_cycle: Option<&'a Cell<bool>>,
     ) -> Self {
         Self {
             db,
@@ -304,7 +309,8 @@ impl<'db, 'a> ResolutionCtx<'db, 'a> {
             resolved: FxHashMap::default(),
             in_progress: FxHashSet::default(),
             resolution_depth: Cell::new(0),
-            encountered_inference_cycle: encountered_inference_cycle.unwrap_or_default(),
+            encountered_inference_cycle: Cell::new(false),
+            root_inference_cycle,
             on_demand_declarations,
         }
     }
@@ -342,19 +348,25 @@ impl<'db, 'a> ResolutionCtx<'db, 'a> {
     /// active, and reports inference cycles to the same root. A context
     /// without an evaluator never creates one here: the root lookup decides
     /// whether a retry with a declaration graph is needed.
-    pub(super) fn for_on_demand_import<'info>(
-        &self,
+    pub(super) fn for_on_demand_import<'s, 'info>(
+        &'s self,
         module: ModuleInfo,
         js_info: &'info JsModuleInfo,
         remaining: u8,
-    ) -> ResolutionCtx<'db, 'info> {
+    ) -> ResolutionCtx<'db, 'info>
+    where
+        's: 'info,
+    {
+        let root_inference_cycle = self
+            .root_inference_cycle
+            .unwrap_or(&self.encountered_inference_cycle);
         ResolutionCtx::new_with_declarations(
             self.db,
             module,
             js_info,
             ImportResolution::OnDemand { remaining },
             self.on_demand_declarations.clone(),
-            Some(Rc::clone(&self.encountered_inference_cycle)),
+            Some(root_inference_cycle),
         )
     }
 
@@ -690,6 +702,9 @@ impl<'db, 'a> ResolutionCtx<'db, 'a> {
 
     pub(super) fn mark_inference_cycle(&self) {
         self.encountered_inference_cycle.set(true);
+        if let Some(root) = self.root_inference_cycle {
+            root.set(true);
+        }
     }
 
     /// Infers `module` as a dependency of the module currently being resolved.
