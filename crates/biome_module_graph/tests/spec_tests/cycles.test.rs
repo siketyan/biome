@@ -1,7 +1,7 @@
 use super::*;
 use biome_module_graph::{
     BindingTypeInput, ExpressionTypeInput, LocalTypeInput, find_member_type, infer_binding_type,
-    infer_expression_type, infer_local_type,
+    infer_expression_type, infer_local_type, infer_module_types,
 };
 
 fn unwrap_typeof_values<'db>(
@@ -931,5 +931,48 @@ fn test_expression_query_resolves_a_namespace_reexport_member_behind_a_foreign_i
     assert!(
         is_inferred_number(&db, ty),
         "namespace member behind a foreign import cycle must be numeric, got {ty:?}"
+    );
+}
+
+#[test]
+fn test_module_types_preserve_acyclic_declarations_in_an_import_cycle() {
+    let fs = MemoryFileSystem::default();
+    fs.insert(
+        "/src/a.ts".into(),
+        r#"
+            import { b, wrapper } from "./b.ts";
+            export const stable = 1;
+            export const a = b;
+            export const outer = wrapper;
+        "#,
+    );
+    fs.insert(
+        "/src/b.ts".into(),
+        r#"
+            import { a, stable } from "./a.ts";
+            export const b = { a, stable };
+            export const wrapper = { cyclic: a, stable };
+        "#,
+    );
+
+    let db = build_js_test_module_db(&fs, &["/src/a.ts", "/src/b.ts"], true);
+    let a_module = db
+        .module_for_path(Utf8Path::new("/src/a.ts"))
+        .expect("a module must exist");
+    let inferred = infer_module_types(&db, a_module).expect("types must be inferred");
+
+    let cyclic = inferred_binding_ty_by_name(&db, a_module, inferred, "a")
+        .expect("cyclic binding type must be inferred");
+    assert_eq!(unwrap_typeof_values(&db, cyclic), InferredTypeData::Unknown);
+
+    let outer = inferred_binding_ty_by_name(&db, a_module, inferred, "outer")
+        .expect("outer binding type must be inferred");
+    let outer = unwrap_typeof_values(&db, outer);
+    let outer_stable =
+        find_member_type(&db, outer, "stable").expect("outer stable member must be inferred");
+    let outer_stable = unwrap_typeof_values(&db, outer_stable);
+    assert!(
+        is_inferred_number(&db, outer_stable),
+        "acyclic declaration reached through the module's own import cycle must be numeric, got {outer_stable:?}"
     );
 }

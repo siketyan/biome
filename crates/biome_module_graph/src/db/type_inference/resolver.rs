@@ -227,7 +227,23 @@ pub(in crate::db) fn resolve_raw_types<'db>(
     import_resolution: ImportResolution<'_>,
 ) -> InferredModuleTypes<'db> {
     let mut ctx = ResolutionCtx::new(db, module, js_info, import_resolution);
+    let types = resolve_all_raw_types(&mut ctx);
+    if !ctx.encountered_inference_cycle()
+        || !matches!(import_resolution, ImportResolution::OnDemand { .. })
+    {
+        return types;
+    }
 
+    // The module imports from its own import component. Complete-module
+    // inference has no tracked-query root to retry it, so it retries here
+    // with one declaration evaluator shared by every entry of the module.
+    let mut ctx =
+        ResolutionCtx::new_with_declaration_evaluator(db, module, js_info, import_resolution);
+    resolve_all_raw_types(&mut ctx)
+}
+
+fn resolve_all_raw_types<'db>(ctx: &mut ResolutionCtx<'db, '_>) -> InferredModuleTypes<'db> {
+    let js_info = ctx.js_info;
     let types = (0..js_info.raw_types.len())
         .map(|index| ctx.resolve_raw_type_id(TypeId::new(index)))
         .collect();
@@ -736,6 +752,17 @@ impl<'db, 'a> ResolutionCtx<'db, 'a> {
         }
     }
 
+    /// Reports whether the current pass will be discarded.
+    ///
+    /// An on-demand pass without a declaration evaluator is retried by its
+    /// root once it reports an import cycle, so any further resolution in
+    /// that pass is wasted work.
+    fn is_discarded_pass(&self) -> bool {
+        self.on_demand_declarations.is_none()
+            && matches!(self.import_resolution, ImportResolution::OnDemand { .. })
+            && self.encountered_inference_cycle()
+    }
+
     /// Converts a raw type reference to an inferred type.
     ///
     /// Recursive conversion is limited to 64 active calls shared by resolved
@@ -745,7 +772,7 @@ impl<'db, 'a> ResolutionCtx<'db, 'a> {
     /// avoid this recursion by resolving to symbolic local handles.
     pub(in crate::db) fn resolve(&mut self, reference: &TypeReference) -> InferredTypeData<'db> {
         let resolution_depth = self.resolution_depth.get();
-        if resolution_depth >= MAX_RAW_TYPE_RESOLUTION_DEPTH {
+        if resolution_depth >= MAX_RAW_TYPE_RESOLUTION_DEPTH || self.is_discarded_pass() {
             return InferredTypeData::Unknown;
         }
 
@@ -790,6 +817,9 @@ impl<'db, 'a> ResolutionCtx<'db, 'a> {
     pub(in crate::db) fn resolve_raw_type_id(&mut self, type_id: TypeId) -> InferredTypeData<'db> {
         if let Some(ty) = self.resolved.get(&type_id) {
             return *ty;
+        }
+        if self.is_discarded_pass() {
+            return InferredTypeData::Unknown;
         }
 
         if !self.in_progress.insert(type_id) {
