@@ -30,6 +30,8 @@ import "#internal";
 // import from `@types/jest`
 import type * as jest from "lodash";
 
+import * as vscode from "vscode";
+
 import "bun";
 
 // NodeJS builtin
