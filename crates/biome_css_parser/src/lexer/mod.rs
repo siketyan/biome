@@ -393,11 +393,18 @@ impl<'src> CssLexer<'src> {
     /// width: ${width}px;
     /// border-${side}: none;
     /// ```
+    #[inline]
     fn metavariable_word_end(&self) -> Option<usize> {
         if self.metavariables.is_empty() {
             return None;
         }
 
+        self.scan_metavariable_word()
+    }
+
+    /// Scans the word that starts at the current position for a Grit
+    /// metavariable. See [Self::metavariable_word_end].
+    fn scan_metavariable_word(&self) -> Option<usize> {
         let source = self.source();
         let mut position = self.position();
         let mut has_metavariable = false;
