@@ -383,6 +383,52 @@ impl<'src> CssLexer<'src> {
         }
     }
 
+    /// Returns the end of the word that starts at the current position, if the
+    /// word contains a Grit metavariable.
+    ///
+    /// The whole word is a single metavariable, because the parts glued to the
+    /// metavariable belong to the same value or name:
+    ///
+    /// ```css
+    /// width: ${width}px;
+    /// border-${side}: none;
+    /// ```
+    fn metavariable_word_end(&self) -> Option<usize> {
+        if self.metavariables.is_empty() {
+            return None;
+        }
+
+        let source = self.source();
+        let mut position = self.position();
+        let mut has_metavariable = false;
+        loop {
+            let offset = TextSize::from(position as u32);
+            if let Ok(index) = self
+                .metavariables
+                .binary_search_by_key(&offset, |range| range.start())
+            {
+                position = self.metavariables[index].end().into();
+                has_metavariable = true;
+                continue;
+            }
+
+            match source.as_bytes().get(position) {
+                Some(byte)
+                    if byte.is_ascii_alphanumeric()
+                        || matches!(byte, b'_' | b'-' | b'%' | b'#') =>
+                {
+                    position += 1;
+                }
+                Some(byte) if !byte.is_ascii() => {
+                    position += source[position..].chars().next().map_or(1, char::len_utf8);
+                }
+                _ => break,
+            }
+        }
+
+        has_metavariable.then_some(position)
+    }
+
     pub(crate) fn with_source_type(self, source_type: CssFileSource) -> Self {
         Self {
             source_type,
@@ -487,8 +533,9 @@ impl<'src> CssLexer<'src> {
         // to do more aggressive optimizations on the match regarding how to map it to instructions
         let dispatched = lookup_byte(current);
 
-        if self.is_metavariable_start() {
-            return self.consume_metavariable(GRIT_METAVARIABLE);
+        if let Some(end) = self.metavariable_word_end() {
+            self.advance(end - self.position());
+            return GRIT_METAVARIABLE;
         }
 
         match dispatched {
