@@ -23,3 +23,7 @@ margin: -.5${unit};
 ${Item}.active {
 	color: red;
 }
+opacity: 0.${level};
+h1.${active} {
+	color: red;
+}

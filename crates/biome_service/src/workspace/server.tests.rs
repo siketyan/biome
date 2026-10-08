@@ -2921,6 +2921,7 @@ fn format_js_with_embedded_css_with_interpolations() {
     const FILE_CONTENT: &str = r#"const Button = styled.button`
   color:${ (props)=>props.color };
   width : ${({width})=>width}px;
+  opacity:0.${level};
   border-${side}:1px solid;
   ${truncate};
   ${base}   ${hover};
@@ -2987,6 +2988,7 @@ fn format_js_with_embedded_css_with_interpolations() {
     const Button = styled.button`
     	color: ${(props) => props.color};
     	width: ${({ width }) => width}px;
+    	opacity: 0.${level};
     	border-${side}: 1px solid;
     	${truncate};
     	${base} ${hover};

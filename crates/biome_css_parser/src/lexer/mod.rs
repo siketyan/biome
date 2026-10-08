@@ -422,8 +422,16 @@ impl<'src> CssLexer<'src> {
         }
 
         let source = self.source();
-        let mut position = self.position();
+        let start = self.position();
+        let mut position = start;
         let mut has_metavariable = false;
+        let is_integer = |text: &str| {
+            let digits = text.strip_prefix('-').unwrap_or(text);
+            !digits.is_empty()
+                && digits
+                    .bytes()
+                    .all(|byte| matches!(lookup_byte(byte), DIG | ZER))
+        };
         loop {
             if let Some(end) = self.metavariable_end_at(position) {
                 position = end;
@@ -438,12 +446,14 @@ impl<'src> CssLexer<'src> {
             match lookup_byte(byte) {
                 IDT | DIG | ZER | MIN | PRC | HAS => position += 1,
                 // A decimal point belongs to the number, such as in
-                // `1.5${unit}`, while a selector dot like in `${Item}.active`
-                // is a boundary.
+                // `1.5${unit}` or `0.${fraction}`, while a selector dot like in
+                // `${Item}.active` or `h1.${active}` is a boundary.
                 PRD if source
                     .as_bytes()
                     .get(position + 1)
-                    .is_some_and(|&next| matches!(lookup_byte(next), DIG | ZER)) =>
+                    .is_some_and(|&next| matches!(lookup_byte(next), DIG | ZER))
+                    || (self.metavariable_end_at(position + 1).is_some()
+                        && is_integer(&source[start..position])) =>
                 {
                     position += 1;
                 }
