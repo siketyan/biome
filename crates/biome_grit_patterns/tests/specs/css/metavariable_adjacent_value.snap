@@ -1,0 +1,20 @@
+---
+source: crates/biome_grit_patterns/tests/spec_tests.rs
+expression: metavariable_adjacent_value
+---
+SnapshotResult {
+    messages: [],
+    matched_ranges: [
+        "2:3-2:18",
+    ],
+    rewritten_files: [
+        OutputFile {
+            messages: [],
+            variables: [],
+            source_file: "tests/specs/css/metavariable_adjacent_value.css",
+            content: "a {\n  padding: red;\n  margin: 0;\n}\n",
+            byte_ranges: None,
+        },
+    ],
+    created_files: [],
+}

@@ -12,6 +12,7 @@ use biome_css_syntax::{
     scan_css_number,
 };
 use biome_languages::CssFileSource;
+use biome_languages::css::CssEmbeddingKind;
 use biome_parser::diagnostic::ParseDiagnostic;
 use biome_parser::lexer::{
     LexContext, Lexer, LexerCheckpoint, LexerWithCheckpoint, ReLexer, TokenFlags,
@@ -403,24 +404,29 @@ impl<'src> CssLexer<'src> {
     /// Returns the end of the word that starts at the current position, if the
     /// word contains a Grit metavariable.
     ///
-    /// The whole word is a single metavariable, because the parts glued to the
-    /// metavariable belong to the same value or name:
+    /// In a styled template, the whole word is a single metavariable, because
+    /// the interpolations are substituted as text glued to the text around them:
     ///
     /// ```css
     /// width: ${width}px;
     /// border-${side}: none;
     /// ```
+    ///
+    /// Elsewhere, such as in Grit snippets, a metavariable is a token on its own.
     fn metavariable_word_end(&self) -> Option<usize> {
+        if !matches!(
+            self.source_type.as_embedding_kind(),
+            CssEmbeddingKind::Styled
+        ) {
+            return self.metavariable_end_at(self.position());
+        }
+
         let source = self.source();
         let mut position = self.position();
         let mut has_metavariable = false;
         loop {
-            let offset = TextSize::from(position as u32);
-            if let Ok(index) = self
-                .metavariables
-                .binary_search_by_key(&offset, |range| range.start())
-            {
-                position = self.metavariables[index].end().into();
+            if let Some(end) = self.metavariable_end_at(position) {
+                position = end;
                 has_metavariable = true;
                 continue;
             }
@@ -440,6 +446,15 @@ impl<'src> CssLexer<'src> {
         }
 
         has_metavariable.then_some(position)
+    }
+
+    /// Returns the end of the Grit metavariable that starts at `position`.
+    fn metavariable_end_at(&self, position: usize) -> Option<usize> {
+        let position = TextSize::from(position as u32);
+        self.metavariables
+            .binary_search_by_key(&position, |range| range.start())
+            .ok()
+            .map(|index| self.metavariables[index].end().into())
     }
 
     pub(crate) fn with_source_type(self, source_type: CssFileSource) -> Self {
