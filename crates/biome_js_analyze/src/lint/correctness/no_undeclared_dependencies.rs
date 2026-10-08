@@ -63,6 +63,7 @@ declare_lint_rule! {
     /// ## Options
     ///
     /// This rule supports the following options:
+    /// - `ignore`: A list of package names to ignore.
     /// - `devDependencies`: If set to `false`, then the rule will show an error when `devDependencies` are imported. Defaults to `true`.
     /// - `peerDependencies`: If set to `false`, then the rule will show an error when `peerDependencies` are imported. Defaults to `true`.
     /// - `optionalDependencies`: If set to `false`, then the rule will show an error when `optionalDependencies` are imported. Defaults to `true`.
@@ -73,6 +74,7 @@ declare_lint_rule! {
     /// ```json,options
     /// {
     ///   "options": {
+    ///     "ignore": ["vscode"],
     ///     "devDependencies": false,
     ///     "peerDependencies": false,
     ///     "optionalDependencies": false,
@@ -183,6 +185,13 @@ impl Rule for NoUndeclaredDependencies {
 
         let import_text = node.inner_string_text()?;
         let package_name = parse_package_name(import_text.text())?;
+        if ctx.options().ignore.as_ref().is_some_and(|ignored| {
+            ignored
+                .iter()
+                .any(|ignored_package| ignored_package.as_ref() == package_name)
+        }) {
+            return None;
+        }
         if is_available(package_name)
             // Self package imports
             // TODO: we should also check that an `.` exports exists.
