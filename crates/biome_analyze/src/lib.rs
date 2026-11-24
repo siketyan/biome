@@ -1029,6 +1029,17 @@ impl<'analysis> AnalysisFilter<'analysis> {
             && self.match_rule_name(<R::Group as RuleGroup>::NAME, R::METADATA.name)
     }
 
+    /// Return `true` if the rule of the given category, group and name
+    /// matches this filter
+    pub(crate) fn match_rule_by_name(
+        &self,
+        category: RuleCategory,
+        group_name: &'static str,
+        rule_name: &'static str,
+    ) -> bool {
+        self.categories.contains(category) && self.match_rule_name(group_name, rule_name)
+    }
+
     fn match_rule_name(&self, group_name: &'static str, rule_name: &'static str) -> bool {
         self.enabled_rules.is_none_or(|enabled_rules| {
             enabled_rules

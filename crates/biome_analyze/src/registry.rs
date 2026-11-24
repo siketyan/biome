@@ -179,20 +179,56 @@ impl<L: Language + Default + 'static> RegistryVisitor<L> for RuleRegistryBuilder
     where
         R: Rule<Options: Default, Query: Queryable<Language = L, Output: Clone>> + 'static,
     {
-        if !self.filter.match_rule::<R>() || !self.execution_context.includes(R::execution_scope())
-        {
+        if !self.accepts_rule(
+            <R::Group as RuleGroup>::Category::CATEGORY,
+            <R::Group as RuleGroup>::NAME,
+            R::METADATA.name,
+            R::execution_scope(),
+        ) {
             return;
         }
 
-        let phase = R::phase() as usize;
-        let phase = &mut self.registry.phase_rules[phase];
-
-        phase.insert_rule(
+        self.insert_rule(
+            R::phase(),
             <R::Query as Queryable>::key(),
-            RegistryRule::new::<R>(phase.rule_states.len()),
+            RegistryRule::new::<R>,
         );
 
         <R::Query as Queryable>::build_visitor(&mut self.visitors, self.root);
+    }
+}
+
+impl<L: Language + Default + 'static> RuleRegistryBuilder<'_, L> {
+    /// Returns `true` if the filter and the execution context select the rule.
+    ///
+    /// It's never inlined, so it's compiled once per language instead of
+    /// once per rule.
+    #[inline(never)]
+    fn accepts_rule(
+        &self,
+        category: RuleCategory,
+        group_name: &'static str,
+        rule_name: &'static str,
+        execution_scope: crate::rule::RuleExecutionScope,
+    ) -> bool {
+        self.filter
+            .match_rule_by_name(category, group_name, rule_name)
+            && self.execution_context.includes(execution_scope)
+    }
+
+    /// Registers the rule built by `new_rule` from the index of its state.
+    ///
+    /// It's never inlined, so it's compiled once per language instead of
+    /// once per rule.
+    #[inline(never)]
+    fn insert_rule(
+        &mut self,
+        phase: Phases,
+        key: QueryKey<L>,
+        new_rule: fn(usize) -> RegistryRule<L>,
+    ) {
+        let phase = &mut self.registry.phase_rules[phase as usize];
+        phase.insert_rule(key, new_rule(phase.rule_states.len()));
     }
 }
 

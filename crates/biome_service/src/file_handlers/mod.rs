@@ -1875,12 +1875,12 @@ impl<'a, 'b> LintVisitor<'a, 'b> {
     /// set to `all` enables the rule, `recommended` enables it only when the rule
     /// is recommended, and `none` disables it unless another matching domain
     /// enables it.
-    fn record_rule_from_domains<R, L>(&mut self, rule_filter: RuleFilter<'static>)
-    where
-        L: biome_rowan::Language,
-        R: Rule<Query: Queryable<Language = L, Output: Clone>> + 'static,
-    {
-        let group = <R::Group as RuleGroup>::NAME;
+    fn record_rule_from_domains(
+        &mut self,
+        rule_filter: RuleFilter<'static>,
+        group: &'static str,
+        metadata: &'static biome_analyze::RuleMetadata,
+    ) {
         // Nursery rules must be enabled only when they are enabled from the group
         if group == "nursery" {
             return;
@@ -1892,7 +1892,7 @@ impl<'a, 'b> LintVisitor<'a, 'b> {
 
         let mut enabled = false;
         let mut disabled = false;
-        for rule_domain in R::METADATA.domains {
+        for rule_domain in metadata.domains {
             if let Some((configured_domain, configured_domain_value)) = self
                 .domains
                 .and_then(|domains| domains.get_key_value(rule_domain))
@@ -1907,7 +1907,7 @@ impl<'a, 'b> LintVisitor<'a, 'b> {
                         disabled = true;
                     }
                     RuleDomainValue::Recommended => {
-                        if R::METADATA.recommended {
+                        if metadata.recommended {
                             enabled = true;
                             self.globals.extend(
                                 configured_domain.globals().iter().copied().map(Into::into),
@@ -1945,19 +1945,28 @@ impl<'a, 'b> LintVisitor<'a, 'b> {
         (self.enabled_rules, self.disabled_rules, self.rules_with_fix)
     }
 
-    fn push_rule<R, L>(&mut self, rule_filter: Option<RuleFilter<'static>>)
-    where
-        R: Rule<Options: Default, Query: Queryable<Language = L, Output: Clone>> + 'static,
-        L: biome_rowan::Language,
-    {
-        let Some(rule_filter) = rule_filter.filter(|rule_filter| rule_filter.match_rule::<R>())
+    /// Records the rule described by `metadata`, which belongs to `group`.
+    ///
+    /// It's never inlined and doesn't depend on the type of the rule, so it's
+    /// compiled once instead of once per rule.
+    #[inline(never)]
+    fn push_rule(
+        &mut self,
+        registry: &biome_analyze::MetadataRegistry,
+        group: &'static str,
+        metadata: &'static biome_analyze::RuleMetadata,
+    ) {
+        let Some(rule_filter) = registry
+            .find_rule(group, metadata.name)
+            .map(RuleFilter::from)
+            .filter(|rule_filter| rule_filter.match_rule_name(group, metadata.name))
         else {
             return;
         };
 
-        self.record_rule_from_domains::<R, L>(rule_filter);
+        self.record_rule_from_domains(rule_filter, group, metadata);
 
-        if R::METADATA.fix_kind != FixKind::None {
+        if metadata.fix_kind != FixKind::None {
             self.rules_with_fix.insert(rule_filter);
         }
     }
@@ -1979,11 +1988,7 @@ impl RegistryVisitor<JsLanguage> for LintVisitor<'_, '_> {
     where
         R: Rule<Options: Default, Query: Queryable<Language = JsLanguage, Output: Clone>> + 'static,
     {
-        self.push_rule::<R, <R::Query as Queryable>::Language>(
-            js_metadata
-                .find_rule(R::Group::NAME, R::METADATA.name)
-                .map(RuleFilter::from),
-        )
+        self.push_rule(&js_metadata, <R::Group as RuleGroup>::NAME, &R::METADATA)
     }
 }
 impl RegistryVisitor<JsonLanguage> for LintVisitor<'_, '_> {
@@ -2002,11 +2007,7 @@ impl RegistryVisitor<JsonLanguage> for LintVisitor<'_, '_> {
         R: Rule<Options: Default, Query: Queryable<Language = JsonLanguage, Output: Clone>>
             + 'static,
     {
-        self.push_rule::<R, <R::Query as Queryable>::Language>(
-            json_metadata
-                .find_rule(R::Group::NAME, R::METADATA.name)
-                .map(RuleFilter::from),
-        )
+        self.push_rule(&json_metadata, <R::Group as RuleGroup>::NAME, &R::METADATA)
     }
 }
 
@@ -2027,11 +2028,7 @@ impl RegistryVisitor<CssLanguage> for LintVisitor<'_, '_> {
         R: Rule<Options: Default, Query: Queryable<Language = CssLanguage, Output: Clone>>
             + 'static,
     {
-        self.push_rule::<R, <R::Query as Queryable>::Language>(
-            css_metadata
-                .find_rule(R::Group::NAME, R::METADATA.name)
-                .map(RuleFilter::from),
-        )
+        self.push_rule(&css_metadata, <R::Group as RuleGroup>::NAME, &R::METADATA)
     }
 }
 
@@ -2052,10 +2049,10 @@ impl RegistryVisitor<GraphqlLanguage> for LintVisitor<'_, '_> {
         R: Rule<Options: Default, Query: Queryable<Language = GraphqlLanguage, Output: Clone>>
             + 'static,
     {
-        self.push_rule::<R, <R::Query as Queryable>::Language>(
-            graphql_metadata
-                .find_rule(R::Group::NAME, R::METADATA.name)
-                .map(RuleFilter::from),
+        self.push_rule(
+            &graphql_metadata,
+            <R::Group as RuleGroup>::NAME,
+            &R::METADATA,
         )
     }
 }
@@ -2077,10 +2074,10 @@ impl RegistryVisitor<HtmlLanguage> for LintVisitor<'_, '_> {
         R: Rule<Options: Default, Query: Queryable<Language = HtmlLanguage, Output: Clone>>
             + 'static,
     {
-        self.push_rule::<R, <R::Query as Queryable>::Language>(
-            biome_html_analyze::METADATA
-                .find_rule(R::Group::NAME, R::METADATA.name)
-                .map(RuleFilter::from),
+        self.push_rule(
+            &biome_html_analyze::METADATA,
+            <R::Group as RuleGroup>::NAME,
+            &R::METADATA,
         )
     }
 }
@@ -2188,23 +2185,29 @@ impl<'a> ManifestVisitor<'a> {
         }
     }
 
-    fn push_rule<R, L>(&mut self, rule_filter: Option<RuleFilter<'static>>)
-    where
-        R: Rule<Options: Default, Query: Queryable<Language = L, Output: Clone>> + 'static,
-        L: biome_rowan::Language,
-    {
-        let Some(rule_filter) = rule_filter.filter(|rule_filter| rule_filter.match_rule::<R>())
+    /// Records the rule described by `metadata`, which belongs to `group`.
+    ///
+    /// It's never inlined and doesn't depend on the type of the rule, so it's
+    /// compiled once instead of once per rule.
+    #[inline(never)]
+    fn push_rule(
+        &mut self,
+        registry: &biome_analyze::MetadataRegistry,
+        group: &'static str,
+        metadata: &'static biome_analyze::RuleMetadata,
+    ) {
+        let Some(rule_filter) = registry
+            .find_rule(group, metadata.name)
+            .map(RuleFilter::from)
+            .filter(|rule_filter| rule_filter.match_rule_name(group, metadata.name))
         else {
             return;
         };
-        if <R::Group as RuleGroup>::NAME == "nursery"
-            || !R::METADATA.recommended
-            || !self.recommended_enabled
-        {
+        if group == "nursery" || !metadata.recommended || !self.recommended_enabled {
             return;
         }
 
-        for domain in R::METADATA.domains {
+        for domain in metadata.domains {
             if self
                 .domains
                 .is_some_and(|domains| domains.contains_key(domain))
@@ -2217,7 +2220,7 @@ impl<'a> ManifestVisitor<'a> {
                 .any(|(dependency, range)| self.manifest.matches_dependency(dependency, range))
             {
                 self.enabled_rules.insert(rule_filter);
-                if R::METADATA.fix_kind != FixKind::None {
+                if metadata.fix_kind != FixKind::None {
                     self.fixable_rules.insert(rule_filter);
                 }
                 self.globals
@@ -2251,11 +2254,7 @@ impl RegistryVisitor<JsLanguage> for ManifestVisitor<'_> {
     where
         R: Rule<Options: Default, Query: Queryable<Language = JsLanguage, Output: Clone>> + 'static,
     {
-        self.push_rule::<R, <R::Query as Queryable>::Language>(
-            js_metadata
-                .find_rule(R::Group::NAME, R::METADATA.name)
-                .map(RuleFilter::from),
-        )
+        self.push_rule(&js_metadata, <R::Group as RuleGroup>::NAME, &R::METADATA)
     }
 }
 
@@ -2275,11 +2274,7 @@ impl RegistryVisitor<JsonLanguage> for ManifestVisitor<'_> {
         R: Rule<Options: Default, Query: Queryable<Language = JsonLanguage, Output: Clone>>
             + 'static,
     {
-        self.push_rule::<R, <R::Query as Queryable>::Language>(
-            json_metadata
-                .find_rule(R::Group::NAME, R::METADATA.name)
-                .map(RuleFilter::from),
-        )
+        self.push_rule(&json_metadata, <R::Group as RuleGroup>::NAME, &R::METADATA)
     }
 }
 
@@ -2300,11 +2295,7 @@ impl RegistryVisitor<CssLanguage> for ManifestVisitor<'_> {
         R: Rule<Options: Default, Query: Queryable<Language = CssLanguage, Output: Clone>>
             + 'static,
     {
-        self.push_rule::<R, <R::Query as Queryable>::Language>(
-            css_metadata
-                .find_rule(R::Group::NAME, R::METADATA.name)
-                .map(RuleFilter::from),
-        )
+        self.push_rule(&css_metadata, <R::Group as RuleGroup>::NAME, &R::METADATA)
     }
 }
 
@@ -2325,10 +2316,10 @@ impl RegistryVisitor<GraphqlLanguage> for ManifestVisitor<'_> {
         R: Rule<Options: Default, Query: Queryable<Language = GraphqlLanguage, Output: Clone>>
             + 'static,
     {
-        self.push_rule::<R, <R::Query as Queryable>::Language>(
-            graphql_metadata
-                .find_rule(R::Group::NAME, R::METADATA.name)
-                .map(RuleFilter::from),
+        self.push_rule(
+            &graphql_metadata,
+            <R::Group as RuleGroup>::NAME,
+            &R::METADATA,
         )
     }
 }
@@ -2350,10 +2341,10 @@ impl RegistryVisitor<HtmlLanguage> for ManifestVisitor<'_> {
         R: Rule<Options: Default, Query: Queryable<Language = HtmlLanguage, Output: Clone>>
             + 'static,
     {
-        self.push_rule::<R, <R::Query as Queryable>::Language>(
-            biome_html_analyze::METADATA
-                .find_rule(R::Group::NAME, R::METADATA.name)
-                .map(RuleFilter::from),
+        self.push_rule(
+            &biome_html_analyze::METADATA,
+            <R::Group as RuleGroup>::NAME,
+            &R::METADATA,
         )
     }
 }
