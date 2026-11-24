@@ -1915,12 +1915,10 @@ mod tests {
         let configuration = Configuration {
             linter: Some(LinterConfiguration {
                 rules: Some(Rules {
-                    correctness: Some(SeverityOrGroup::Group(Correctness {
-                        no_private_imports: Some(RuleConfiguration::Plain(
-                            RulePlainConfiguration::Error,
-                        )),
-                        ..Default::default()
-                    })),
+                    correctness: Some(SeverityOrGroup::Group(
+                        Correctness::default()
+                            .with_rule("no_private_imports", RulePlainConfiguration::Error),
+                    )),
                     ..Default::default()
                 }),
                 ..Default::default()
@@ -1939,12 +1937,10 @@ mod tests {
         let configuration = Configuration {
             linter: Some(LinterConfiguration {
                 rules: Some(Rules {
-                    correctness: Some(SeverityOrGroup::Group(Correctness {
-                        no_private_imports: Some(RuleConfiguration::Plain(
-                            RulePlainConfiguration::Error,
-                        )),
-                        ..Default::default()
-                    })),
+                    correctness: Some(SeverityOrGroup::Group(
+                        Correctness::default()
+                            .with_rule("no_private_imports", RulePlainConfiguration::Error),
+                    )),
                     ..Default::default()
                 }),
                 ..Default::default()
@@ -1968,12 +1964,10 @@ mod tests {
         let configuration = Configuration {
             linter: Some(LinterConfiguration {
                 rules: Some(Rules {
-                    correctness: Some(SeverityOrGroup::Group(Correctness {
-                        no_private_imports: Some(RuleConfiguration::Plain(
-                            RulePlainConfiguration::Off,
-                        )),
-                        ..Default::default()
-                    })),
+                    correctness: Some(SeverityOrGroup::Group(
+                        Correctness::default()
+                            .with_rule("no_private_imports", RulePlainConfiguration::Off),
+                    )),
                     ..Default::default()
                 }),
                 ..Default::default()

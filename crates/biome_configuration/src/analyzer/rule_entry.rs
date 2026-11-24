@@ -372,6 +372,15 @@ impl<G: LintGroupTable> RuleGroupConfig<G> {
         *self.rule_slot(ident) = Some(entry.into());
     }
 
+    /// Returns the group with the rule whose snake case name is `ident`
+    /// configured with `entry`.
+    ///
+    /// Panics when the group has no such rule.
+    pub fn with_rule(mut self, ident: &str, entry: impl Into<RuleEntry>) -> Self {
+        self.set_rule(ident, entry);
+        self
+    }
+
     /// Returns the configuration of the rule whose snake case name is `ident`,
     /// configuring the rule with its default configuration when it's unset.
     ///

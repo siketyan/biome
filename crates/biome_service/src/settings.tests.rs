@@ -191,12 +191,10 @@ fn merge_override_linter_group_rule() {
             ]))),
             linter: Some(OverrideLinterConfiguration {
                 rules: Some(Rules {
-                    style: Some(SeverityOrGroup::Group(Style {
-                        no_default_export: Some(RuleConfiguration::Plain(
-                            RulePlainConfiguration::Off,
-                        )),
-                        ..Style::default()
-                    })),
+                    style: Some(SeverityOrGroup::Group(
+                        Style::default()
+                            .with_rule("no_default_export", RulePlainConfiguration::Off),
+                    )),
                     ..Rules::default()
                 }),
                 ..OverrideLinterConfiguration::default()
