@@ -351,6 +351,73 @@ opt-level = 3
 opt-level = 3
 debug     = false
 
+# The crates below take a negligible share of the time of a run: they parse the
+# command line and drive the commands, migrate configuration files, update the
+# binary over HTTPS, write logs, set up the file watcher, and write JUnit
+# reports. They are optimized for size instead of speed.
+[profile.release.package.biome_cli]
+opt-level = "s"
+
+[profile.release.package.biome_migrate]
+opt-level = "s"
+
+[profile.release.package.bpaf]
+opt-level = "s"
+
+[profile.release.package.chrono]
+opt-level = "s"
+
+[profile.release.package.encoding_rs]
+opt-level = "s"
+
+[profile.release.package.flate2]
+opt-level = "s"
+
+[profile.release.package.http]
+opt-level = "s"
+
+[profile.release.package.httparse]
+opt-level = "s"
+
+[profile.release.package.idna]
+opt-level = "s"
+
+[profile.release.package.notify]
+opt-level = "s"
+
+[profile.release.package.quick-junit]
+opt-level = "s"
+
+[profile.release.package.quick-xml]
+opt-level = "s"
+
+[profile.release.package.rustls]
+opt-level = "s"
+
+[profile.release.package.rustls-webpki]
+opt-level = "s"
+
+[profile.release.package.self_update]
+opt-level = "s"
+
+[profile.release.package.tracing-appender]
+opt-level = "s"
+
+[profile.release.package.tracing-subscriber]
+opt-level = "s"
+
+[profile.release.package.tracing-tree]
+opt-level = "s"
+
+[profile.release.package.ureq]
+opt-level = "s"
+
+[profile.release.package.ureq-proto]
+opt-level = "s"
+
+[profile.release.package.url]
+opt-level = "s"
+
 [profile.test.package.biome_wasm]
 opt-level = "s"
 debug     = true
