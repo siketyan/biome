@@ -1680,8 +1680,9 @@ mod tests {
                 .suspicious
                 .unwrap()
                 .unwrap_group()
-                .no_double_equals,
-            Some(biome_config::RuleFixConfiguration::Plain(
+                .rule("no_double_equals")
+                .cloned(),
+            Some(biome_config::analyzer::RuleEntry::from(
                 biome_config::RulePlainConfiguration::Error
             ))
         );
@@ -1701,8 +1702,9 @@ mod tests {
                 .suspicious
                 .unwrap()
                 .unwrap_group()
-                .no_double_equals,
-            Some(biome_config::RuleFixConfiguration::Plain(
+                .rule("no_double_equals")
+                .cloned(),
+            Some(biome_config::analyzer::RuleEntry::from(
                 biome_config::RulePlainConfiguration::Off
             ))
         );
@@ -1770,12 +1772,14 @@ mod tests {
                     .correctness
                     .unwrap()
                     .unwrap_group()
-                    .no_unused_variables
+                    .rule("no_unused_variables")
+                    .cloned()
                     .unwrap();
-                let biome_config::RuleFixConfiguration::WithOptions(rule) = rule else {
+                let Some(options) = rule.options::<no_unused_variables::NoUnusedVariablesOptions>()
+                else {
                     panic!("the override should set the options of the rule");
                 };
-                (rule.level, rule.options.ignore_rest_siblings)
+                (rule.level(), options.ignore_rest_siblings)
             });
         // `@typescript-eslint/no-unused-vars` inherits the options of the same rule.
         assert_eq!(

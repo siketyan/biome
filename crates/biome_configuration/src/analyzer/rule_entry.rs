@@ -29,7 +29,7 @@ pub trait ErasedRuleOptions: Any + Send + Sync + Debug {
     /// Merges `other` into `self`. Does nothing when `other` holds a different
     /// concrete type.
     fn merge_dyn(&mut self, other: Box<dyn ErasedRuleOptions>);
-    fn to_json(&self) -> serde_json::Value;
+    fn to_json(&self) -> SerializedOptions;
     fn to_rule_options(&self, fix: Option<FixKind>) -> RuleOptions;
     fn as_any(&self) -> &dyn Any;
     fn as_any_mut(&mut self) -> &mut dyn Any;
@@ -57,8 +57,11 @@ where
         }
     }
 
-    fn to_json(&self) -> serde_json::Value {
-        serde_json::to_value(self).unwrap_or(serde_json::Value::Null)
+    fn to_json(&self) -> SerializedOptions {
+        serde_json::to_string(self)
+            .ok()
+            .and_then(|json| serde_json::from_str(&json).ok())
+            .unwrap_or(SerializedOptions::Null)
     }
 
     fn to_rule_options(&self, fix: Option<FixKind>) -> RuleOptions {
@@ -75,6 +78,100 @@ where
 
     fn into_any(self: Box<Self>) -> Box<dyn Any> {
         self
+    }
+}
+
+/// The options of a rule in a form that any serializer can write.
+///
+/// Unlike [serde_json::Value], it keeps the properties of an object in the
+/// order in which the options serialize them.
+pub enum SerializedOptions {
+    Null,
+    Bool(bool),
+    Number(serde_json::Number),
+    String(String),
+    Array(Vec<Self>),
+    Object(Vec<(String, Self)>),
+}
+
+impl serde::Serialize for SerializedOptions {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        match self {
+            Self::Null => serializer.serialize_unit(),
+            Self::Bool(value) => serializer.serialize_bool(*value),
+            Self::Number(value) => value.serialize(serializer),
+            Self::String(value) => serializer.serialize_str(value),
+            Self::Array(items) => serializer.collect_seq(items),
+            Self::Object(members) => {
+                let mut map = serializer.serialize_map(Some(members.len()))?;
+                for (key, value) in members {
+                    map.serialize_entry(key, value)?;
+                }
+                map.end()
+            }
+        }
+    }
+}
+
+impl<'de> serde::Deserialize<'de> for SerializedOptions {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        struct Visitor;
+        impl<'de> serde::de::Visitor<'de> for Visitor {
+            type Value = SerializedOptions;
+
+            fn expecting(&self, formatter: &mut Formatter) -> std::fmt::Result {
+                formatter.write_str("a JSON value")
+            }
+
+            fn visit_unit<E>(self) -> Result<Self::Value, E> {
+                Ok(SerializedOptions::Null)
+            }
+
+            fn visit_bool<E>(self, value: bool) -> Result<Self::Value, E> {
+                Ok(SerializedOptions::Bool(value))
+            }
+
+            fn visit_i64<E>(self, value: i64) -> Result<Self::Value, E> {
+                Ok(SerializedOptions::Number(value.into()))
+            }
+
+            fn visit_u64<E>(self, value: u64) -> Result<Self::Value, E> {
+                Ok(SerializedOptions::Number(value.into()))
+            }
+
+            fn visit_f64<E>(self, value: f64) -> Result<Self::Value, E> {
+                Ok(serde_json::Number::from_f64(value)
+                    .map_or(SerializedOptions::Null, SerializedOptions::Number))
+            }
+
+            fn visit_str<E>(self, value: &str) -> Result<Self::Value, E> {
+                Ok(SerializedOptions::String(value.to_string()))
+            }
+
+            fn visit_seq<A: serde::de::SeqAccess<'de>>(
+                self,
+                mut seq: A,
+            ) -> Result<Self::Value, A::Error> {
+                let mut items = Vec::new();
+                while let Some(item) = seq.next_element()? {
+                    items.push(item);
+                }
+                Ok(SerializedOptions::Array(items))
+            }
+
+            fn visit_map<A: serde::de::MapAccess<'de>>(
+                self,
+                mut map: A,
+            ) -> Result<Self::Value, A::Error> {
+                let mut members = Vec::new();
+                while let Some(member) = map.next_entry()? {
+                    members.push(member);
+                }
+                Ok(SerializedOptions::Object(members))
+            }
+        }
+
+        deserializer.deserialize_any(Visitor)
     }
 }
 
@@ -537,10 +634,14 @@ impl<G: LintGroupTable> Deserializable for RuleGroupConfig<G> {
                         }
                         rule_name => {
                             let Ok(index) = G::RULES.binary_search(&rule_name) else {
+                                let allowed_keys: Vec<_> = ["recommended", "preset"]
+                                    .into_iter()
+                                    .chain(G::RULES.iter().copied())
+                                    .collect();
                                 ctx.report(DeserializationDiagnostic::new_unknown_key(
                                     rule_name,
                                     key.range(),
-                                    G::RULES,
+                                    &allowed_keys,
                                 ));
                                 continue;
                             };
