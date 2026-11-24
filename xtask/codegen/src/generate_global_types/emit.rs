@@ -125,33 +125,260 @@ fn builder_name(global: &LoweredGlobal) -> String {
 }
 
 pub(super) fn render_local_types(globals: &[LoweredGlobal]) -> String {
-    let mut arrays = String::new();
-    let mut arms = String::new();
-    for global in globals
+    let tables: Vec<_> = globals
         .iter()
         .filter(|global| !global.local_types().is_empty())
-    {
-        let id = global.id_constant();
-        let name = format!("{}_LOCAL_TYPES", id.trim_end_matches("_ID_GLOBAL_TYPE_ID"));
-        let count = global.local_types().len();
-        let types = global
-            .local_types()
-            .iter()
-            .map(render_type_data)
-            .collect::<Vec<_>>()
-            .join(",\n");
-        arrays.push_str(&format!(
-            "static {name}: std::sync::LazyLock<[crate::TypeData; {count}]> = std::sync::LazyLock::new(|| [{types}]);\n"
-        ));
-        arms.push_str(&format!("ids::{id} => &*{name},\n"));
+        .map(|global| {
+            let id = global.id_constant();
+            let name = format!("{}_LOCAL_TYPES", id.trim_end_matches("_ID_GLOBAL_TYPE_ID"));
+            let types = global
+                .local_types()
+                .iter()
+                .map(render_type_data)
+                .collect::<Vec<_>>()
+                .join(",\n");
+            LocalTypesTable {
+                id,
+                name,
+                count: global.local_types().len(),
+                template: LocalTypesTemplate::new(&types),
+            }
+        })
+        .collect();
+
+    // Tables with the same template are grouped in the order of their first occurrence.
+    let mut groups: Vec<Vec<&LocalTypesTable>> = Vec::new();
+    for table in &tables {
+        match groups.iter_mut().find(|group| {
+            group[0].count == table.count && group[0].template.skeleton == table.template.skeleton
+        }) {
+            Some(group) => group.push(table),
+            None => groups.push(vec![table]),
+        }
+    }
+
+    let mut builders = String::new();
+    let mut arrays = String::new();
+    let mut arms = String::new();
+    for group in &groups {
+        let parameters = shared_builder_parameters(group);
+        let shared = (group.len() > 1 && parameters.holes.len() <= MAX_SHARED_BUILDER_PARAMETERS)
+            .then_some(parameters);
+        for table in group {
+            let LocalTypesTable {
+                id, name, count, ..
+            } = table;
+            let initializer = match &shared {
+                // Clippy rejects a closure that only calls a function.
+                Some(parameters) if parameters.holes.is_empty() => shared_builder_name(group),
+                Some(parameters) => {
+                    let arguments = parameters
+                        .holes
+                        .iter()
+                        .map(|&hole| table.template.holes[hole].text.as_str())
+                        .collect::<Vec<_>>()
+                        .join(", ");
+                    format!("|| {}({arguments})", shared_builder_name(group))
+                }
+                None => format!("|| [{}]", table.template.render(&[])),
+            };
+            arrays.push_str(&format!(
+                "static {name}: std::sync::LazyLock<[crate::TypeData; {count}]> = std::sync::LazyLock::new({initializer});\n"
+            ));
+            arms.push_str(&format!("ids::{id} => &*{name},\n"));
+        }
+        if let Some(parameters) = &shared {
+            let first = group[0];
+            let signature = parameters
+                .holes
+                .iter()
+                .enumerate()
+                .map(|(index, &hole)| {
+                    format!("p{index}: {}", first.template.holes[hole].kind.rust_type())
+                })
+                .collect::<Vec<_>>()
+                .join(", ");
+            builders.push_str(&format!(
+                "/// Builds the supporting types of the globals that share this shape.\n                fn {}({signature}) -> [crate::TypeData; {}] {{ [{}] }}\n",
+                shared_builder_name(group),
+                first.count,
+                first.template.render(&parameters.hole_parameters),
+            ));
+        }
     }
     format!(
-        "{arrays}
+        "{builders}
+        {arrays}
         /// Supporting types in dependency order, indexed relative to their owning global.
         pub(crate) fn generated_local_types(owner: crate::globals::GlobalTypeId) -> &'static [crate::TypeData] {{
             match owner {{ {arms} _ => &[] }}
         }}"
     )
+}
+
+/// Tables that need more parameters than this keep their own builder.
+const MAX_SHARED_BUILDER_PARAMETERS: usize = 8;
+
+struct LocalTypesTable<'a> {
+    id: &'a str,
+    name: String,
+    count: usize,
+    template: LocalTypesTemplate,
+}
+
+/// The rendered supporting types of a global, split into the text that is
+/// common to the globals of the same shape and the holes that can differ:
+/// the global ids they reference and their string literals.
+struct LocalTypesTemplate {
+    /// The rendered types, with every hole replaced by [HOLE_MARKER].
+    skeleton: String,
+    holes: Vec<TemplateHole>,
+}
+
+#[derive(Clone, Copy, Eq, PartialEq)]
+enum TemplateHoleKind {
+    GlobalId,
+    StringLiteral,
+}
+
+impl TemplateHoleKind {
+    fn rust_type(self) -> &'static str {
+        match self {
+            Self::GlobalId => "crate::RawTypeId",
+            Self::StringLiteral => "&'static str",
+        }
+    }
+
+    fn marker(self) -> char {
+        match self {
+            Self::GlobalId => '\u{1}',
+            Self::StringLiteral => '\u{2}',
+        }
+    }
+}
+
+struct TemplateHole {
+    kind: TemplateHoleKind,
+    text: String,
+}
+
+const GLOBAL_ID_PREFIX: &str = "crate::globals::";
+
+impl LocalTypesTemplate {
+    fn new(rendered: &str) -> Self {
+        let mut skeleton = String::with_capacity(rendered.len());
+        let mut holes = Vec::new();
+        let mut rest = rendered;
+        loop {
+            let next_id = rest.find(GLOBAL_ID_PREFIX);
+            let next_string = rest.find('"');
+            let (start, kind) = match (next_id, next_string) {
+                (Some(id), Some(string)) if id < string => (id, TemplateHoleKind::GlobalId),
+                (_, Some(string)) => (string, TemplateHoleKind::StringLiteral),
+                (Some(id), None) => (id, TemplateHoleKind::GlobalId),
+                (None, None) => break,
+            };
+            let len = match kind {
+                TemplateHoleKind::GlobalId => {
+                    let path = &rest[start + GLOBAL_ID_PREFIX.len()..];
+                    GLOBAL_ID_PREFIX.len()
+                        + path
+                            .find(|c: char| !c.is_ascii_alphanumeric() && c != '_')
+                            .unwrap_or(path.len())
+                }
+                TemplateHoleKind::StringLiteral => string_literal_len(&rest[start..]),
+            };
+            skeleton.push_str(&rest[..start]);
+            skeleton.push(kind.marker());
+            holes.push(TemplateHole {
+                kind,
+                text: rest[start..start + len].to_string(),
+            });
+            rest = &rest[start + len..];
+        }
+        skeleton.push_str(rest);
+        Self { skeleton, holes }
+    }
+
+    /// Renders the types, replacing every hole by the parameter that
+    /// `hole_parameters` assigns to it, or by its own text when it has none.
+    fn render(&self, hole_parameters: &[Option<usize>]) -> String {
+        let mut rendered = String::with_capacity(self.skeleton.len());
+        let mut holes = self.holes.iter().enumerate();
+        for c in self.skeleton.chars() {
+            if c != TemplateHoleKind::GlobalId.marker()
+                && c != TemplateHoleKind::StringLiteral.marker()
+            {
+                rendered.push(c);
+                continue;
+            }
+            let Some((index, hole)) = holes.next() else {
+                continue;
+            };
+            match hole_parameters.get(index).copied().flatten() {
+                Some(parameter) => rendered.push_str(&format!("p{parameter}")),
+                None => rendered.push_str(&hole.text),
+            }
+        }
+        rendered
+    }
+}
+
+/// Returns the length of the string literal that `text` starts with.
+fn string_literal_len(text: &str) -> usize {
+    let mut escaped = false;
+    for (index, c) in text.char_indices().skip(1) {
+        match c {
+            _ if escaped => escaped = false,
+            '\\' => escaped = true,
+            '"' => return index + 1,
+            _ => {}
+        }
+    }
+    text.len()
+}
+
+/// The parameters of the builder shared by the tables of a group.
+struct SharedBuilderParameters {
+    /// For every parameter, a hole whose text is its argument.
+    holes: Vec<usize>,
+    /// For every hole, the parameter that replaces it, if any.
+    hole_parameters: Vec<Option<usize>>,
+}
+
+/// Assigns a parameter to the holes whose text isn't the same in every table
+/// of the group. The holes that hold the same text in every table share one.
+fn shared_builder_parameters(group: &[&LocalTypesTable]) -> SharedBuilderParameters {
+    let first = &group[0].template;
+    let mut holes: Vec<usize> = Vec::new();
+    let mut hole_parameters = Vec::with_capacity(first.holes.len());
+    for hole in 0..first.holes.len() {
+        let varies = group
+            .iter()
+            .any(|table| table.template.holes[hole].text != first.holes[hole].text);
+        if !varies {
+            hole_parameters.push(None);
+            continue;
+        }
+        let parameter = holes.iter().position(|&parameter| {
+            first.holes[parameter].kind == first.holes[hole].kind
+                && group.iter().all(|table| {
+                    table.template.holes[parameter].text == table.template.holes[hole].text
+                })
+        });
+        hole_parameters.push(Some(parameter.unwrap_or_else(|| {
+            holes.push(hole);
+            holes.len() - 1
+        })));
+    }
+    SharedBuilderParameters {
+        holes,
+        hole_parameters,
+    }
+}
+
+fn shared_builder_name(group: &[&LocalTypesTable]) -> String {
+    format!("shared_{}", group[0].name.to_ascii_lowercase_cow())
 }
 
 /// Dispatches lowered data to its Rust expression renderer.
