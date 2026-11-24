@@ -475,29 +475,13 @@ impl<L: Language + Default> RegistryRule<L> {
             // if the query doesn't match
             let query_result = params.query.downcast_ref().unwrap();
             let query_result = <R::Query as Queryable>::unwrap_match(params.services, query_result);
-            let globals = params.options.globals();
-            let preferred_quote = params.options.preferred_quote();
-            let preferred_jsx_quote = params.options.preferred_jsx_quote();
-            let preferred_indentation = params.options.preferred_indentation();
-            let jsx_runtime = params.options.jsx_runtime();
-            let jsx_factory = params.options.jsx_factory();
-            let jsx_fragment_factory = params.options.jsx_fragment_factory();
             let options = params.options.rule_options::<R>().unwrap_or_default();
-            let working_directory = params.options.working_directory.as_deref();
-            let ctx = RuleContext::new(
+            let ctx = RuleContext::from_analyzer_options(
                 &query_result,
                 params.root,
                 params.services,
-                globals,
-                params.options.file_path.as_path(),
+                params.options,
                 &options,
-                preferred_quote,
-                preferred_jsx_quote,
-                preferred_indentation,
-                jsx_runtime,
-                jsx_factory,
-                jsx_fragment_factory,
-                working_directory,
             )?;
 
             let rule_timer = crate::profiling::start_rule::<R>();

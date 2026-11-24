@@ -1,4 +1,4 @@
-use crate::options::{JsxRuntime, PreferredIndentation, PreferredQuote};
+use crate::options::{AnalyzerOptions, JsxRuntime, PreferredIndentation, PreferredQuote};
 use crate::{FromServices, Queryable, Rule, RuleKey, ServiceBag, registry::RuleRoot};
 use crate::{GroupCategory, RuleCategory, RuleGroup, RuleMetadata};
 use biome_diagnostics::{Error, Result};
@@ -62,6 +62,35 @@ where
             jsx_fragment_factory,
             working_directory,
         })
+    }
+
+    /// Creates the context of a rule from the options of the analyzer.
+    ///
+    /// It's never inlined, so the code that runs a rule and the code that
+    /// builds its diagnostics and actions share a single copy per rule.
+    #[inline(never)]
+    pub(crate) fn from_analyzer_options(
+        query_result: &'a RuleQueryResult<R>,
+        root: &'a RuleRoot<R>,
+        services: &'a ServiceBag,
+        analyzer_options: &'a AnalyzerOptions,
+        options: &'a R::Options,
+    ) -> Result<Self, Error> {
+        Self::new(
+            query_result,
+            root,
+            services,
+            analyzer_options.globals(),
+            analyzer_options.file_path.as_path(),
+            options,
+            analyzer_options.preferred_quote(),
+            analyzer_options.preferred_jsx_quote(),
+            analyzer_options.preferred_indentation(),
+            analyzer_options.jsx_runtime(),
+            analyzer_options.jsx_factory(),
+            analyzer_options.jsx_fragment_factory(),
+            analyzer_options.working_directory.as_deref(),
+        )
     }
 
     pub fn query(&self) -> &RuleQueryResult<R> {
