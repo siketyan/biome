@@ -23,14 +23,10 @@ pub fn generate_analyzer_rule_options(
         Span::call_site(),
     );
 
+    // A new rule has nothing to configure until its author adds options, so
+    // it shares the options type of the rules without options.
     let content = quote! {
-        use biome_deserialize_macros::{Deserializable, Merge};
-        use serde::{Deserialize, Serialize};
-
-        #[derive(Default, Clone, Debug, Deserialize, Deserializable, Merge, Eq, PartialEq, Serialize)]
-        #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-        #[serde(rename_all = "camelCase", deny_unknown_fields, default)]
-        pub struct #struct_name {}
+        pub type #struct_name = crate::EmptyRuleOptions;
     };
 
     let snake_rule_name = Case::Snake.convert(rule_name);

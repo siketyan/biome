@@ -11,63 +11,69 @@ use xtask_codegen::update;
 use xtask_glue::*;
 
 fn generate_multi_mapping(eslint_name: Box<str>, mapped_rules: Vec<RuleMapping>) -> TokenStream {
-    let rules = mapped_rules.iter().map(|RuleMapping{source_kind, rule_name, group_name}| {
-        let name_ident = format_ident!("{}", Case::Snake.convert(rule_name));
-        let group_ident = format_ident!("{group_name}");
-        let blocked_set = if source_kind.is_inspired() || *group_name == "nursery" {
-            quote! {
-                let mut blocked = false;
-            }
-        } else {
-            quote! {}
-        };
-        let check_inspired = if source_kind.is_inspired() {
-            quote! {
-                if !options.include_inspired {
-                    results.add(eslint_name, eslint_to_biome::RuleMigrationResult::Inspired);
-                    blocked = true;
+    let rules = mapped_rules.iter().map(
+        |RuleMapping {
+             source_kind,
+             rule_name,
+             group_name,
+         }| {
+            let rule_ident = Case::Snake.convert(rule_name);
+            let group_ident = format_ident!("{group_name}");
+            let blocked_set = if source_kind.is_inspired() || *group_name == "nursery" {
+                quote! {
+                    let mut blocked = false;
                 }
-            }
-        } else {
-            quote! {}
-        };
-        let check_nursery = if *group_name == "nursery" {
-            quote! {
-                if !options.include_nursery {
-                    results.add(eslint_name, eslint_to_biome::RuleMigrationResult::Nursery);
-                    blocked = true;
+            } else {
+                quote! {}
+            };
+            let check_inspired = if source_kind.is_inspired() {
+                quote! {
+                    if !options.include_inspired {
+                        results.add(eslint_name, eslint_to_biome::RuleMigrationResult::Inspired);
+                        blocked = true;
+                    }
                 }
-            }
-        } else {
-            quote! {}
-        };
-        let migrate = if source_kind.is_inspired() || *group_name == "nursery" {
-            quote! {
-                if !blocked {
+            } else {
+                quote! {}
+            };
+            let check_nursery = if *group_name == "nursery" {
+                quote! {
+                    if !options.include_nursery {
+                        results.add(eslint_name, eslint_to_biome::RuleMigrationResult::Nursery);
+                        blocked = true;
+                    }
+                }
+            } else {
+                quote! {}
+            };
+            let migrate = if source_kind.is_inspired() || *group_name == "nursery" {
+                quote! {
+                    if !blocked {
+                        let group = rules.#group_ident.get_or_insert_with(Default::default);
+                        let rule = group.unwrap_group_as_mut().rule_mut(#rule_ident);
+                        rule.set_level(rule.level().max(rule_severity.into()));
+                        migrated = true;
+                    }
+                }
+            } else {
+                quote! {
                     let group = rules.#group_ident.get_or_insert_with(Default::default);
-                    let rule = group.unwrap_group_as_mut().#name_ident.get_or_insert(Default::default());
+                    let rule = group.unwrap_group_as_mut().rule_mut(#rule_ident);
                     rule.set_level(rule.level().max(rule_severity.into()));
                     migrated = true;
                 }
-            }
-        } else {
-            quote! {
-                let group = rules.#group_ident.get_or_insert_with(Default::default);
-                let rule = group.unwrap_group_as_mut().#name_ident.get_or_insert(Default::default());
-                rule.set_level(rule.level().max(rule_severity.into()));
-                migrated = true;
-            }
-        };
+            };
 
-        quote! {
-            {
-                #blocked_set
-                #check_inspired
-                #check_nursery
-                #migrate
+            quote! {
+                {
+                    #blocked_set
+                    #check_inspired
+                    #check_nursery
+                    #migrate
+                }
             }
-        }
-    });
+        },
+    );
 
     quote! {
         #eslint_name => {
@@ -90,7 +96,7 @@ fn generate_single_mapping(eslint_name: Box<str>, mapped_rules: Vec<RuleMapping>
         return quote! {};
     };
 
-    let name_ident = format_ident!("{}", Case::Snake.convert(rule_name));
+    let rule_ident = Case::Snake.convert(rule_name);
     let group_ident = format_ident!("{group_name}");
     let check_inspired = if source_kind.is_inspired() {
         quote! {
@@ -118,7 +124,7 @@ fn generate_single_mapping(eslint_name: Box<str>, mapped_rules: Vec<RuleMapping>
             #check_inspired
             #check_nursery
             let group = rules.#group_ident.get_or_insert_with(Default::default);
-            let rule = group.unwrap_group_as_mut().#name_ident.get_or_insert(Default::default());
+            let rule = group.unwrap_group_as_mut().rule_mut(#rule_ident);
             rule.set_level(rule.level().max(rule_severity.into()));
         }
     }

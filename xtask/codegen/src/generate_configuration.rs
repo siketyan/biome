@@ -593,7 +593,7 @@ fn generate_for_groups(
         }
     } else {
         quote! {
-            use crate::analyzer::{GroupPlainConfiguration, RuleConfiguration, RulePlainConfiguration, RuleFixConfiguration, SeverityOrGroup, RuleGroupExt};
+            use crate::analyzer::{GroupPlainConfiguration, RulePlainConfiguration, SeverityOrGroup, RuleGroupExt};
             use biome_analyze::{options::RuleOptions, RuleFilter};
         }
     };

@@ -1,8 +1,11 @@
 use biome_string_case::StrLikeExtension;
 
+mod empty_rule_options;
 pub mod restricted_regex;
 pub mod sort_order;
 pub mod tailwind_utility_category;
+
+pub use empty_rule_options::EmptyRuleOptions;
 
 const REDUNDANT_WORDS: [&str; 3] = ["image", "photo", "picture"];
 
