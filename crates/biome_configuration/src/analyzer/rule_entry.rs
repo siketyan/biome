@@ -342,6 +342,20 @@ pub trait LintGroupTable: 'static {
     const RULE_IDENTS: &'static [&'static str];
     const HAS_FIX: &'static [bool];
 
+    /// Name of the group in the JSON schema.
+    #[cfg(feature = "schema")]
+    const SCHEMA_NAME: &'static str;
+    /// Whether the JSON schema documents `recommended` and `preset`.
+    #[cfg(feature = "schema")]
+    const HAS_PRESET_IN_SCHEMA: bool;
+
+    /// Returns the description and the JSON schema of the configuration of a rule.
+    #[cfg(feature = "schema")]
+    fn rule_schema(
+        index: usize,
+        generator: &mut schemars::SchemaGenerator,
+    ) -> (&'static str, schemars::Schema);
+
     fn default_options(index: usize) -> Box<dyn ErasedRuleOptions>;
 
     fn options_from_json(
@@ -737,11 +751,148 @@ fn deserialize_entry<G: LintGroupTable, S>(
 #[cfg(feature = "schema")]
 impl<G: LintGroupTable> schemars::JsonSchema for RuleGroupConfig<G> {
     fn schema_name() -> std::borrow::Cow<'static, str> {
-        std::borrow::Cow::Borrowed(G::NAME)
+        std::borrow::Cow::Borrowed(G::SCHEMA_NAME)
     }
 
-    // ponytail: placeholder schema, the per-rule properties need to be generated from the group table.
-    fn json_schema(_generator: &mut schemars::generate::SchemaGenerator) -> schemars::Schema {
-        schemars::json_schema!({ "type": "object" })
+    fn json_schema(generator: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        // The properties are sorted by name.
+        let mut properties = std::collections::BTreeMap::new();
+        if G::HAS_PRESET_IN_SCHEMA {
+            properties.insert(
+                "recommended",
+                schemars::json_schema!({
+                    "description": "Enables or disables the recommended rules in a non-nursery group. The group's\n`preset` setting takes precedence when both options are set.",
+                    "type": ["boolean", "null"],
+                }),
+            );
+            let preset_schema = generator.subschema_for::<PresetConfig>();
+            properties.insert(
+                "preset",
+                schemars::json_schema!({
+                    "description": "Selects the baseline set of lint rules for a non-nursery group. `recommended`\nenables the group's recommended rules, `all` enables all rules in the group, and\n`none` starts with no rules enabled in the group. Explicit rule settings override\nthis group preset, which overrides `linter.rules.preset` for the group.",
+                    "anyOf": [preset_schema, { "type": "null" }],
+                }),
+            );
+        }
+        for (index, rule_name) in G::RULES.iter().enumerate() {
+            let (description, rule_schema) = G::rule_schema(index, generator);
+            properties.insert(
+                rule_name,
+                schemars::json_schema!({
+                    "description": description,
+                    "anyOf": [rule_schema, { "type": "null" }],
+                }),
+            );
+        }
+        schemars::json_schema!({
+            "description": "Configures all rules in one lint group.",
+            "type": "object",
+            "properties": properties,
+            "additionalProperties": false,
+        })
+    }
+}
+
+/// Names the options of a rule in the JSON schema.
+///
+/// The rules without options share one options type, but the JSON schema
+/// keeps a definition per rule.
+#[cfg(feature = "schema")]
+pub trait RuleOptionsSchema {
+    const NAME: &'static str;
+    type Options: schemars::JsonSchema;
+}
+
+/// JSON schema of the configuration of the rule whose options are named by `N`.
+#[cfg(feature = "schema")]
+pub struct RuleConfigurationSchema<N, const HAS_FIX: bool>(PhantomData<N>);
+
+#[cfg(feature = "schema")]
+impl<N: RuleOptionsSchema, const HAS_FIX: bool> schemars::JsonSchema
+    for RuleConfigurationSchema<N, HAS_FIX>
+{
+    fn schema_name() -> std::borrow::Cow<'static, str> {
+        let kind = if HAS_FIX {
+            "RuleFixConfiguration"
+        } else {
+            "RuleConfiguration"
+        };
+        std::borrow::Cow::Owned(format!("{kind}_for_{}", N::NAME))
+    }
+
+    fn json_schema(generator: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        let plain_schema = generator.subschema_for::<RulePlainConfiguration>();
+        let with_options_schema = generator.subschema_for::<RuleWithOptionsSchema<N, HAS_FIX>>();
+        schemars::json_schema!({
+            "oneOf": [
+                plain_schema,
+                with_options_schema,
+            ]
+        })
+    }
+}
+
+#[cfg(feature = "schema")]
+struct RuleWithOptionsSchema<N, const HAS_FIX: bool>(PhantomData<N>);
+
+#[cfg(feature = "schema")]
+impl<N: RuleOptionsSchema, const HAS_FIX: bool> schemars::JsonSchema
+    for RuleWithOptionsSchema<N, HAS_FIX>
+{
+    fn schema_name() -> std::borrow::Cow<'static, str> {
+        let kind = if HAS_FIX {
+            "RuleWithFixOptions"
+        } else {
+            "RuleWithOptions"
+        };
+        std::borrow::Cow::Owned(format!("{kind}_for_{}", N::NAME))
+    }
+
+    fn json_schema(generator: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        let level_schema = generator.subschema_for::<RulePlainConfiguration>();
+        if !HAS_FIX {
+            let options_schema = generator.subschema_for::<RuleOptionsNameSchema<N>>();
+            return schemars::json_schema!({
+                "type": "object",
+                "properties": {
+                    "level": level_schema,
+                    "options": options_schema,
+                },
+                "required": ["level"],
+                "additionalProperties": false,
+            });
+        }
+        let mut fix_schema = generator.subschema_for::<Option<FixKind>>();
+        fix_schema.insert(
+            "description".to_string(),
+            "Controls the applicability of the rule's fix. `none` suppresses the fix, while `safe` and `unsafe` reclassify its applicability. This setting does not change the fix itself."
+                .into(),
+        );
+        let options_schema = generator.subschema_for::<RuleOptionsNameSchema<N>>();
+        schemars::json_schema!({
+            "type": "object",
+            "properties": {
+                "level": level_schema,
+                "fix": fix_schema,
+                "options": options_schema,
+            },
+            "required": ["level"],
+            "additionalProperties": false,
+        })
+    }
+}
+
+/// The JSON schema of the options of a rule, under the name of the rule.
+#[cfg(feature = "schema")]
+struct RuleOptionsNameSchema<N>(PhantomData<N>);
+
+#[cfg(feature = "schema")]
+impl<N: RuleOptionsSchema> schemars::JsonSchema for RuleOptionsNameSchema<N> {
+    fn schema_name() -> std::borrow::Cow<'static, str> {
+        std::borrow::Cow::Borrowed(N::NAME)
+    }
+
+    fn json_schema(generator: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        <N::Options as schemars::JsonSchema>::json_schema(generator)
     }
 }

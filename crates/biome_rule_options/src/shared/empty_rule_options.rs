@@ -1,4 +1,7 @@
-/// Options shared by every rule that has nothing to configure.
+// Options shared by every lint rule that has nothing to configure.
+//
+// This isn't a doc comment because the JSON schema would repeat it as the
+// description of the options of each of these rules.
 #[derive(
     Default,
     Clone,

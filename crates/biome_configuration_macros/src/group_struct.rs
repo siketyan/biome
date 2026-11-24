@@ -23,6 +23,8 @@ pub fn generate_group_struct(
     let mut rule_option_types = Vec::new();
     let mut rule_ident_names = Vec::new();
     let mut rule_has_fix = Vec::new();
+    let mut rule_summaries = Vec::new();
+    let mut rule_option_names = Vec::new();
     let mut preset_rules_map: BTreeMap<String, Vec<TokenStream>> = BTreeMap::new();
 
     for (index, (rule, metadata)) in rules.iter().enumerate() {
@@ -151,6 +153,8 @@ pub fn generate_group_struct(
         rule_option_types.push(rule_option_type.clone());
         rule_ident_names.push(Case::Snake.convert(rule));
         rule_has_fix.push(metadata.fix_kind != biome_analyze::FixKind::None);
+        rule_summaries.push(summary.trim().to_string());
+        rule_option_names.push(rule_name.to_string());
         rule_identifiers.push(rule_identifier);
     }
 
@@ -308,6 +312,8 @@ pub fn generate_group_struct(
         }
     } else {
         let table_ident = quote::format_ident!("{}Table", to_capitalized(group));
+        let group_schema_name = to_capitalized(group);
+        let has_preset_in_schema = group != "nursery";
         quote! {
             /// Describes the rules of a lint group.
             #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
@@ -324,6 +330,33 @@ pub fn generate_group_struct(
                 const HAS_FIX: &'static [bool] = &[
                     #( #rule_has_fix ),*
                 ];
+
+                #[cfg(feature = "schema")]
+                const SCHEMA_NAME: &'static str = #group_schema_name;
+                #[cfg(feature = "schema")]
+                const HAS_PRESET_IN_SCHEMA: bool = #has_preset_in_schema;
+
+                #[cfg(feature = "schema")]
+                fn rule_schema(
+                    index: usize,
+                    generator: &mut schemars::SchemaGenerator,
+                ) -> (&'static str, schemars::Schema) {
+                    use crate::analyzer::rule_entry::{RuleConfigurationSchema, RuleOptionsSchema};
+                    match index {
+                        #( #rule_positions => {
+                            struct Name;
+                            impl RuleOptionsSchema for Name {
+                                const NAME: &'static str = #rule_option_names;
+                                type Options = #rule_option_types;
+                            }
+                            (
+                                #rule_summaries,
+                                generator.subschema_for::<RuleConfigurationSchema<Name, #rule_has_fix>>(),
+                            )
+                        } )*
+                        _ => unreachable!(),
+                    }
+                }
 
                 fn default_options(index: usize) -> Box<dyn crate::analyzer::rule_entry::ErasedRuleOptions> {
                     match index {
