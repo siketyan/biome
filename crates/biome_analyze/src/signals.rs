@@ -618,78 +618,50 @@ where
 
     fn actions(&self, filter: ActionFilter) -> AnalyzerActionIter<RuleLanguage<R>> {
         let configured_fix_kind = self.options.rule_fix_kind::<R>();
-
-        // When fix is set to "none", disable the rule fix but still allow
-        // suppression actions.
-        let fix_disabled = matches!(configured_fix_kind, Some(FixKind::None));
-        let configured_applicability = if filter.is_rule_fix() && !fix_disabled {
-            if let Some(fix_kind) = configured_fix_kind {
-                match fix_kind {
-                    FixKind::None => None,
-                    FixKind::Safe => Some(Applicability::Always),
-                    FixKind::Unsafe => Some(Applicability::MaybeIncorrect),
-                }
-            } else {
-                None
-            }
-        } else {
-            None
-        };
         let options = self.options.rule_options::<R>().unwrap_or_default();
-        let ctx = RuleContext::from_analyzer_options(
+        let Ok(ctx) = RuleContext::<R>::from_analyzer_options(
             &self.query_result,
             self.root,
             self.services,
             self.options,
             &options,
-        )
-        .ok();
-        let mut actions = Vec::new();
-        if let Some(ctx) = ctx {
-            let rule_name = (<R::Group as RuleGroup>::NAME, R::METADATA.name);
+        ) else {
+            return AnalyzerActionIter::new(vec![]);
+        };
 
-            if filter.is_rule_fix()
-                && !fix_disabled
-                && let Some(action) = R::action(&ctx, &self.state)
-            {
-                actions.push(rule_action_to_analyzer_action(
-                    rule_name,
-                    configured_applicability,
-                    action,
-                ));
-            }
-
-            if filter.is_inline_suppression()
-                && let Some(text_range) = R::text_range(&ctx, &self.state)
-                && let Some(suppression_action) = R::inline_suppression(
-                    &ctx,
-                    &text_range,
-                    self.suppression_action,
-                    self.options.suppression_reason.as_deref(),
-                )
-            {
-                actions.push(suppress_action_to_analyzer_action(
-                    rule_name,
-                    ActionCategory::Other(OtherActionCategory::InlineSuppression),
-                    suppression_action,
-                ));
-            }
-
-            if filter.is_toplevel_suppression()
-                && let Some(suppression_action) =
-                    R::top_level_suppression(&ctx, self.suppression_action)
-            {
-                actions.push(suppress_action_to_analyzer_action(
-                    rule_name,
-                    ActionCategory::Other(OtherActionCategory::ToplevelSuppression),
-                    suppression_action,
-                ));
-            }
-
-            AnalyzerActionIter::new(actions)
+        // When fix is set to "none", disable the rule fix but still allow
+        // suppression actions.
+        let fix_disabled = matches!(configured_fix_kind, Some(FixKind::None));
+        let action = if filter.is_rule_fix() && !fix_disabled {
+            R::action(&ctx, &self.state)
         } else {
-            AnalyzerActionIter::new(vec![])
-        }
+            None
+        };
+        let inline_suppression = if filter.is_inline_suppression()
+            && let Some(text_range) = R::text_range(&ctx, &self.state)
+        {
+            R::inline_suppression(
+                &ctx,
+                &text_range,
+                self.suppression_action,
+                self.options.suppression_reason.as_deref(),
+            )
+        } else {
+            None
+        };
+        let top_level_suppression = if filter.is_toplevel_suppression() {
+            R::top_level_suppression(&ctx, self.suppression_action)
+        } else {
+            None
+        };
+
+        collect_rule_actions(
+            (<R::Group as RuleGroup>::NAME, R::METADATA.name),
+            configured_fix_kind,
+            action,
+            inline_suppression,
+            top_level_suppression,
+        )
     }
 
     fn actions_metadata(&self) -> Vec<ActionMetadata> {
@@ -702,27 +674,70 @@ where
     }
 
     fn transformations(&self) -> AnalyzerTransformationIter<RuleLanguage<R>> {
+        // Only transformations rewrite the tree. The category is a constant,
+        // so this compiles to nothing for the rules of the other categories.
+        if !matches!(
+            <<R::Group as RuleGroup>::Category as GroupCategory>::CATEGORY,
+            RuleCategory::Transformation
+        ) {
+            return AnalyzerTransformationIter::new(vec![]);
+        }
         let options = self.options.rule_options::<R>().unwrap_or_default();
-        let ctx = RuleContext::from_analyzer_options(
+        let Ok(ctx) = RuleContext::<R>::from_analyzer_options(
             &self.query_result,
             self.root,
             self.services,
             self.options,
             &options,
-        )
-        .ok();
-        if let Some(ctx) = ctx {
-            let mut transformations = Vec::new();
-            let mutation = R::transform(&ctx, &self.state);
-            if let Some(mutation) = mutation {
-                let transformation = AnalyzerTransformation { mutation };
-                transformations.push(transformation)
-            }
-            AnalyzerTransformationIter::new(transformations)
-        } else {
-            AnalyzerTransformationIter::new(vec![])
-        }
+        ) else {
+            return AnalyzerTransformationIter::new(vec![]);
+        };
+        let transformations: Vec<_> = R::transform(&ctx, &self.state)
+            .map(|mutation| AnalyzerTransformation { mutation })
+            .into_iter()
+            .collect();
+        AnalyzerTransformationIter::new(transformations)
     }
+}
+
+/// Converts the fix and the suppressions of a rule into the actions of its
+/// signal, kept out of the generic method so it is compiled once per language
+/// instead of once per rule.
+fn collect_rule_actions<L: Language>(
+    rule_name: (&'static str, &'static str),
+    configured_fix_kind: Option<FixKind>,
+    action: Option<RuleAction<L>>,
+    inline_suppression: Option<SuppressAction<L>>,
+    top_level_suppression: Option<SuppressAction<L>>,
+) -> AnalyzerActionIter<L> {
+    let configured_applicability = match configured_fix_kind {
+        Some(FixKind::Safe) => Some(Applicability::Always),
+        Some(FixKind::Unsafe) => Some(Applicability::MaybeIncorrect),
+        Some(FixKind::None) | None => None,
+    };
+    let mut actions = Vec::new();
+    if let Some(action) = action {
+        actions.push(rule_action_to_analyzer_action(
+            rule_name,
+            configured_applicability,
+            action,
+        ));
+    }
+    if let Some(suppression_action) = inline_suppression {
+        actions.push(suppress_action_to_analyzer_action(
+            rule_name,
+            ActionCategory::Other(OtherActionCategory::InlineSuppression),
+            suppression_action,
+        ));
+    }
+    if let Some(suppression_action) = top_level_suppression {
+        actions.push(suppress_action_to_analyzer_action(
+            rule_name,
+            ActionCategory::Other(OtherActionCategory::ToplevelSuppression),
+            suppression_action,
+        ));
+    }
+    AnalyzerActionIter::new(actions)
 }
 
 /// Post-processing of [AnalyzerSignal::diagnostic] for [RuleSignal], kept out

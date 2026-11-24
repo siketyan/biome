@@ -452,6 +452,43 @@ impl<L: Language> RuleSuppressions<L> {
 /// Executor for rule as a generic function pointer
 type RuleExecutor<L> = fn(&mut MatchQueryParams<L>, &mut RuleState<L>) -> Result<(), Error>;
 
+/// Returns `true` if the node matched by the query was suppressed by a rule.
+///
+/// It's never inlined, so it's compiled once per language instead of once
+/// per rule.
+#[inline(never)]
+fn is_query_suppressed<L: Language + 'static>(
+    params: &MatchQueryParams<L>,
+    state: &RuleState<L>,
+) -> bool {
+    params
+        .query
+        .downcast_ref::<SyntaxNode<L>>()
+        .is_some_and(|node| state.suppressions.inner.contains(node))
+}
+
+/// Queues the signal emitted by a rule.
+///
+/// It's never inlined, so it's compiled once per language instead of once
+/// per rule.
+#[inline(never)]
+fn push_rule_signal<'phase, L: Language>(
+    signal_queue: &mut std::collections::BinaryHeap<SignalEntry<'phase, L>>,
+    signal: Box<dyn crate::AnalyzerSignal<L> + 'phase>,
+    rule: RuleKey,
+    instances: Box<[Box<str>]>,
+    text_range: biome_rowan::TextRange,
+    category: RuleCategory,
+) {
+    signal_queue.push(SignalEntry {
+        signal,
+        rule: rule.into(),
+        instances,
+        text_range,
+        category,
+    });
+}
+
 impl<L: Language + Default> RegistryRule<L> {
     fn new<R>(state_index: usize) -> Self
     where
@@ -465,9 +502,7 @@ impl<L: Language + Default> RegistryRule<L> {
         where
             R: Rule<Options: Default, Query: Queryable<Output: Clone>> + 'static,
         {
-            if let Some(node) = params.query.downcast_ref::<SyntaxNode<RuleLanguage<R>>>()
-                && state.suppressions.inner.contains(node)
-            {
+            if is_query_suppressed(params, state) {
                 return Ok(());
             }
 
@@ -504,13 +539,14 @@ impl<L: Language + Default> RegistryRule<L> {
                     params.options,
                 ));
 
-                params.signal_queue.push(SignalEntry {
+                push_rule_signal(
+                    params.signal_queue,
                     signal,
-                    rule: RuleKey::rule::<R>().into(),
+                    RuleKey::rule::<R>(),
                     instances,
                     text_range,
-                    category: <R::Group as RuleGroup>::Category::CATEGORY,
-                });
+                    <R::Group as RuleGroup>::Category::CATEGORY,
+                );
             }
 
             Ok(())
