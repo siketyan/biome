@@ -5,8 +5,9 @@
 //! type aliases in this module are the formatter types for [RowanSource], and
 //! [prelude] exports them instead of the generic types.
 
-use crate::TransformSourceMap;
+use crate::printer::{Printer, PrinterOptions};
 use crate::source::Source;
+use crate::{PrintResult, TransformSourceMap};
 use biome_rowan::{TextLen, TextRange, TextSize, TokenText};
 
 /// Source code parsed into a `biome_rowan` syntax tree.
@@ -29,6 +30,14 @@ impl Source for RowanSource {
 
     fn span(start: Self::Position, end: Self::Position) -> Self::Span {
         TextRange::new(start, end)
+    }
+
+    fn print_document(
+        options: PrinterOptions,
+        document: &Document,
+        indent: u16,
+    ) -> PrintResult<Printed> {
+        print_rowan_document(options, document, indent)
     }
 }
 
@@ -60,4 +69,17 @@ pub mod prelude {
         BestFittingVariants, Document, FormatElement, FormatEmbedded, Interned, LineMode,
         RowanSource, Tag,
     };
+}
+
+/// Prints a document whose source is a Rowan tree.
+///
+/// It isn't generic and it's never inlined, so the printer of the documents
+/// of every language is compiled once, in this crate.
+#[inline(never)]
+fn print_rowan_document(
+    options: PrinterOptions,
+    document: &Document,
+    indent: u16,
+) -> PrintResult<Printed> {
+    Printer::new(options).print_with_indent(document, indent)
 }

@@ -16,7 +16,7 @@ use crate::{
     },
     quote::{quote_line_prefix, should_format_quote_structurally},
 };
-use biome_formatter::{FormatOptions, GroupId, format_args, printer::Printer, write};
+use biome_formatter::{FormatOptions, GroupId, Source, format_args, write};
 use biome_markdown_syntax::{GfmTable, GfmTableDelimiterRow, GfmTableRow, MdBullet, MdQuote};
 use unicode_width::UnicodeWidthStr;
 
@@ -135,7 +135,8 @@ impl PreparedGfmTable {
                 let cell = cell?;
                 let content = f.intern(&cell.format())?;
                 let document = Document::new(content.clone().into_iter().collect());
-                let printed = Printer::new(f.options().as_print_options()).print(&document)?;
+                let printed =
+                    RowanSource::print_document(f.options().as_print_options(), &document, 0)?;
                 let text = printed.as_code();
 
                 Ok(CachedGfmTableCell {

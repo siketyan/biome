@@ -7,7 +7,9 @@
 //! [Source] chooses their types, and the formatter stores them and hands them
 //! back.
 
-use crate::Printed;
+use crate::prelude::Document;
+use crate::printer::{Printer, PrinterOptions};
+use crate::{PrintResult, Printed};
 use std::fmt::Debug;
 use std::hash::Hash;
 use std::ops::{Deref, Range};
@@ -48,6 +50,19 @@ pub trait Source: Copy + Debug + Default + Eq + Hash + 'static {
 
     /// Returns the range from `start` to `end`.
     fn span(start: Self::Position, end: Self::Position) -> Self::Span;
+
+    /// Prints `document`, starting at the given indentation level.
+    ///
+    /// The printer is generic over the source, so it's compiled in every
+    /// crate that prints a document. A source overrides this method with a
+    /// call to a function that isn't generic to compile its printer once.
+    fn print_document(
+        options: PrinterOptions,
+        document: &Document<Self>,
+        indent: u16,
+    ) -> PrintResult<Printed<Self>> {
+        Printer::new(options).print_with_indent(document, indent)
+    }
 }
 
 /// Changes the source positions of printed output, for example to point at

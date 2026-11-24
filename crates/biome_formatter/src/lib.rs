@@ -70,7 +70,7 @@ pub use crate::format_extensions::{
 };
 #[cfg(all(debug_assertions, feature = "rowan"))]
 use crate::printed_tokens::PrintedTokens;
-use crate::printer::{Printer, PrinterOptions};
+use crate::printer::PrinterOptions;
 #[cfg(feature = "rowan")]
 use crate::rowan::RowanSource;
 pub use arguments::{Argument, Arguments};
@@ -1251,7 +1251,7 @@ impl<Context: FormatContext> Formatted<Context> {
     pub fn print(&self) -> PrintResult<Printed<Context::Source>> {
         let print_options = self.context.options().as_print_options();
 
-        let printed = Printer::new(print_options).print(&self.document)?;
+        let printed = Context::Source::print_document(print_options, &self.document, 0)?;
 
         let printed = match self.context.source_map() {
             Some(source_map) => source_map.map_printed(printed),
@@ -1278,7 +1278,7 @@ impl<Context: FormatContext> Formatted<Context> {
             .options()
             .as_print_options()
             .with_source_map_generation(source_map);
-        let printed = Printer::new(print_options).print_with_indent(&self.document, indent)?;
+        let printed = Context::Source::print_document(print_options, &self.document, indent)?;
 
         let printed = match self.context.source_map() {
             Some(source_map) => source_map.map_printed(printed),
