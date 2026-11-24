@@ -174,13 +174,7 @@ impl WorkspaceTransport for SocketTransport {
             return Err(TransportError::ChannelClosed);
         }
 
-        let (send, recv) = oneshot::channel();
-
         let id = request.id;
-        self.pending_requests
-            .pin()
-            .insert(id, Mutex::new(Some(send)));
-
         let is_shutdown = request.method == "biome/shutdown";
 
         let request = JsonRpcRequest {
@@ -196,6 +190,37 @@ impl WorkspaceTransport for SocketTransport {
                 type_name::<P>()
             ))
         })?;
+
+        let response = self.exchange(id, is_shutdown, request)?;
+
+        let response = response.get();
+        let result = from_str(response).map_err(|err| {
+            TransportError::SerdeError(format!(
+                "failed to deserialize {} from {response:?}: {err}",
+                type_name::<R>()
+            ))
+        })?;
+
+        Ok(result)
+    }
+}
+
+impl SocketTransport {
+    /// Sends a serialized request and waits for its response.
+    ///
+    /// It doesn't depend on the types of the request and of the response, so
+    /// it's compiled once instead of once per workspace method.
+    fn exchange(
+        &self,
+        id: u64,
+        is_shutdown: bool,
+        request: Vec<u8>,
+    ) -> Result<Box<RawValue>, TransportError> {
+        let (send, recv) = oneshot::channel();
+
+        self.pending_requests
+            .pin()
+            .insert(id, Mutex::new(Some(send)));
 
         let mut connection_closed = self.connection_closed.clone();
         let exchange = async move {
@@ -232,17 +257,7 @@ impl WorkspaceTransport for SocketTransport {
         if response.is_err() {
             self.pending_requests.pin().remove(&id);
         }
-        let response = response?;
-
-        let response = response.get();
-        let result = from_str(response).map_err(|err| {
-            TransportError::SerdeError(format!(
-                "failed to deserialize {} from {response:?}: {err}",
-                type_name::<R>()
-            ))
-        })?;
-
-        Ok(result)
+        response
     }
 }
 
