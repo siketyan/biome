@@ -8,7 +8,6 @@ use crate::{
     GraphqlSyntaxKind::{self as SyntaxKind, *},
     GraphqlSyntaxList as SyntaxList, GraphqlSyntaxNode as SyntaxNode,
     GraphqlSyntaxToken as SyntaxToken,
-    macros::map_syntax_node,
 };
 use biome_rowan::{
     AstNode, AstNodeList, AstNodeListIterator, AstNodeSlotMap, AstSeparatedList,
@@ -3196,15 +3195,7 @@ impl AstNode for GraphqlAlias {
 }
 impl std::fmt::Debug for GraphqlAlias {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "GraphqlAlias",
-            &DEPTH,
-            &[("value", false), ("colon_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<GraphqlAlias> for SyntaxNode {
@@ -3240,15 +3231,7 @@ impl AstNode for GraphqlArgument {
 }
 impl std::fmt::Debug for GraphqlArgument {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "GraphqlArgument",
-            &DEPTH,
-            &[("name", false), ("colon_token", false), ("value", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<GraphqlArgument> for SyntaxNode {
@@ -3284,19 +3267,7 @@ impl AstNode for GraphqlArguments {
 }
 impl std::fmt::Debug for GraphqlArguments {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "GraphqlArguments",
-            &DEPTH,
-            &[
-                ("l_paren_token", false),
-                ("arguments", false),
-                ("r_paren_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<GraphqlArguments> for SyntaxNode {
@@ -3332,19 +3303,7 @@ impl AstNode for GraphqlArgumentsDefinition {
 }
 impl std::fmt::Debug for GraphqlArgumentsDefinition {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "GraphqlArgumentsDefinition",
-            &DEPTH,
-            &[
-                ("l_paren_token", false),
-                ("arguments", false),
-                ("r_paren_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<GraphqlArgumentsDefinition> for SyntaxNode {
@@ -3380,15 +3339,7 @@ impl AstNode for GraphqlBooleanValue {
 }
 impl std::fmt::Debug for GraphqlBooleanValue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "GraphqlBooleanValue",
-            &DEPTH,
-            &[("value_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<GraphqlBooleanValue> for SyntaxNode {
@@ -3424,15 +3375,7 @@ impl AstNode for GraphqlDefaultValue {
 }
 impl std::fmt::Debug for GraphqlDefaultValue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "GraphqlDefaultValue",
-            &DEPTH,
-            &[("eq_token", false), ("value", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<GraphqlDefaultValue> for SyntaxNode {
@@ -3468,15 +3411,7 @@ impl AstNode for GraphqlDescription {
 }
 impl std::fmt::Debug for GraphqlDescription {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "GraphqlDescription",
-            &DEPTH,
-            &[("graphql_string_value", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<GraphqlDescription> for SyntaxNode {
@@ -3512,15 +3447,7 @@ impl AstNode for GraphqlDirective {
 }
 impl std::fmt::Debug for GraphqlDirective {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "GraphqlDirective",
-            &DEPTH,
-            &[("at_token", false), ("name", false), ("arguments", true)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<GraphqlDirective> for SyntaxNode {
@@ -3556,25 +3483,7 @@ impl AstNode for GraphqlDirectiveDefinition {
 }
 impl std::fmt::Debug for GraphqlDirectiveDefinition {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "GraphqlDirectiveDefinition",
-            &DEPTH,
-            &[
-                ("description", true),
-                ("directive_token", false),
-                ("at_token", false),
-                ("name", false),
-                ("arguments", true),
-                ("repeatable_token", true),
-                ("on_token", false),
-                ("bitwise_or_token", true),
-                ("locations", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<GraphqlDirectiveDefinition> for SyntaxNode {
@@ -3610,15 +3519,7 @@ impl AstNode for GraphqlDirectiveLocation {
 }
 impl std::fmt::Debug for GraphqlDirectiveLocation {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "GraphqlDirectiveLocation",
-            &DEPTH,
-            &[("value_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<GraphqlDirectiveLocation> for SyntaxNode {
@@ -3654,21 +3555,7 @@ impl AstNode for GraphqlEnumTypeDefinition {
 }
 impl std::fmt::Debug for GraphqlEnumTypeDefinition {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "GraphqlEnumTypeDefinition",
-            &DEPTH,
-            &[
-                ("description", true),
-                ("enum_token", false),
-                ("name", false),
-                ("directives", false),
-                ("enum_values", true),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<GraphqlEnumTypeDefinition> for SyntaxNode {
@@ -3704,21 +3591,7 @@ impl AstNode for GraphqlEnumTypeExtension {
 }
 impl std::fmt::Debug for GraphqlEnumTypeExtension {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "GraphqlEnumTypeExtension",
-            &DEPTH,
-            &[
-                ("extend_token", false),
-                ("enum_token", false),
-                ("name", false),
-                ("directives", false),
-                ("enum_values", true),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<GraphqlEnumTypeExtension> for SyntaxNode {
@@ -3754,15 +3627,7 @@ impl AstNode for GraphqlEnumValue {
 }
 impl std::fmt::Debug for GraphqlEnumValue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "GraphqlEnumValue",
-            &DEPTH,
-            &[("value", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<GraphqlEnumValue> for SyntaxNode {
@@ -3798,19 +3663,7 @@ impl AstNode for GraphqlEnumValueDefinition {
 }
 impl std::fmt::Debug for GraphqlEnumValueDefinition {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "GraphqlEnumValueDefinition",
-            &DEPTH,
-            &[
-                ("description", true),
-                ("value", false),
-                ("directives", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<GraphqlEnumValueDefinition> for SyntaxNode {
@@ -3846,19 +3699,7 @@ impl AstNode for GraphqlEnumValuesDefinition {
 }
 impl std::fmt::Debug for GraphqlEnumValuesDefinition {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "GraphqlEnumValuesDefinition",
-            &DEPTH,
-            &[
-                ("l_curly_token", false),
-                ("values", false),
-                ("r_curly_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<GraphqlEnumValuesDefinition> for SyntaxNode {
@@ -3894,21 +3735,7 @@ impl AstNode for GraphqlField {
 }
 impl std::fmt::Debug for GraphqlField {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "GraphqlField",
-            &DEPTH,
-            &[
-                ("alias", true),
-                ("name", false),
-                ("arguments", true),
-                ("directives", false),
-                ("selection_set", true),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<GraphqlField> for SyntaxNode {
@@ -3944,22 +3771,7 @@ impl AstNode for GraphqlFieldDefinition {
 }
 impl std::fmt::Debug for GraphqlFieldDefinition {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "GraphqlFieldDefinition",
-            &DEPTH,
-            &[
-                ("description", true),
-                ("name", false),
-                ("arguments", true),
-                ("colon_token", false),
-                ("ty", false),
-                ("directives", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<GraphqlFieldDefinition> for SyntaxNode {
@@ -3995,19 +3807,7 @@ impl AstNode for GraphqlFieldsDefinition {
 }
 impl std::fmt::Debug for GraphqlFieldsDefinition {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "GraphqlFieldsDefinition",
-            &DEPTH,
-            &[
-                ("l_curly_token", false),
-                ("fields", false),
-                ("r_curly_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<GraphqlFieldsDefinition> for SyntaxNode {
@@ -4043,15 +3843,7 @@ impl AstNode for GraphqlFloatValue {
 }
 impl std::fmt::Debug for GraphqlFloatValue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "GraphqlFloatValue",
-            &DEPTH,
-            &[("graphql_float_literal_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<GraphqlFloatValue> for SyntaxNode {
@@ -4087,23 +3879,7 @@ impl AstNode for GraphqlFragmentDefinition {
 }
 impl std::fmt::Debug for GraphqlFragmentDefinition {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "GraphqlFragmentDefinition",
-            &DEPTH,
-            &[
-                ("description", true),
-                ("fragment_token", false),
-                ("name", false),
-                ("variables", true),
-                ("type_condition", false),
-                ("directives", false),
-                ("selection_set", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<GraphqlFragmentDefinition> for SyntaxNode {
@@ -4139,19 +3915,7 @@ impl AstNode for GraphqlFragmentSpread {
 }
 impl std::fmt::Debug for GraphqlFragmentSpread {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "GraphqlFragmentSpread",
-            &DEPTH,
-            &[
-                ("dotdotdot_token", false),
-                ("name", false),
-                ("directives", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<GraphqlFragmentSpread> for SyntaxNode {
@@ -4187,19 +3951,7 @@ impl AstNode for GraphqlImplementsInterfaces {
 }
 impl std::fmt::Debug for GraphqlImplementsInterfaces {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "GraphqlImplementsInterfaces",
-            &DEPTH,
-            &[
-                ("implements_token", false),
-                ("amp_token", true),
-                ("interfaces", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<GraphqlImplementsInterfaces> for SyntaxNode {
@@ -4235,20 +3987,7 @@ impl AstNode for GraphqlInlineFragment {
 }
 impl std::fmt::Debug for GraphqlInlineFragment {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "GraphqlInlineFragment",
-            &DEPTH,
-            &[
-                ("dotdotdot_token", false),
-                ("type_condition", true),
-                ("directives", false),
-                ("selection_set", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<GraphqlInlineFragment> for SyntaxNode {
@@ -4284,19 +4023,7 @@ impl AstNode for GraphqlInputFieldsDefinition {
 }
 impl std::fmt::Debug for GraphqlInputFieldsDefinition {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "GraphqlInputFieldsDefinition",
-            &DEPTH,
-            &[
-                ("l_curly_token", false),
-                ("fields", false),
-                ("r_curly_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<GraphqlInputFieldsDefinition> for SyntaxNode {
@@ -4332,21 +4059,7 @@ impl AstNode for GraphqlInputObjectTypeDefinition {
 }
 impl std::fmt::Debug for GraphqlInputObjectTypeDefinition {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "GraphqlInputObjectTypeDefinition",
-            &DEPTH,
-            &[
-                ("description", true),
-                ("input_token", false),
-                ("name", false),
-                ("directives", false),
-                ("input_fields", true),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<GraphqlInputObjectTypeDefinition> for SyntaxNode {
@@ -4382,21 +4095,7 @@ impl AstNode for GraphqlInputObjectTypeExtension {
 }
 impl std::fmt::Debug for GraphqlInputObjectTypeExtension {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "GraphqlInputObjectTypeExtension",
-            &DEPTH,
-            &[
-                ("extend_token", false),
-                ("input_token", false),
-                ("name", false),
-                ("directives", false),
-                ("input_fields", true),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<GraphqlInputObjectTypeExtension> for SyntaxNode {
@@ -4432,22 +4131,7 @@ impl AstNode for GraphqlInputValueDefinition {
 }
 impl std::fmt::Debug for GraphqlInputValueDefinition {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "GraphqlInputValueDefinition",
-            &DEPTH,
-            &[
-                ("description", true),
-                ("name", false),
-                ("colon_token", false),
-                ("ty", false),
-                ("default", true),
-                ("directives", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<GraphqlInputValueDefinition> for SyntaxNode {
@@ -4483,15 +4167,7 @@ impl AstNode for GraphqlIntValue {
 }
 impl std::fmt::Debug for GraphqlIntValue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "GraphqlIntValue",
-            &DEPTH,
-            &[("graphql_int_literal_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<GraphqlIntValue> for SyntaxNode {
@@ -4527,22 +4203,7 @@ impl AstNode for GraphqlInterfaceTypeDefinition {
 }
 impl std::fmt::Debug for GraphqlInterfaceTypeDefinition {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "GraphqlInterfaceTypeDefinition",
-            &DEPTH,
-            &[
-                ("description", true),
-                ("interface_token", false),
-                ("name", false),
-                ("implements", true),
-                ("directives", false),
-                ("fields", true),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<GraphqlInterfaceTypeDefinition> for SyntaxNode {
@@ -4578,22 +4239,7 @@ impl AstNode for GraphqlInterfaceTypeExtension {
 }
 impl std::fmt::Debug for GraphqlInterfaceTypeExtension {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "GraphqlInterfaceTypeExtension",
-            &DEPTH,
-            &[
-                ("extend_token", false),
-                ("interface_token", false),
-                ("name", false),
-                ("implements", true),
-                ("directives", false),
-                ("fields", true),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<GraphqlInterfaceTypeExtension> for SyntaxNode {
@@ -4629,19 +4275,7 @@ impl AstNode for GraphqlListType {
 }
 impl std::fmt::Debug for GraphqlListType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "GraphqlListType",
-            &DEPTH,
-            &[
-                ("l_brack_token", false),
-                ("element", false),
-                ("r_brack_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<GraphqlListType> for SyntaxNode {
@@ -4677,19 +4311,7 @@ impl AstNode for GraphqlListValue {
 }
 impl std::fmt::Debug for GraphqlListValue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "GraphqlListValue",
-            &DEPTH,
-            &[
-                ("l_brack_token", false),
-                ("elements", false),
-                ("r_brack_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<GraphqlListValue> for SyntaxNode {
@@ -4725,15 +4347,7 @@ impl AstNode for GraphqlLiteralName {
 }
 impl std::fmt::Debug for GraphqlLiteralName {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "GraphqlLiteralName",
-            &DEPTH,
-            &[("value_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<GraphqlLiteralName> for SyntaxNode {
@@ -4769,15 +4383,7 @@ impl AstNode for GraphqlNameBinding {
 }
 impl std::fmt::Debug for GraphqlNameBinding {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "GraphqlNameBinding",
-            &DEPTH,
-            &[("value_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<GraphqlNameBinding> for SyntaxNode {
@@ -4813,15 +4419,7 @@ impl AstNode for GraphqlNameReference {
 }
 impl std::fmt::Debug for GraphqlNameReference {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "GraphqlNameReference",
-            &DEPTH,
-            &[("value_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<GraphqlNameReference> for SyntaxNode {
@@ -4857,15 +4455,7 @@ impl AstNode for GraphqlNonNullType {
 }
 impl std::fmt::Debug for GraphqlNonNullType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "GraphqlNonNullType",
-            &DEPTH,
-            &[("base", false), ("excl_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<GraphqlNonNullType> for SyntaxNode {
@@ -4901,15 +4491,7 @@ impl AstNode for GraphqlNullValue {
 }
 impl std::fmt::Debug for GraphqlNullValue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "GraphqlNullValue",
-            &DEPTH,
-            &[("null_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<GraphqlNullValue> for SyntaxNode {
@@ -4945,15 +4527,7 @@ impl AstNode for GraphqlObjectField {
 }
 impl std::fmt::Debug for GraphqlObjectField {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "GraphqlObjectField",
-            &DEPTH,
-            &[("name", false), ("colon_token", false), ("value", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<GraphqlObjectField> for SyntaxNode {
@@ -4989,22 +4563,7 @@ impl AstNode for GraphqlObjectTypeDefinition {
 }
 impl std::fmt::Debug for GraphqlObjectTypeDefinition {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "GraphqlObjectTypeDefinition",
-            &DEPTH,
-            &[
-                ("description", true),
-                ("type_token", false),
-                ("name", false),
-                ("implements", true),
-                ("directives", false),
-                ("fields", true),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<GraphqlObjectTypeDefinition> for SyntaxNode {
@@ -5040,22 +4599,7 @@ impl AstNode for GraphqlObjectTypeExtension {
 }
 impl std::fmt::Debug for GraphqlObjectTypeExtension {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "GraphqlObjectTypeExtension",
-            &DEPTH,
-            &[
-                ("extend_token", false),
-                ("type_token", false),
-                ("name", false),
-                ("implements", true),
-                ("directives", false),
-                ("fields", true),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<GraphqlObjectTypeExtension> for SyntaxNode {
@@ -5091,19 +4635,7 @@ impl AstNode for GraphqlObjectValue {
 }
 impl std::fmt::Debug for GraphqlObjectValue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "GraphqlObjectValue",
-            &DEPTH,
-            &[
-                ("l_curly_token", false),
-                ("members", false),
-                ("r_curly_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<GraphqlObjectValue> for SyntaxNode {
@@ -5139,22 +4671,7 @@ impl AstNode for GraphqlOperationDefinition {
 }
 impl std::fmt::Debug for GraphqlOperationDefinition {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "GraphqlOperationDefinition",
-            &DEPTH,
-            &[
-                ("description", true),
-                ("ty", false),
-                ("name", true),
-                ("variables", true),
-                ("directives", false),
-                ("selection_set", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<GraphqlOperationDefinition> for SyntaxNode {
@@ -5190,15 +4707,7 @@ impl AstNode for GraphqlOperationType {
 }
 impl std::fmt::Debug for GraphqlOperationType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "GraphqlOperationType",
-            &DEPTH,
-            &[("value_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<GraphqlOperationType> for SyntaxNode {
@@ -5234,19 +4743,7 @@ impl AstNode for GraphqlRoot {
 }
 impl std::fmt::Debug for GraphqlRoot {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "GraphqlRoot",
-            &DEPTH,
-            &[
-                ("bom_token", true),
-                ("definitions", false),
-                ("eof_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<GraphqlRoot> for SyntaxNode {
@@ -5282,19 +4779,7 @@ impl AstNode for GraphqlRootOperationTypeDefinition {
 }
 impl std::fmt::Debug for GraphqlRootOperationTypeDefinition {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "GraphqlRootOperationTypeDefinition",
-            &DEPTH,
-            &[
-                ("operation_type", false),
-                ("colon_token", false),
-                ("named_type", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<GraphqlRootOperationTypeDefinition> for SyntaxNode {
@@ -5330,19 +4815,7 @@ impl AstNode for GraphqlRootOperationTypes {
 }
 impl std::fmt::Debug for GraphqlRootOperationTypes {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "GraphqlRootOperationTypes",
-            &DEPTH,
-            &[
-                ("l_curly_token", false),
-                ("root_operation_type", false),
-                ("r_curly_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<GraphqlRootOperationTypes> for SyntaxNode {
@@ -5378,20 +4851,7 @@ impl AstNode for GraphqlScalarTypeDefinition {
 }
 impl std::fmt::Debug for GraphqlScalarTypeDefinition {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "GraphqlScalarTypeDefinition",
-            &DEPTH,
-            &[
-                ("description", true),
-                ("scalar_token", false),
-                ("name", false),
-                ("directives", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<GraphqlScalarTypeDefinition> for SyntaxNode {
@@ -5427,20 +4887,7 @@ impl AstNode for GraphqlScalarTypeExtension {
 }
 impl std::fmt::Debug for GraphqlScalarTypeExtension {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "GraphqlScalarTypeExtension",
-            &DEPTH,
-            &[
-                ("extend_token", false),
-                ("scalar_token", false),
-                ("name", false),
-                ("directives", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<GraphqlScalarTypeExtension> for SyntaxNode {
@@ -5476,20 +4923,7 @@ impl AstNode for GraphqlSchemaDefinition {
 }
 impl std::fmt::Debug for GraphqlSchemaDefinition {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "GraphqlSchemaDefinition",
-            &DEPTH,
-            &[
-                ("description", true),
-                ("schema_token", false),
-                ("directives", false),
-                ("root_operation_types", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<GraphqlSchemaDefinition> for SyntaxNode {
@@ -5525,20 +4959,7 @@ impl AstNode for GraphqlSchemaExtension {
 }
 impl std::fmt::Debug for GraphqlSchemaExtension {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "GraphqlSchemaExtension",
-            &DEPTH,
-            &[
-                ("extend_token", false),
-                ("schema_token", false),
-                ("directives", false),
-                ("root_operation_types", true),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<GraphqlSchemaExtension> for SyntaxNode {
@@ -5574,19 +4995,7 @@ impl AstNode for GraphqlSelectionSet {
 }
 impl std::fmt::Debug for GraphqlSelectionSet {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "GraphqlSelectionSet",
-            &DEPTH,
-            &[
-                ("l_curly_token", false),
-                ("selections", false),
-                ("r_curly_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<GraphqlSelectionSet> for SyntaxNode {
@@ -5622,15 +5031,7 @@ impl AstNode for GraphqlStringValue {
 }
 impl std::fmt::Debug for GraphqlStringValue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "GraphqlStringValue",
-            &DEPTH,
-            &[("graphql_string_literal_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<GraphqlStringValue> for SyntaxNode {
@@ -5666,15 +5067,7 @@ impl AstNode for GraphqlTypeCondition {
 }
 impl std::fmt::Debug for GraphqlTypeCondition {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "GraphqlTypeCondition",
-            &DEPTH,
-            &[("on_token", false), ("ty", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<GraphqlTypeCondition> for SyntaxNode {
@@ -5710,19 +5103,7 @@ impl AstNode for GraphqlUnionMemberTypes {
 }
 impl std::fmt::Debug for GraphqlUnionMemberTypes {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "GraphqlUnionMemberTypes",
-            &DEPTH,
-            &[
-                ("eq_token", false),
-                ("bitwise_or_token", true),
-                ("members", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<GraphqlUnionMemberTypes> for SyntaxNode {
@@ -5758,21 +5139,7 @@ impl AstNode for GraphqlUnionTypeDefinition {
 }
 impl std::fmt::Debug for GraphqlUnionTypeDefinition {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "GraphqlUnionTypeDefinition",
-            &DEPTH,
-            &[
-                ("description", true),
-                ("union_token", false),
-                ("name", false),
-                ("directives", false),
-                ("union_members", true),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<GraphqlUnionTypeDefinition> for SyntaxNode {
@@ -5808,21 +5175,7 @@ impl AstNode for GraphqlUnionTypeExtension {
 }
 impl std::fmt::Debug for GraphqlUnionTypeExtension {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "GraphqlUnionTypeExtension",
-            &DEPTH,
-            &[
-                ("extend_token", false),
-                ("union_token", false),
-                ("name", false),
-                ("directives", false),
-                ("union_members", true),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<GraphqlUnionTypeExtension> for SyntaxNode {
@@ -5858,15 +5211,7 @@ impl AstNode for GraphqlVariableBinding {
 }
 impl std::fmt::Debug for GraphqlVariableBinding {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "GraphqlVariableBinding",
-            &DEPTH,
-            &[("dollar_token", false), ("name", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<GraphqlVariableBinding> for SyntaxNode {
@@ -5902,22 +5247,7 @@ impl AstNode for GraphqlVariableDefinition {
 }
 impl std::fmt::Debug for GraphqlVariableDefinition {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "GraphqlVariableDefinition",
-            &DEPTH,
-            &[
-                ("description", true),
-                ("variable", false),
-                ("colon_token", false),
-                ("ty", false),
-                ("default", true),
-                ("directives", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<GraphqlVariableDefinition> for SyntaxNode {
@@ -5953,19 +5283,7 @@ impl AstNode for GraphqlVariableDefinitions {
 }
 impl std::fmt::Debug for GraphqlVariableDefinitions {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "GraphqlVariableDefinitions",
-            &DEPTH,
-            &[
-                ("l_paren_token", false),
-                ("elements", false),
-                ("r_paren_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<GraphqlVariableDefinitions> for SyntaxNode {
@@ -6001,15 +5319,7 @@ impl AstNode for GraphqlVariableReference {
 }
 impl std::fmt::Debug for GraphqlVariableReference {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "GraphqlVariableReference",
-            &DEPTH,
-            &[("dollar_token", false), ("name", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<GraphqlVariableReference> for SyntaxNode {
@@ -7212,9 +6522,7 @@ impl AstNode for GraphqlBogus {
 }
 impl std::fmt::Debug for GraphqlBogus {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("GraphqlBogus")
-            .field("items", &DebugSyntaxElementChildren(self.items()))
-            .finish()
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<GraphqlBogus> for SyntaxNode {
@@ -7268,9 +6576,7 @@ impl AstNode for GraphqlBogusDefinition {
 }
 impl std::fmt::Debug for GraphqlBogusDefinition {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("GraphqlBogusDefinition")
-            .field("items", &DebugSyntaxElementChildren(self.items()))
-            .finish()
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<GraphqlBogusDefinition> for SyntaxNode {
@@ -7324,9 +6630,7 @@ impl AstNode for GraphqlBogusSelection {
 }
 impl std::fmt::Debug for GraphqlBogusSelection {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("GraphqlBogusSelection")
-            .field("items", &DebugSyntaxElementChildren(self.items()))
-            .finish()
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<GraphqlBogusSelection> for SyntaxNode {
@@ -7380,9 +6684,7 @@ impl AstNode for GraphqlBogusType {
 }
 impl std::fmt::Debug for GraphqlBogusType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("GraphqlBogusType")
-            .field("items", &DebugSyntaxElementChildren(self.items()))
-            .finish()
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<GraphqlBogusType> for SyntaxNode {
@@ -7436,9 +6738,7 @@ impl AstNode for GraphqlBogusValue {
 }
 impl std::fmt::Debug for GraphqlBogusValue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("GraphqlBogusValue")
-            .field("items", &DebugSyntaxElementChildren(self.items()))
-            .finish()
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<GraphqlBogusValue> for SyntaxNode {
@@ -7516,8 +6816,7 @@ impl AstNodeList for GraphqlArgumentDefinitionList {
 }
 impl Debug for GraphqlArgumentDefinitionList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("GraphqlArgumentDefinitionList ")?;
-        f.debug_list().entries(self.iter()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for &GraphqlArgumentDefinitionList {
@@ -7598,8 +6897,7 @@ impl AstNodeList for GraphqlArgumentList {
 }
 impl Debug for GraphqlArgumentList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("GraphqlArgumentList ")?;
-        f.debug_list().entries(self.iter()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for &GraphqlArgumentList {
@@ -7680,8 +6978,7 @@ impl AstNodeList for GraphqlDefinitionList {
 }
 impl Debug for GraphqlDefinitionList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("GraphqlDefinitionList ")?;
-        f.debug_list().entries(self.iter()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for &GraphqlDefinitionList {
@@ -7762,8 +7059,7 @@ impl AstNodeList for GraphqlDirectiveList {
 }
 impl Debug for GraphqlDirectiveList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("GraphqlDirectiveList ")?;
-        f.debug_list().entries(self.iter()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for &GraphqlDirectiveList {
@@ -7844,8 +7140,7 @@ impl AstSeparatedList for GraphqlDirectiveLocationList {
 }
 impl Debug for GraphqlDirectiveLocationList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("GraphqlDirectiveLocationList ")?;
-        f.debug_list().entries(self.elements()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for GraphqlDirectiveLocationList {
@@ -7926,8 +7221,7 @@ impl AstNodeList for GraphqlEnumValueList {
 }
 impl Debug for GraphqlEnumValueList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("GraphqlEnumValueList ")?;
-        f.debug_list().entries(self.iter()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for &GraphqlEnumValueList {
@@ -8008,8 +7302,7 @@ impl AstNodeList for GraphqlFieldDefinitionList {
 }
 impl Debug for GraphqlFieldDefinitionList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("GraphqlFieldDefinitionList ")?;
-        f.debug_list().entries(self.iter()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for &GraphqlFieldDefinitionList {
@@ -8090,8 +7383,7 @@ impl AstSeparatedList for GraphqlImplementsInterfaceList {
 }
 impl Debug for GraphqlImplementsInterfaceList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("GraphqlImplementsInterfaceList ")?;
-        f.debug_list().entries(self.elements()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for GraphqlImplementsInterfaceList {
@@ -8172,8 +7464,7 @@ impl AstNodeList for GraphqlInputFieldList {
 }
 impl Debug for GraphqlInputFieldList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("GraphqlInputFieldList ")?;
-        f.debug_list().entries(self.iter()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for &GraphqlInputFieldList {
@@ -8254,8 +7545,7 @@ impl AstNodeList for GraphqlListValueElementList {
 }
 impl Debug for GraphqlListValueElementList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("GraphqlListValueElementList ")?;
-        f.debug_list().entries(self.iter()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for &GraphqlListValueElementList {
@@ -8336,8 +7626,7 @@ impl AstNodeList for GraphqlObjectValueMemberList {
 }
 impl Debug for GraphqlObjectValueMemberList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("GraphqlObjectValueMemberList ")?;
-        f.debug_list().entries(self.iter()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for &GraphqlObjectValueMemberList {
@@ -8419,8 +7708,7 @@ impl AstNodeList for GraphqlRootOperationTypeDefinitionList {
 }
 impl Debug for GraphqlRootOperationTypeDefinitionList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("GraphqlRootOperationTypeDefinitionList ")?;
-        f.debug_list().entries(self.iter()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for &GraphqlRootOperationTypeDefinitionList {
@@ -8501,8 +7789,7 @@ impl AstNodeList for GraphqlSelectionList {
 }
 impl Debug for GraphqlSelectionList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("GraphqlSelectionList ")?;
-        f.debug_list().entries(self.iter()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for &GraphqlSelectionList {
@@ -8583,8 +7870,7 @@ impl AstSeparatedList for GraphqlUnionMemberTypeList {
 }
 impl Debug for GraphqlUnionMemberTypeList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("GraphqlUnionMemberTypeList ")?;
-        f.debug_list().entries(self.elements()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for GraphqlUnionMemberTypeList {
@@ -8665,8 +7951,7 @@ impl AstNodeList for GraphqlVariableDefinitionList {
 }
 impl Debug for GraphqlVariableDefinitionList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("GraphqlVariableDefinitionList ")?;
-        f.debug_list().entries(self.iter()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for &GraphqlVariableDefinitionList {
@@ -8701,7 +7986,186 @@ impl Debug for DebugSyntaxElement {
         }
     }
 }
-#[doc = r" Prints `node` the way the AST node of its kind does."]
+#[doc = r" Describes how the nodes of this language are printed."]
+struct DebugShapes;
+impl support::DebugNodeShapes for DebugShapes {
+    type Language = Language;
+    const SHAPES: &'static str = concat!(
+        "nGraphqlAlias,value,colon_token\n",
+        "nGraphqlArgument,name,colon_token,value\n",
+        "nGraphqlArguments,l_paren_token,arguments,r_paren_token\n",
+        "nGraphqlArgumentsDefinition,l_paren_token,arguments,r_paren_token\n",
+        "nGraphqlBooleanValue,value_token\n",
+        "nGraphqlDefaultValue,eq_token,value\n",
+        "nGraphqlDescription,graphql_string_value\n",
+        "nGraphqlDirective,at_token,name,?arguments\n",
+        "nGraphqlDirectiveDefinition,?description,directive_token,at_token,name,?arguments,?repeatable_token,on_token,?bitwise_or_token,locations\n",
+        "nGraphqlDirectiveLocation,value_token\n",
+        "nGraphqlEnumTypeDefinition,?description,enum_token,name,directives,?enum_values\n",
+        "nGraphqlEnumTypeExtension,extend_token,enum_token,name,directives,?enum_values\n",
+        "nGraphqlEnumValue,value\n",
+        "nGraphqlEnumValueDefinition,?description,value,directives\n",
+        "nGraphqlEnumValuesDefinition,l_curly_token,values,r_curly_token\n",
+        "nGraphqlField,?alias,name,?arguments,directives,?selection_set\n",
+        "nGraphqlFieldDefinition,?description,name,?arguments,colon_token,ty,directives\n",
+        "nGraphqlFieldsDefinition,l_curly_token,fields,r_curly_token\n",
+        "nGraphqlFloatValue,graphql_float_literal_token\n",
+        "nGraphqlFragmentDefinition,?description,fragment_token,name,?variables,type_condition,directives,selection_set\n",
+        "nGraphqlFragmentSpread,dotdotdot_token,name,directives\n",
+        "nGraphqlImplementsInterfaces,implements_token,?amp_token,interfaces\n",
+        "nGraphqlInlineFragment,dotdotdot_token,?type_condition,directives,selection_set\n",
+        "nGraphqlInputFieldsDefinition,l_curly_token,fields,r_curly_token\n",
+        "nGraphqlInputObjectTypeDefinition,?description,input_token,name,directives,?input_fields\n",
+        "nGraphqlInputObjectTypeExtension,extend_token,input_token,name,directives,?input_fields\n",
+        "nGraphqlInputValueDefinition,?description,name,colon_token,ty,?default,directives\n",
+        "nGraphqlIntValue,graphql_int_literal_token\n",
+        "nGraphqlInterfaceTypeDefinition,?description,interface_token,name,?implements,directives,?fields\n",
+        "nGraphqlInterfaceTypeExtension,extend_token,interface_token,name,?implements,directives,?fields\n",
+        "nGraphqlListType,l_brack_token,element,r_brack_token\n",
+        "nGraphqlListValue,l_brack_token,elements,r_brack_token\n",
+        "nGraphqlLiteralName,value_token\n",
+        "nGraphqlNameBinding,value_token\n",
+        "nGraphqlNameReference,value_token\n",
+        "nGraphqlNonNullType,base,excl_token\n",
+        "nGraphqlNullValue,null_token\n",
+        "nGraphqlObjectField,name,colon_token,value\n",
+        "nGraphqlObjectTypeDefinition,?description,type_token,name,?implements,directives,?fields\n",
+        "nGraphqlObjectTypeExtension,extend_token,type_token,name,?implements,directives,?fields\n",
+        "nGraphqlObjectValue,l_curly_token,members,r_curly_token\n",
+        "nGraphqlOperationDefinition,?description,ty,?name,?variables,directives,selection_set\n",
+        "nGraphqlOperationType,value_token\n",
+        "nGraphqlRoot,?bom_token,definitions,eof_token\n",
+        "nGraphqlRootOperationTypeDefinition,operation_type,colon_token,named_type\n",
+        "nGraphqlRootOperationTypes,l_curly_token,root_operation_type,r_curly_token\n",
+        "nGraphqlScalarTypeDefinition,?description,scalar_token,name,directives\n",
+        "nGraphqlScalarTypeExtension,extend_token,scalar_token,name,directives\n",
+        "nGraphqlSchemaDefinition,?description,schema_token,directives,root_operation_types\n",
+        "nGraphqlSchemaExtension,extend_token,schema_token,directives,?root_operation_types\n",
+        "nGraphqlSelectionSet,l_curly_token,selections,r_curly_token\n",
+        "nGraphqlStringValue,graphql_string_literal_token\n",
+        "nGraphqlTypeCondition,on_token,ty\n",
+        "nGraphqlUnionMemberTypes,eq_token,?bitwise_or_token,members\n",
+        "nGraphqlUnionTypeDefinition,?description,union_token,name,directives,?union_members\n",
+        "nGraphqlUnionTypeExtension,extend_token,union_token,name,directives,?union_members\n",
+        "nGraphqlVariableBinding,dollar_token,name\n",
+        "nGraphqlVariableDefinition,?description,variable,colon_token,ty,?default,directives\n",
+        "nGraphqlVariableDefinitions,l_paren_token,elements,r_paren_token\n",
+        "nGraphqlVariableReference,dollar_token,name\n",
+        "bGraphqlBogus\n",
+        "bGraphqlBogusDefinition\n",
+        "bGraphqlBogusSelection\n",
+        "bGraphqlBogusType\n",
+        "bGraphqlBogusValue\n",
+        "lGraphqlArgumentDefinitionList\n",
+        "lGraphqlArgumentList\n",
+        "lGraphqlDefinitionList\n",
+        "lGraphqlDirectiveList\n",
+        "sGraphqlDirectiveLocationList\n",
+        "lGraphqlEnumValueList\n",
+        "lGraphqlFieldDefinitionList\n",
+        "sGraphqlImplementsInterfaceList\n",
+        "lGraphqlInputFieldList\n",
+        "lGraphqlListValueElementList\n",
+        "lGraphqlObjectValueMemberList\n",
+        "lGraphqlRootOperationTypeDefinitionList\n",
+        "lGraphqlSelectionList\n",
+        "sGraphqlUnionMemberTypeList\n",
+        "lGraphqlVariableDefinitionList\n"
+    );
+    fn shape_offset(kind: SyntaxKind) -> u32 {
+        match kind {
+            GRAPHQL_ALIAS => 0u32,
+            GRAPHQL_ARGUMENT => 32u32,
+            GRAPHQL_ARGUMENTS => 72u32,
+            GRAPHQL_ARGUMENTS_DEFINITION => 128u32,
+            GRAPHQL_BOOLEAN_VALUE => 194u32,
+            GRAPHQL_DEFAULT_VALUE => 227u32,
+            GRAPHQL_DESCRIPTION => 263u32,
+            GRAPHQL_DIRECTIVE => 304u32,
+            GRAPHQL_DIRECTIVE_DEFINITION => 347u32,
+            GRAPHQL_DIRECTIVE_LOCATION => 484u32,
+            GRAPHQL_ENUM_TYPE_DEFINITION => 522u32,
+            GRAPHQL_ENUM_TYPE_EXTENSION => 602u32,
+            GRAPHQL_ENUM_VALUE => 681u32,
+            GRAPHQL_ENUM_VALUE_DEFINITION => 705u32,
+            GRAPHQL_ENUM_VALUES_DEFINITION => 763u32,
+            GRAPHQL_FIELD => 827u32,
+            GRAPHQL_FIELD_DEFINITION => 890u32,
+            GRAPHQL_FIELDS_DEFINITION => 969u32,
+            GRAPHQL_FLOAT_VALUE => 1029u32,
+            GRAPHQL_FRAGMENT_DEFINITION => 1076u32,
+            GRAPHQL_FRAGMENT_SPREAD => 1187u32,
+            GRAPHQL_IMPLEMENTS_INTERFACES => 1242u32,
+            GRAPHQL_INLINE_FRAGMENT => 1310u32,
+            GRAPHQL_INPUT_FIELDS_DEFINITION => 1390u32,
+            GRAPHQL_INPUT_OBJECT_TYPE_DEFINITION => 1455u32,
+            GRAPHQL_INPUT_OBJECT_TYPE_EXTENSION => 1544u32,
+            GRAPHQL_INPUT_VALUE_DEFINITION => 1632u32,
+            GRAPHQL_INT_VALUE => 1714u32,
+            GRAPHQL_INTERFACE_TYPE_DEFINITION => 1757u32,
+            GRAPHQL_INTERFACE_TYPE_EXTENSION => 1854u32,
+            GRAPHQL_LIST_TYPE => 1950u32,
+            GRAPHQL_LIST_VALUE => 2003u32,
+            GRAPHQL_LITERAL_NAME => 2058u32,
+            GRAPHQL_NAME_BINDING => 2090u32,
+            GRAPHQL_NAME_REFERENCE => 2122u32,
+            GRAPHQL_NON_NULL_TYPE => 2156u32,
+            GRAPHQL_NULL_VALUE => 2192u32,
+            GRAPHQL_OBJECT_FIELD => 2221u32,
+            GRAPHQL_OBJECT_TYPE_DEFINITION => 2264u32,
+            GRAPHQL_OBJECT_TYPE_EXTENSION => 2353u32,
+            GRAPHQL_OBJECT_VALUE => 2441u32,
+            GRAPHQL_OPERATION_DEFINITION => 2497u32,
+            GRAPHQL_OPERATION_TYPE => 2583u32,
+            GRAPHQL_ROOT => 2617u32,
+            GRAPHQL_ROOT_OPERATION_TYPE_DEFINITION => 2663u32,
+            GRAPHQL_ROOT_OPERATION_TYPES => 2737u32,
+            GRAPHQL_SCALAR_TYPE_DEFINITION => 2812u32,
+            GRAPHQL_SCALAR_TYPE_EXTENSION => 2883u32,
+            GRAPHQL_SCHEMA_DEFINITION => 2953u32,
+            GRAPHQL_SCHEMA_EXTENSION => 3036u32,
+            GRAPHQL_SELECTION_SET => 3119u32,
+            GRAPHQL_STRING_VALUE => 3179u32,
+            GRAPHQL_TYPE_CONDITION => 3228u32,
+            GRAPHQL_UNION_MEMBER_TYPES => 3262u32,
+            GRAPHQL_UNION_TYPE_DEFINITION => 3322u32,
+            GRAPHQL_UNION_TYPE_EXTENSION => 3406u32,
+            GRAPHQL_VARIABLE_BINDING => 3489u32,
+            GRAPHQL_VARIABLE_DEFINITION => 3531u32,
+            GRAPHQL_VARIABLE_DEFINITIONS => 3615u32,
+            GRAPHQL_VARIABLE_REFERENCE => 3680u32,
+            GRAPHQL_BOGUS => 3724u32,
+            GRAPHQL_BOGUS_DEFINITION => 3738u32,
+            GRAPHQL_BOGUS_SELECTION => 3762u32,
+            GRAPHQL_BOGUS_TYPE => 3785u32,
+            GRAPHQL_BOGUS_VALUE => 3803u32,
+            GRAPHQL_ARGUMENT_DEFINITION_LIST => 3822u32,
+            GRAPHQL_ARGUMENT_LIST => 3853u32,
+            GRAPHQL_DEFINITION_LIST => 3874u32,
+            GRAPHQL_DIRECTIVE_LIST => 3897u32,
+            GRAPHQL_DIRECTIVE_LOCATION_LIST => 3919u32,
+            GRAPHQL_ENUM_VALUE_LIST => 3949u32,
+            GRAPHQL_FIELD_DEFINITION_LIST => 3971u32,
+            GRAPHQL_IMPLEMENTS_INTERFACE_LIST => 3999u32,
+            GRAPHQL_INPUT_FIELD_LIST => 4031u32,
+            GRAPHQL_LIST_VALUE_ELEMENT_LIST => 4054u32,
+            GRAPHQL_OBJECT_VALUE_MEMBER_LIST => 4083u32,
+            GRAPHQL_ROOT_OPERATION_TYPE_DEFINITION_LIST => 4113u32,
+            GRAPHQL_SELECTION_LIST => 4153u32,
+            GRAPHQL_UNION_MEMBER_TYPE_LIST => 4175u32,
+            GRAPHQL_VARIABLE_DEFINITION_LIST => 4203u32,
+            _ => u32::MAX,
+        }
+    }
+    fn with_depth<R>(raw_kind: usize, f: impl FnOnce(&std::cell::Cell<u8>) -> R) -> R {
+        thread_local! { static DEPTHS : [std :: cell :: Cell < u8 > ; SyntaxKind :: __LAST as usize] = const { [const { std :: cell :: Cell :: new (0) } ; SyntaxKind :: __LAST as usize] } ; }
+        DEPTHS.with(|depths| f(&depths[raw_kind]))
+    }
+    fn debug_unshaped(_: &SyntaxNode, _: &mut Formatter<'_>) -> std::fmt::Result {
+        unreachable!("every kind of node has a shape")
+    }
+}
+#[doc = r" Prints `node` the way the AST node of its kind is printed."]
 fn debug_syntax_node(node: &SyntaxNode, f: &mut Formatter<'_>) -> std::fmt::Result {
-    map_syntax_node ! (node . clone () , node => std :: fmt :: Debug :: fmt (& node , f))
+    support::debug_any_node::<DebugShapes>(node, f)
 }
