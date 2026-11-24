@@ -1493,20 +1493,14 @@ impl AstNode for YamlAliasNode {
 impl std::fmt::Debug for YamlAliasNode {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        let current_depth = DEPTH.get();
-        let result = if current_depth < 16 {
-            DEPTH.set(current_depth + 1);
-            f.debug_struct("YamlAliasNode")
-                .field(
-                    "value_token",
-                    &support::DebugSyntaxResult(self.value_token()),
-                )
-                .finish()
-        } else {
-            f.debug_struct("YamlAliasNode").finish()
-        };
-        DEPTH.set(current_depth);
-        result
+        support::debug_node(
+            &self.syntax,
+            f,
+            "YamlAliasNode",
+            &DEPTH,
+            &[("value_token", false)],
+            debug_syntax_node,
+        )
     }
 }
 impl From<YamlAliasNode> for SyntaxNode {
@@ -1543,20 +1537,14 @@ impl AstNode for YamlAnchorProperty {
 impl std::fmt::Debug for YamlAnchorProperty {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        let current_depth = DEPTH.get();
-        let result = if current_depth < 16 {
-            DEPTH.set(current_depth + 1);
-            f.debug_struct("YamlAnchorProperty")
-                .field(
-                    "value_token",
-                    &support::DebugSyntaxResult(self.value_token()),
-                )
-                .finish()
-        } else {
-            f.debug_struct("YamlAnchorProperty").finish()
-        };
-        DEPTH.set(current_depth);
-        result
+        support::debug_node(
+            &self.syntax,
+            f,
+            "YamlAnchorProperty",
+            &DEPTH,
+            &[("value_token", false)],
+            debug_syntax_node,
+        )
     }
 }
 impl From<YamlAnchorProperty> for SyntaxNode {
@@ -1593,20 +1581,14 @@ impl AstNode for YamlBlockContent {
 impl std::fmt::Debug for YamlBlockContent {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        let current_depth = DEPTH.get();
-        let result = if current_depth < 16 {
-            DEPTH.set(current_depth + 1);
-            f.debug_struct("YamlBlockContent")
-                .field(
-                    "value_token",
-                    &support::DebugSyntaxResult(self.value_token()),
-                )
-                .finish()
-        } else {
-            f.debug_struct("YamlBlockContent").finish()
-        };
-        DEPTH.set(current_depth);
-        result
+        support::debug_node(
+            &self.syntax,
+            f,
+            "YamlBlockContent",
+            &DEPTH,
+            &[("value_token", false)],
+            debug_syntax_node,
+        )
     }
 }
 impl From<YamlBlockContent> for SyntaxNode {
@@ -1643,18 +1625,14 @@ impl AstNode for YamlBlockInBlockNode {
 impl std::fmt::Debug for YamlBlockInBlockNode {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        let current_depth = DEPTH.get();
-        let result = if current_depth < 16 {
-            DEPTH.set(current_depth + 1);
-            f.debug_struct("YamlBlockInBlockNode")
-                .field("properties", &self.properties())
-                .field("content", &support::DebugSyntaxResult(self.content()))
-                .finish()
-        } else {
-            f.debug_struct("YamlBlockInBlockNode").finish()
-        };
-        DEPTH.set(current_depth);
-        result
+        support::debug_node(
+            &self.syntax,
+            f,
+            "YamlBlockInBlockNode",
+            &DEPTH,
+            &[("properties", false), ("content", false)],
+            debug_syntax_node,
+        )
     }
 }
 impl From<YamlBlockInBlockNode> for SyntaxNode {
@@ -1691,17 +1669,14 @@ impl AstNode for YamlBlockKeepIndicator {
 impl std::fmt::Debug for YamlBlockKeepIndicator {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        let current_depth = DEPTH.get();
-        let result = if current_depth < 16 {
-            DEPTH.set(current_depth + 1);
-            f.debug_struct("YamlBlockKeepIndicator")
-                .field("plus_token", &support::DebugSyntaxResult(self.plus_token()))
-                .finish()
-        } else {
-            f.debug_struct("YamlBlockKeepIndicator").finish()
-        };
-        DEPTH.set(current_depth);
-        result
+        support::debug_node(
+            &self.syntax,
+            f,
+            "YamlBlockKeepIndicator",
+            &DEPTH,
+            &[("plus_token", false)],
+            debug_syntax_node,
+        )
     }
 }
 impl From<YamlBlockKeepIndicator> for SyntaxNode {
@@ -1738,26 +1713,19 @@ impl AstNode for YamlBlockMapExplicitEntry {
 impl std::fmt::Debug for YamlBlockMapExplicitEntry {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        let current_depth = DEPTH.get();
-        let result = if current_depth < 16 {
-            DEPTH.set(current_depth + 1);
-            f.debug_struct("YamlBlockMapExplicitEntry")
-                .field(
-                    "question_mark_token",
-                    &support::DebugSyntaxResult(self.question_mark_token()),
-                )
-                .field("key", &support::DebugOptionalElement(self.key()))
-                .field(
-                    "colon_token",
-                    &support::DebugOptionalElement(self.colon_token()),
-                )
-                .field("value", &support::DebugOptionalElement(self.value()))
-                .finish()
-        } else {
-            f.debug_struct("YamlBlockMapExplicitEntry").finish()
-        };
-        DEPTH.set(current_depth);
-        result
+        support::debug_node(
+            &self.syntax,
+            f,
+            "YamlBlockMapExplicitEntry",
+            &DEPTH,
+            &[
+                ("question_mark_token", false),
+                ("key", true),
+                ("colon_token", true),
+                ("value", true),
+            ],
+            debug_syntax_node,
+        )
     }
 }
 impl From<YamlBlockMapExplicitEntry> for SyntaxNode {
@@ -1794,22 +1762,14 @@ impl AstNode for YamlBlockMapImplicitEntry {
 impl std::fmt::Debug for YamlBlockMapImplicitEntry {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        let current_depth = DEPTH.get();
-        let result = if current_depth < 16 {
-            DEPTH.set(current_depth + 1);
-            f.debug_struct("YamlBlockMapImplicitEntry")
-                .field("key", &support::DebugOptionalElement(self.key()))
-                .field(
-                    "colon_token",
-                    &support::DebugSyntaxResult(self.colon_token()),
-                )
-                .field("value", &support::DebugOptionalElement(self.value()))
-                .finish()
-        } else {
-            f.debug_struct("YamlBlockMapImplicitEntry").finish()
-        };
-        DEPTH.set(current_depth);
-        result
+        support::debug_node(
+            &self.syntax,
+            f,
+            "YamlBlockMapImplicitEntry",
+            &DEPTH,
+            &[("key", true), ("colon_token", false), ("value", true)],
+            debug_syntax_node,
+        )
     }
 }
 impl From<YamlBlockMapImplicitEntry> for SyntaxNode {
@@ -1846,25 +1806,18 @@ impl AstNode for YamlBlockMapping {
 impl std::fmt::Debug for YamlBlockMapping {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        let current_depth = DEPTH.get();
-        let result = if current_depth < 16 {
-            DEPTH.set(current_depth + 1);
-            f.debug_struct("YamlBlockMapping")
-                .field(
-                    "mapping_start_token",
-                    &support::DebugSyntaxResult(self.mapping_start_token()),
-                )
-                .field("entries", &self.entries())
-                .field(
-                    "mapping_end_token",
-                    &support::DebugSyntaxResult(self.mapping_end_token()),
-                )
-                .finish()
-        } else {
-            f.debug_struct("YamlBlockMapping").finish()
-        };
-        DEPTH.set(current_depth);
-        result
+        support::debug_node(
+            &self.syntax,
+            f,
+            "YamlBlockMapping",
+            &DEPTH,
+            &[
+                ("mapping_start_token", false),
+                ("entries", false),
+                ("mapping_end_token", false),
+            ],
+            debug_syntax_node,
+        )
     }
 }
 impl From<YamlBlockMapping> for SyntaxNode {
@@ -1901,25 +1854,18 @@ impl AstNode for YamlBlockSequence {
 impl std::fmt::Debug for YamlBlockSequence {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        let current_depth = DEPTH.get();
-        let result = if current_depth < 16 {
-            DEPTH.set(current_depth + 1);
-            f.debug_struct("YamlBlockSequence")
-                .field(
-                    "sequence_start_token",
-                    &support::DebugSyntaxResult(self.sequence_start_token()),
-                )
-                .field("entries", &self.entries())
-                .field(
-                    "sequence_end_token",
-                    &support::DebugSyntaxResult(self.sequence_end_token()),
-                )
-                .finish()
-        } else {
-            f.debug_struct("YamlBlockSequence").finish()
-        };
-        DEPTH.set(current_depth);
-        result
+        support::debug_node(
+            &self.syntax,
+            f,
+            "YamlBlockSequence",
+            &DEPTH,
+            &[
+                ("sequence_start_token", false),
+                ("entries", false),
+                ("sequence_end_token", false),
+            ],
+            debug_syntax_node,
+        )
     }
 }
 impl From<YamlBlockSequence> for SyntaxNode {
@@ -1956,21 +1902,14 @@ impl AstNode for YamlBlockSequenceEntry {
 impl std::fmt::Debug for YamlBlockSequenceEntry {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        let current_depth = DEPTH.get();
-        let result = if current_depth < 16 {
-            DEPTH.set(current_depth + 1);
-            f.debug_struct("YamlBlockSequenceEntry")
-                .field(
-                    "minus_token",
-                    &support::DebugSyntaxResult(self.minus_token()),
-                )
-                .field("value", &support::DebugOptionalElement(self.value()))
-                .finish()
-        } else {
-            f.debug_struct("YamlBlockSequenceEntry").finish()
-        };
-        DEPTH.set(current_depth);
-        result
+        support::debug_node(
+            &self.syntax,
+            f,
+            "YamlBlockSequenceEntry",
+            &DEPTH,
+            &[("minus_token", false), ("value", true)],
+            debug_syntax_node,
+        )
     }
 }
 impl From<YamlBlockSequenceEntry> for SyntaxNode {
@@ -2007,20 +1946,14 @@ impl AstNode for YamlBlockStripIndicator {
 impl std::fmt::Debug for YamlBlockStripIndicator {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        let current_depth = DEPTH.get();
-        let result = if current_depth < 16 {
-            DEPTH.set(current_depth + 1);
-            f.debug_struct("YamlBlockStripIndicator")
-                .field(
-                    "minus_token",
-                    &support::DebugSyntaxResult(self.minus_token()),
-                )
-                .finish()
-        } else {
-            f.debug_struct("YamlBlockStripIndicator").finish()
-        };
-        DEPTH.set(current_depth);
-        result
+        support::debug_node(
+            &self.syntax,
+            f,
+            "YamlBlockStripIndicator",
+            &DEPTH,
+            &[("minus_token", false)],
+            debug_syntax_node,
+        )
     }
 }
 impl From<YamlBlockStripIndicator> for SyntaxNode {
@@ -2057,20 +1990,14 @@ impl AstNode for YamlDirective {
 impl std::fmt::Debug for YamlDirective {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        let current_depth = DEPTH.get();
-        let result = if current_depth < 16 {
-            DEPTH.set(current_depth + 1);
-            f.debug_struct("YamlDirective")
-                .field(
-                    "value_token",
-                    &support::DebugSyntaxResult(self.value_token()),
-                )
-                .finish()
-        } else {
-            f.debug_struct("YamlDirective").finish()
-        };
-        DEPTH.set(current_depth);
-        result
+        support::debug_node(
+            &self.syntax,
+            f,
+            "YamlDirective",
+            &DEPTH,
+            &[("value_token", false)],
+            debug_syntax_node,
+        )
     }
 }
 impl From<YamlDirective> for SyntaxNode {
@@ -2107,30 +2034,20 @@ impl AstNode for YamlDocument {
 impl std::fmt::Debug for YamlDocument {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        let current_depth = DEPTH.get();
-        let result = if current_depth < 16 {
-            DEPTH.set(current_depth + 1);
-            f.debug_struct("YamlDocument")
-                .field(
-                    "bom_token",
-                    &support::DebugOptionalElement(self.bom_token()),
-                )
-                .field("directives", &self.directives())
-                .field(
-                    "dashdashdash_token",
-                    &support::DebugOptionalElement(self.dashdashdash_token()),
-                )
-                .field("node", &support::DebugOptionalElement(self.node()))
-                .field(
-                    "dotdotdot_token",
-                    &support::DebugOptionalElement(self.dotdotdot_token()),
-                )
-                .finish()
-        } else {
-            f.debug_struct("YamlDocument").finish()
-        };
-        DEPTH.set(current_depth);
-        result
+        support::debug_node(
+            &self.syntax,
+            f,
+            "YamlDocument",
+            &DEPTH,
+            &[
+                ("bom_token", true),
+                ("directives", false),
+                ("dashdashdash_token", true),
+                ("node", true),
+                ("dotdotdot_token", true),
+            ],
+            debug_syntax_node,
+        )
     }
 }
 impl From<YamlDocument> for SyntaxNode {
@@ -2167,20 +2084,14 @@ impl AstNode for YamlDoubleQuotedScalar {
 impl std::fmt::Debug for YamlDoubleQuotedScalar {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        let current_depth = DEPTH.get();
-        let result = if current_depth < 16 {
-            DEPTH.set(current_depth + 1);
-            f.debug_struct("YamlDoubleQuotedScalar")
-                .field(
-                    "value_token",
-                    &support::DebugSyntaxResult(self.value_token()),
-                )
-                .finish()
-        } else {
-            f.debug_struct("YamlDoubleQuotedScalar").finish()
-        };
-        DEPTH.set(current_depth);
-        result
+        support::debug_node(
+            &self.syntax,
+            f,
+            "YamlDoubleQuotedScalar",
+            &DEPTH,
+            &[("value_token", false)],
+            debug_syntax_node,
+        )
     }
 }
 impl From<YamlDoubleQuotedScalar> for SyntaxNode {
@@ -2217,25 +2128,18 @@ impl AstNode for YamlFlowInBlockNode {
 impl std::fmt::Debug for YamlFlowInBlockNode {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        let current_depth = DEPTH.get();
-        let result = if current_depth < 16 {
-            DEPTH.set(current_depth + 1);
-            f.debug_struct("YamlFlowInBlockNode")
-                .field(
-                    "flow_start_token",
-                    &support::DebugSyntaxResult(self.flow_start_token()),
-                )
-                .field("flow", &support::DebugSyntaxResult(self.flow()))
-                .field(
-                    "flow_end_token",
-                    &support::DebugSyntaxResult(self.flow_end_token()),
-                )
-                .finish()
-        } else {
-            f.debug_struct("YamlFlowInBlockNode").finish()
-        };
-        DEPTH.set(current_depth);
-        result
+        support::debug_node(
+            &self.syntax,
+            f,
+            "YamlFlowInBlockNode",
+            &DEPTH,
+            &[
+                ("flow_start_token", false),
+                ("flow", false),
+                ("flow_end_token", false),
+            ],
+            debug_syntax_node,
+        )
     }
 }
 impl From<YamlFlowInBlockNode> for SyntaxNode {
@@ -2272,18 +2176,14 @@ impl AstNode for YamlFlowJsonNode {
 impl std::fmt::Debug for YamlFlowJsonNode {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        let current_depth = DEPTH.get();
-        let result = if current_depth < 16 {
-            DEPTH.set(current_depth + 1);
-            f.debug_struct("YamlFlowJsonNode")
-                .field("properties", &self.properties())
-                .field("content", &support::DebugSyntaxResult(self.content()))
-                .finish()
-        } else {
-            f.debug_struct("YamlFlowJsonNode").finish()
-        };
-        DEPTH.set(current_depth);
-        result
+        support::debug_node(
+            &self.syntax,
+            f,
+            "YamlFlowJsonNode",
+            &DEPTH,
+            &[("properties", false), ("content", false)],
+            debug_syntax_node,
+        )
     }
 }
 impl From<YamlFlowJsonNode> for SyntaxNode {
@@ -2320,26 +2220,19 @@ impl AstNode for YamlFlowMapExplicitEntry {
 impl std::fmt::Debug for YamlFlowMapExplicitEntry {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        let current_depth = DEPTH.get();
-        let result = if current_depth < 16 {
-            DEPTH.set(current_depth + 1);
-            f.debug_struct("YamlFlowMapExplicitEntry")
-                .field(
-                    "question_mark_token",
-                    &support::DebugSyntaxResult(self.question_mark_token()),
-                )
-                .field("key", &support::DebugOptionalElement(self.key()))
-                .field(
-                    "colon_token",
-                    &support::DebugOptionalElement(self.colon_token()),
-                )
-                .field("value", &support::DebugOptionalElement(self.value()))
-                .finish()
-        } else {
-            f.debug_struct("YamlFlowMapExplicitEntry").finish()
-        };
-        DEPTH.set(current_depth);
-        result
+        support::debug_node(
+            &self.syntax,
+            f,
+            "YamlFlowMapExplicitEntry",
+            &DEPTH,
+            &[
+                ("question_mark_token", false),
+                ("key", true),
+                ("colon_token", true),
+                ("value", true),
+            ],
+            debug_syntax_node,
+        )
     }
 }
 impl From<YamlFlowMapExplicitEntry> for SyntaxNode {
@@ -2376,22 +2269,14 @@ impl AstNode for YamlFlowMapImplicitEntry {
 impl std::fmt::Debug for YamlFlowMapImplicitEntry {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        let current_depth = DEPTH.get();
-        let result = if current_depth < 16 {
-            DEPTH.set(current_depth + 1);
-            f.debug_struct("YamlFlowMapImplicitEntry")
-                .field("key", &support::DebugOptionalElement(self.key()))
-                .field(
-                    "colon_token",
-                    &support::DebugOptionalElement(self.colon_token()),
-                )
-                .field("value", &support::DebugOptionalElement(self.value()))
-                .finish()
-        } else {
-            f.debug_struct("YamlFlowMapImplicitEntry").finish()
-        };
-        DEPTH.set(current_depth);
-        result
+        support::debug_node(
+            &self.syntax,
+            f,
+            "YamlFlowMapImplicitEntry",
+            &DEPTH,
+            &[("key", true), ("colon_token", true), ("value", true)],
+            debug_syntax_node,
+        )
     }
 }
 impl From<YamlFlowMapImplicitEntry> for SyntaxNode {
@@ -2428,25 +2313,18 @@ impl AstNode for YamlFlowMapping {
 impl std::fmt::Debug for YamlFlowMapping {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        let current_depth = DEPTH.get();
-        let result = if current_depth < 16 {
-            DEPTH.set(current_depth + 1);
-            f.debug_struct("YamlFlowMapping")
-                .field(
-                    "l_curly_token",
-                    &support::DebugSyntaxResult(self.l_curly_token()),
-                )
-                .field("entries", &self.entries())
-                .field(
-                    "r_curly_token",
-                    &support::DebugSyntaxResult(self.r_curly_token()),
-                )
-                .finish()
-        } else {
-            f.debug_struct("YamlFlowMapping").finish()
-        };
-        DEPTH.set(current_depth);
-        result
+        support::debug_node(
+            &self.syntax,
+            f,
+            "YamlFlowMapping",
+            &DEPTH,
+            &[
+                ("l_curly_token", false),
+                ("entries", false),
+                ("r_curly_token", false),
+            ],
+            debug_syntax_node,
+        )
     }
 }
 impl From<YamlFlowMapping> for SyntaxNode {
@@ -2483,25 +2361,18 @@ impl AstNode for YamlFlowSequence {
 impl std::fmt::Debug for YamlFlowSequence {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        let current_depth = DEPTH.get();
-        let result = if current_depth < 16 {
-            DEPTH.set(current_depth + 1);
-            f.debug_struct("YamlFlowSequence")
-                .field(
-                    "l_brack_token",
-                    &support::DebugSyntaxResult(self.l_brack_token()),
-                )
-                .field("entries", &self.entries())
-                .field(
-                    "r_brack_token",
-                    &support::DebugSyntaxResult(self.r_brack_token()),
-                )
-                .finish()
-        } else {
-            f.debug_struct("YamlFlowSequence").finish()
-        };
-        DEPTH.set(current_depth);
-        result
+        support::debug_node(
+            &self.syntax,
+            f,
+            "YamlFlowSequence",
+            &DEPTH,
+            &[
+                ("l_brack_token", false),
+                ("entries", false),
+                ("r_brack_token", false),
+            ],
+            debug_syntax_node,
+        )
     }
 }
 impl From<YamlFlowSequence> for SyntaxNode {
@@ -2538,18 +2409,14 @@ impl AstNode for YamlFlowYamlNode {
 impl std::fmt::Debug for YamlFlowYamlNode {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        let current_depth = DEPTH.get();
-        let result = if current_depth < 16 {
-            DEPTH.set(current_depth + 1);
-            f.debug_struct("YamlFlowYamlNode")
-                .field("properties", &self.properties())
-                .field("content", &support::DebugOptionalElement(self.content()))
-                .finish()
-        } else {
-            f.debug_struct("YamlFlowYamlNode").finish()
-        };
-        DEPTH.set(current_depth);
-        result
+        support::debug_node(
+            &self.syntax,
+            f,
+            "YamlFlowYamlNode",
+            &DEPTH,
+            &[("properties", false), ("content", true)],
+            debug_syntax_node,
+        )
     }
 }
 impl From<YamlFlowYamlNode> for SyntaxNode {
@@ -2586,22 +2453,18 @@ impl AstNode for YamlFoldedScalar {
 impl std::fmt::Debug for YamlFoldedScalar {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        let current_depth = DEPTH.get();
-        let result = if current_depth < 16 {
-            DEPTH.set(current_depth + 1);
-            f.debug_struct("YamlFoldedScalar")
-                .field(
-                    "r_angle_token",
-                    &support::DebugSyntaxResult(self.r_angle_token()),
-                )
-                .field("headers", &self.headers())
-                .field("content", &support::DebugSyntaxResult(self.content()))
-                .finish()
-        } else {
-            f.debug_struct("YamlFoldedScalar").finish()
-        };
-        DEPTH.set(current_depth);
-        result
+        support::debug_node(
+            &self.syntax,
+            f,
+            "YamlFoldedScalar",
+            &DEPTH,
+            &[
+                ("r_angle_token", false),
+                ("headers", false),
+                ("content", false),
+            ],
+            debug_syntax_node,
+        )
     }
 }
 impl From<YamlFoldedScalar> for SyntaxNode {
@@ -2638,20 +2501,14 @@ impl AstNode for YamlIndentationIndicator {
 impl std::fmt::Debug for YamlIndentationIndicator {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        let current_depth = DEPTH.get();
-        let result = if current_depth < 16 {
-            DEPTH.set(current_depth + 1);
-            f.debug_struct("YamlIndentationIndicator")
-                .field(
-                    "indentation_indicator_token",
-                    &support::DebugSyntaxResult(self.indentation_indicator_token()),
-                )
-                .finish()
-        } else {
-            f.debug_struct("YamlIndentationIndicator").finish()
-        };
-        DEPTH.set(current_depth);
-        result
+        support::debug_node(
+            &self.syntax,
+            f,
+            "YamlIndentationIndicator",
+            &DEPTH,
+            &[("indentation_indicator_token", false)],
+            debug_syntax_node,
+        )
     }
 }
 impl From<YamlIndentationIndicator> for SyntaxNode {
@@ -2688,22 +2545,18 @@ impl AstNode for YamlLiteralScalar {
 impl std::fmt::Debug for YamlLiteralScalar {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        let current_depth = DEPTH.get();
-        let result = if current_depth < 16 {
-            DEPTH.set(current_depth + 1);
-            f.debug_struct("YamlLiteralScalar")
-                .field(
-                    "bitwise_or_token",
-                    &support::DebugSyntaxResult(self.bitwise_or_token()),
-                )
-                .field("headers", &self.headers())
-                .field("content", &support::DebugSyntaxResult(self.content()))
-                .finish()
-        } else {
-            f.debug_struct("YamlLiteralScalar").finish()
-        };
-        DEPTH.set(current_depth);
-        result
+        support::debug_node(
+            &self.syntax,
+            f,
+            "YamlLiteralScalar",
+            &DEPTH,
+            &[
+                ("bitwise_or_token", false),
+                ("headers", false),
+                ("content", false),
+            ],
+            debug_syntax_node,
+        )
     }
 }
 impl From<YamlLiteralScalar> for SyntaxNode {
@@ -2740,20 +2593,14 @@ impl AstNode for YamlPlainScalar {
 impl std::fmt::Debug for YamlPlainScalar {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        let current_depth = DEPTH.get();
-        let result = if current_depth < 16 {
-            DEPTH.set(current_depth + 1);
-            f.debug_struct("YamlPlainScalar")
-                .field(
-                    "value_token",
-                    &support::DebugSyntaxResult(self.value_token()),
-                )
-                .finish()
-        } else {
-            f.debug_struct("YamlPlainScalar").finish()
-        };
-        DEPTH.set(current_depth);
-        result
+        support::debug_node(
+            &self.syntax,
+            f,
+            "YamlPlainScalar",
+            &DEPTH,
+            &[("value_token", false)],
+            debug_syntax_node,
+        )
     }
 }
 impl From<YamlPlainScalar> for SyntaxNode {
@@ -2790,18 +2637,14 @@ impl AstNode for YamlRoot {
 impl std::fmt::Debug for YamlRoot {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        let current_depth = DEPTH.get();
-        let result = if current_depth < 16 {
-            DEPTH.set(current_depth + 1);
-            f.debug_struct("YamlRoot")
-                .field("documents", &self.documents())
-                .field("eof_token", &support::DebugSyntaxResult(self.eof_token()))
-                .finish()
-        } else {
-            f.debug_struct("YamlRoot").finish()
-        };
-        DEPTH.set(current_depth);
-        result
+        support::debug_node(
+            &self.syntax,
+            f,
+            "YamlRoot",
+            &DEPTH,
+            &[("documents", false), ("eof_token", false)],
+            debug_syntax_node,
+        )
     }
 }
 impl From<YamlRoot> for SyntaxNode {
@@ -2838,20 +2681,14 @@ impl AstNode for YamlSingleQuotedScalar {
 impl std::fmt::Debug for YamlSingleQuotedScalar {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        let current_depth = DEPTH.get();
-        let result = if current_depth < 16 {
-            DEPTH.set(current_depth + 1);
-            f.debug_struct("YamlSingleQuotedScalar")
-                .field(
-                    "value_token",
-                    &support::DebugSyntaxResult(self.value_token()),
-                )
-                .finish()
-        } else {
-            f.debug_struct("YamlSingleQuotedScalar").finish()
-        };
-        DEPTH.set(current_depth);
-        result
+        support::debug_node(
+            &self.syntax,
+            f,
+            "YamlSingleQuotedScalar",
+            &DEPTH,
+            &[("value_token", false)],
+            debug_syntax_node,
+        )
     }
 }
 impl From<YamlSingleQuotedScalar> for SyntaxNode {
@@ -2888,20 +2725,14 @@ impl AstNode for YamlTagProperty {
 impl std::fmt::Debug for YamlTagProperty {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        let current_depth = DEPTH.get();
-        let result = if current_depth < 16 {
-            DEPTH.set(current_depth + 1);
-            f.debug_struct("YamlTagProperty")
-                .field(
-                    "value_token",
-                    &support::DebugSyntaxResult(self.value_token()),
-                )
-                .finish()
-        } else {
-            f.debug_struct("YamlTagProperty").finish()
-        };
-        DEPTH.set(current_depth);
-        result
+        support::debug_node(
+            &self.syntax,
+            f,
+            "YamlTagProperty",
+            &DEPTH,
+            &[("value_token", false)],
+            debug_syntax_node,
+        )
     }
 }
 impl From<YamlTagProperty> for SyntaxNode {
@@ -2984,12 +2815,7 @@ impl AstNode for AnyYamlBlockHeader {
 }
 impl std::fmt::Debug for AnyYamlBlockHeader {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::YamlBlockKeepIndicator(it) => std::fmt::Debug::fmt(it, f),
-            Self::YamlBlockStripIndicator(it) => std::fmt::Debug::fmt(it, f),
-            Self::YamlBogusBlockHeader(it) => std::fmt::Debug::fmt(it, f),
-            Self::YamlIndentationIndicator(it) => std::fmt::Debug::fmt(it, f),
-        }
+        debug_syntax_node(self.syntax(), f)
     }
 }
 impl From<AnyYamlBlockHeader> for SyntaxNode {
@@ -3069,12 +2895,7 @@ impl AstNode for AnyYamlBlockInBlockContent {
 }
 impl std::fmt::Debug for AnyYamlBlockInBlockContent {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::YamlBlockMapping(it) => std::fmt::Debug::fmt(it, f),
-            Self::YamlBlockSequence(it) => std::fmt::Debug::fmt(it, f),
-            Self::YamlFoldedScalar(it) => std::fmt::Debug::fmt(it, f),
-            Self::YamlLiteralScalar(it) => std::fmt::Debug::fmt(it, f),
-        }
+        debug_syntax_node(self.syntax(), f)
     }
 }
 impl From<AnyYamlBlockInBlockContent> for SyntaxNode {
@@ -3153,11 +2974,7 @@ impl AstNode for AnyYamlBlockMapEntry {
 }
 impl std::fmt::Debug for AnyYamlBlockMapEntry {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::YamlBlockMapExplicitEntry(it) => std::fmt::Debug::fmt(it, f),
-            Self::YamlBlockMapImplicitEntry(it) => std::fmt::Debug::fmt(it, f),
-            Self::YamlBogusBlockMapEntry(it) => std::fmt::Debug::fmt(it, f),
-        }
+        debug_syntax_node(self.syntax(), f)
     }
 }
 impl From<AnyYamlBlockMapEntry> for SyntaxNode {
@@ -3227,11 +3044,7 @@ impl AstNode for AnyYamlBlockNode {
 }
 impl std::fmt::Debug for AnyYamlBlockNode {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::YamlBlockInBlockNode(it) => std::fmt::Debug::fmt(it, f),
-            Self::YamlBogusBlockNode(it) => std::fmt::Debug::fmt(it, f),
-            Self::YamlFlowInBlockNode(it) => std::fmt::Debug::fmt(it, f),
-        }
+        debug_syntax_node(self.syntax(), f)
     }
 }
 impl From<AnyYamlBlockNode> for SyntaxNode {
@@ -3291,10 +3104,7 @@ impl AstNode for AnyYamlBlockSequenceEntry {
 }
 impl std::fmt::Debug for AnyYamlBlockSequenceEntry {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::YamlBlockSequenceEntry(it) => std::fmt::Debug::fmt(it, f),
-            Self::YamlBogus(it) => std::fmt::Debug::fmt(it, f),
-        }
+        debug_syntax_node(self.syntax(), f)
     }
 }
 impl From<AnyYamlBlockSequenceEntry> for SyntaxNode {
@@ -3350,10 +3160,7 @@ impl AstNode for AnyYamlDocument {
 }
 impl std::fmt::Debug for AnyYamlDocument {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::YamlBogus(it) => std::fmt::Debug::fmt(it, f),
-            Self::YamlDocument(it) => std::fmt::Debug::fmt(it, f),
-        }
+        debug_syntax_node(self.syntax(), f)
     }
 }
 impl From<AnyYamlDocument> for SyntaxNode {
@@ -3417,10 +3224,7 @@ impl AstNode for AnyYamlFlowMapEntry {
 }
 impl std::fmt::Debug for AnyYamlFlowMapEntry {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::YamlFlowMapExplicitEntry(it) => std::fmt::Debug::fmt(it, f),
-            Self::YamlFlowMapImplicitEntry(it) => std::fmt::Debug::fmt(it, f),
-        }
+        debug_syntax_node(self.syntax(), f)
     }
 }
 impl From<AnyYamlFlowMapEntry> for SyntaxNode {
@@ -3498,12 +3302,7 @@ impl AstNode for AnyYamlFlowNode {
 }
 impl std::fmt::Debug for AnyYamlFlowNode {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::YamlAliasNode(it) => std::fmt::Debug::fmt(it, f),
-            Self::YamlBogusFlowNode(it) => std::fmt::Debug::fmt(it, f),
-            Self::YamlFlowJsonNode(it) => std::fmt::Debug::fmt(it, f),
-            Self::YamlFlowYamlNode(it) => std::fmt::Debug::fmt(it, f),
-        }
+        debug_syntax_node(self.syntax(), f)
     }
 }
 impl From<AnyYamlFlowNode> for SyntaxNode {
@@ -3560,10 +3359,7 @@ impl AstNode for AnyYamlFlowSequenceEntry {
 }
 impl std::fmt::Debug for AnyYamlFlowSequenceEntry {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::AnyYamlFlowMapEntry(it) => std::fmt::Debug::fmt(it, f),
-            Self::AnyYamlFlowNode(it) => std::fmt::Debug::fmt(it, f),
-        }
+        debug_syntax_node(self.syntax(), f)
     }
 }
 impl From<AnyYamlFlowSequenceEntry> for SyntaxNode {
@@ -3648,12 +3444,7 @@ impl AstNode for AnyYamlJsonContent {
 }
 impl std::fmt::Debug for AnyYamlJsonContent {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::YamlDoubleQuotedScalar(it) => std::fmt::Debug::fmt(it, f),
-            Self::YamlFlowMapping(it) => std::fmt::Debug::fmt(it, f),
-            Self::YamlFlowSequence(it) => std::fmt::Debug::fmt(it, f),
-            Self::YamlSingleQuotedScalar(it) => std::fmt::Debug::fmt(it, f),
-        }
+        debug_syntax_node(self.syntax(), f)
     }
 }
 impl From<AnyYamlJsonContent> for SyntaxNode {
@@ -3724,11 +3515,7 @@ impl AstNode for AnyYamlMappingImplicitKey {
 }
 impl std::fmt::Debug for AnyYamlMappingImplicitKey {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::YamlAliasNode(it) => std::fmt::Debug::fmt(it, f),
-            Self::YamlFlowJsonNode(it) => std::fmt::Debug::fmt(it, f),
-            Self::YamlFlowYamlNode(it) => std::fmt::Debug::fmt(it, f),
-        }
+        debug_syntax_node(self.syntax(), f)
     }
 }
 impl From<AnyYamlMappingImplicitKey> for SyntaxNode {
@@ -3786,10 +3573,7 @@ impl AstNode for AnyYamlProperty {
 }
 impl std::fmt::Debug for AnyYamlProperty {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::YamlAnchorProperty(it) => std::fmt::Debug::fmt(it, f),
-            Self::YamlTagProperty(it) => std::fmt::Debug::fmt(it, f),
-        }
+        debug_syntax_node(self.syntax(), f)
     }
 }
 impl From<AnyYamlProperty> for SyntaxNode {
@@ -4956,10 +4740,12 @@ struct DebugSyntaxElement(SyntaxElement);
 impl Debug for DebugSyntaxElement {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match &self.0 {
-            SyntaxElement::Node(node) => {
-                map_syntax_node ! (node . clone () , node => std :: fmt :: Debug :: fmt (& node , f))
-            }
+            SyntaxElement::Node(node) => debug_syntax_node(node, f),
             SyntaxElement::Token(token) => Debug::fmt(token, f),
         }
     }
+}
+#[doc = r" Prints `node` the way the AST node of its kind does."]
+fn debug_syntax_node(node: &SyntaxNode, f: &mut Formatter<'_>) -> std::fmt::Result {
+    map_syntax_node ! (node . clone () , node => std :: fmt :: Debug :: fmt (& node , f))
 }
