@@ -29,7 +29,7 @@ pub trait ErasedRuleOptions: Any + Send + Sync + Debug {
     /// Merges `other` into `self`. Does nothing when `other` holds a different
     /// concrete type.
     fn merge_dyn(&mut self, other: Box<dyn ErasedRuleOptions>);
-    fn to_json(&self) -> OrderedJson;
+    fn to_json(&self) -> Result<OrderedJson, String>;
     fn to_rule_options(&self, fix: Option<FixKind>) -> RuleOptions;
     fn as_any(&self) -> &dyn Any;
     fn as_any_mut(&mut self) -> &mut dyn Any;
@@ -57,11 +57,9 @@ where
         }
     }
 
-    fn to_json(&self) -> OrderedJson {
-        serde_json::to_string(self)
-            .ok()
-            .and_then(|json| serde_json::from_str(&json).ok())
-            .unwrap_or(OrderedJson::Null)
+    fn to_json(&self) -> Result<OrderedJson, String> {
+        let json = serde_json::to_string(self).map_err(|error| error.to_string())?;
+        serde_json::from_str(&json).map_err(|error| error.to_string())
     }
 
     fn to_rule_options(&self, fix: Option<FixKind>) -> RuleOptions {
@@ -201,7 +199,7 @@ pub struct RuleEntry {
 }
 
 impl RuleEntry {
-    pub fn new_with_options<T: ErasedRuleOptions>(
+    pub(crate) fn new_with_options<T: ErasedRuleOptions>(
         level: RulePlainConfiguration,
         fix: Option<FixKind>,
         options: T,
@@ -235,12 +233,12 @@ impl RuleEntry {
 
     /// Returns the options when the rule is configured with an object and the
     /// options are of type `T`.
-    pub fn options<T: 'static>(&self) -> Option<&T> {
+    pub(crate) fn options<T: 'static>(&self) -> Option<&T> {
         self.options.as_ref()?.as_any().downcast_ref()
     }
 
     /// Mutable counterpart of [`Self::options`].
-    pub fn options_mut<T: 'static>(&mut self) -> Option<&mut T> {
+    pub(crate) fn options_mut<T: 'static>(&mut self) -> Option<&mut T> {
         self.options.as_mut()?.as_any_mut().downcast_mut()
     }
 
@@ -306,28 +304,6 @@ impl From<GroupPlainConfiguration> for RuleEntry {
     }
 }
 
-impl<T: Default + Merge + ErasedRuleOptions> From<RuleConfiguration<T>> for RuleEntry {
-    fn from(value: RuleConfiguration<T>) -> Self {
-        match value {
-            RuleConfiguration::Plain(level) => level.into(),
-            RuleConfiguration::WithOptions(rule) => {
-                Self::new_with_options(rule.level, None, rule.options)
-            }
-        }
-    }
-}
-
-impl<T: Default + Merge + ErasedRuleOptions> From<RuleFixConfiguration<T>> for RuleEntry {
-    fn from(value: RuleFixConfiguration<T>) -> Self {
-        match value {
-            RuleFixConfiguration::Plain(level) => level.into(),
-            RuleFixConfiguration::WithOptions(rule) => {
-                Self::new_with_options(rule.level, rule.fix, rule.options)
-            }
-        }
-    }
-}
-
 impl serde::Serialize for RuleEntry {
     fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         let Some(options) = &self.options else {
@@ -338,7 +314,8 @@ impl serde::Serialize for RuleEntry {
         if let Some(fix) = &self.fix {
             map.serialize_entry("fix", fix)?;
         }
-        map.serialize_entry("options", &options.to_json())?;
+        let options = options.to_json().map_err(serde::ser::Error::custom)?;
+        map.serialize_entry("options", &options)?;
         map.end()
     }
 }
@@ -433,11 +410,11 @@ impl<G> PartialEq for RuleGroupConfig<G> {
 impl<G> Eq for RuleGroupConfig<G> {}
 
 impl<G> RuleGroupConfig<G> {
-    pub fn get_at(&self, index: usize) -> Option<&RuleEntry> {
+    pub(crate) fn get_at(&self, index: usize) -> Option<&RuleEntry> {
         self.rules.get(index)?.as_ref()
     }
 
-    pub fn slot_at(&mut self, index: usize) -> &mut Option<RuleEntry> {
+    pub(crate) fn slot_at(&mut self, index: usize) -> &mut Option<RuleEntry> {
         if self.rules.len() <= index {
             self.rules.resize_with(index + 1, || None);
         }
@@ -471,18 +448,20 @@ impl<G: LintGroupTable> RuleGroupConfig<G> {
 }
 
 /// Identifies a rule of the group described by `G`, whose options have the
-/// type `O`.
+/// type `O` and which has a fix when `HAS_FIX` is `true`.
 ///
 /// A group exposes one constant of this type per rule. Reaching a rule
 /// through its constant makes it a compile error to name a rule that the
-/// group doesn't have, or to give a rule options of another type.
-pub struct RuleSlot<G, O> {
+/// group doesn't have, to give a rule options of another type, or to
+/// configure the fix of a rule that has none.
+pub struct RuleSlot<G, O, const HAS_FIX: bool> {
     index: usize,
     types: PhantomData<fn() -> (G, O)>,
 }
 
-impl<G, O> RuleSlot<G, O> {
-    pub const fn new(index: usize) -> Self {
+impl<G, O, const HAS_FIX: bool> RuleSlot<G, O, HAS_FIX> {
+    /// `index` must be the position of the rule in [LintGroupTable::RULES].
+    pub(crate) const fn new(index: usize) -> Self {
         Self {
             index,
             types: PhantomData,
@@ -490,78 +469,103 @@ impl<G, O> RuleSlot<G, O> {
     }
 }
 
-impl<G, O> Clone for RuleSlot<G, O> {
+impl<G, O, const HAS_FIX: bool> Clone for RuleSlot<G, O, HAS_FIX> {
     fn clone(&self) -> Self {
         *self
     }
 }
 
-impl<G, O> Copy for RuleSlot<G, O> {}
+impl<G, O, const HAS_FIX: bool> Copy for RuleSlot<G, O, HAS_FIX> {}
 
 impl<G> RuleGroupConfig<G> {
     /// Returns the configuration of a rule, if it's configured.
-    pub fn rule<O>(&self, slot: RuleSlot<G, O>) -> Option<&RuleEntry> {
+    pub fn rule<O, const HAS_FIX: bool>(
+        &self,
+        slot: RuleSlot<G, O, HAS_FIX>,
+    ) -> Option<&RuleEntry> {
         self.get_at(slot.index)
-    }
-
-    /// Returns the configuration of a rule, to set, change or unset it.
-    pub fn rule_slot<O>(&mut self, slot: RuleSlot<G, O>) -> &mut Option<RuleEntry> {
-        self.slot_at(slot.index)
     }
 
     /// Returns the configuration of a rule, configuring the rule with its
     /// default configuration when it's unset.
-    pub fn rule_mut<O>(&mut self, slot: RuleSlot<G, O>) -> &mut RuleEntry {
+    pub fn rule_mut<O, const HAS_FIX: bool>(
+        &mut self,
+        slot: RuleSlot<G, O, HAS_FIX>,
+    ) -> &mut RuleEntry {
         self.slot_at(slot.index)
             .get_or_insert_with(RuleEntry::default)
     }
 
     /// Configures a rule.
-    pub fn set_rule<O>(&mut self, slot: RuleSlot<G, O>, configuration: impl IntoRuleEntry<O>) {
+    pub fn set_rule<O, const HAS_FIX: bool>(
+        &mut self,
+        slot: RuleSlot<G, O, HAS_FIX>,
+        configuration: impl IntoRuleEntry<O, HAS_FIX>,
+    ) {
         *self.slot_at(slot.index) = Some(configuration.into_rule_entry());
     }
 
     /// Returns the group with a rule configured.
-    pub fn with_rule<O>(
+    pub fn with_rule<O, const HAS_FIX: bool>(
         mut self,
-        slot: RuleSlot<G, O>,
-        configuration: impl IntoRuleEntry<O>,
+        slot: RuleSlot<G, O, HAS_FIX>,
+        configuration: impl IntoRuleEntry<O, HAS_FIX>,
     ) -> Self {
         self.set_rule(slot, configuration);
         self
     }
 
+    /// Removes the configuration of a rule.
+    pub fn unset_rule<O, const HAS_FIX: bool>(&mut self, slot: RuleSlot<G, O, HAS_FIX>) {
+        *self.slot_at(slot.index) = None;
+    }
+
     /// Returns the options of a rule, if it's configured with options.
-    pub fn rule_options<O: 'static>(&self, slot: RuleSlot<G, O>) -> Option<&O> {
+    pub fn rule_options<O: 'static, const HAS_FIX: bool>(
+        &self,
+        slot: RuleSlot<G, O, HAS_FIX>,
+    ) -> Option<&O> {
         self.get_at(slot.index)?.options()
     }
 
     /// Mutable counterpart of [`Self::rule_options`].
-    pub fn rule_options_mut<O: 'static>(&mut self, slot: RuleSlot<G, O>) -> Option<&mut O> {
+    pub fn rule_options_mut<O: 'static, const HAS_FIX: bool>(
+        &mut self,
+        slot: RuleSlot<G, O, HAS_FIX>,
+    ) -> Option<&mut O> {
         self.slot_at(slot.index).as_mut()?.options_mut()
     }
 }
 
-/// A configuration that a rule whose options have the type `O` accepts.
-pub trait IntoRuleEntry<O> {
+/// A configuration that a rule accepts, given the type `O` of its options
+/// and whether it has a fix.
+pub trait IntoRuleEntry<O, const HAS_FIX: bool> {
     fn into_rule_entry(self) -> RuleEntry;
 }
 
-impl<O> IntoRuleEntry<O> for RulePlainConfiguration {
+impl<O, const HAS_FIX: bool> IntoRuleEntry<O, HAS_FIX> for RulePlainConfiguration {
     fn into_rule_entry(self) -> RuleEntry {
         self.into()
     }
 }
 
-impl<O: Default + Merge + ErasedRuleOptions> IntoRuleEntry<O> for RuleConfiguration<O> {
+impl<O: Default + Merge + ErasedRuleOptions> IntoRuleEntry<O, false> for RuleConfiguration<O> {
     fn into_rule_entry(self) -> RuleEntry {
-        self.into()
+        match self {
+            Self::Plain(level) => level.into(),
+            Self::WithOptions(rule) => RuleEntry::new_with_options(rule.level, None, rule.options),
+        }
     }
 }
 
-impl<O: Default + Merge + ErasedRuleOptions> IntoRuleEntry<O> for RuleFixConfiguration<O> {
+impl<O: Default + Merge + ErasedRuleOptions> IntoRuleEntry<O, true> for RuleFixConfiguration<O> {
     fn into_rule_entry(self) -> RuleEntry {
-        self.into()
+        match self {
+            Self::Plain(level) => level.into(),
+            Self::WithOptions(rule) => {
+                RuleEntry::new_with_options(rule.level, rule.fix, rule.options)
+            }
+        }
     }
 }
 
@@ -618,7 +622,11 @@ impl<G: LintGroupTable> RuleGroupConfig<G> {
             return Err(format!("invalid type: expected the rules of `{}`", G::NAME));
         };
         let mut result = Self::default();
+        let mut seen = Vec::with_capacity(members.len());
         for (key, value) in members {
+            if seen.contains(&key) {
+                return Err(format!("duplicate field `{key}`"));
+            }
             match key.as_str() {
                 "recommended" => result.recommended = value.parse()?,
                 "preset" => result.preset = value.parse()?,
@@ -631,6 +639,7 @@ impl<G: LintGroupTable> RuleGroupConfig<G> {
                     }
                 }
             }
+            seen.push(key);
         }
         Ok(result)
     }
@@ -643,7 +652,11 @@ impl<G: LintGroupTable> RuleGroupConfig<G> {
         let mut level = None;
         let mut fix = None;
         let mut options = None;
+        let mut seen = Vec::with_capacity(members.len());
         for (key, value) in members {
+            if seen.contains(&key) {
+                return Err(format!("duplicate field `{key}`"));
+            }
             match key.as_str() {
                 "level" => level = Some(value.parse()?),
                 "fix" if G::HAS_FIX[index] => fix = value.parse()?,
@@ -655,6 +668,7 @@ impl<G: LintGroupTable> RuleGroupConfig<G> {
                 }
                 name => return Err(format!("unknown field `{name}`")),
             }
+            seen.push(key);
         }
         Ok(RuleEntry {
             level: level.ok_or("missing field `level`")?,

@@ -818,17 +818,19 @@ fn migrate_eslint_rule(
         eslint_eslint::Rule::Eqeqeq(conf) => {
             if migrate_eslint_any_rule(rules, &name, conf.severity(), opts, results) {
                 let group = rules.suspicious.get_or_insert_with(Default::default);
+                let slot = biome_config::analyzer::Suspicious::NO_DOUBLE_EQUALS;
                 if let SeverityOrGroup::Group(group) = group
-                    && let Some(rule) = group
-                        .rule_slot(biome_config::analyzer::Suspicious::NO_DOUBLE_EQUALS)
-                        .as_mut()
+                    && let Some(level) = group.rule(slot).map(|rule| rule.level())
                 {
-                    let options: biome_rule_options::no_double_equals::NoDoubleEqualsOptions =
-                        conf.into();
-                    *rule = biome_config::analyzer::RuleEntry::new_with_options(
-                        rule.level(),
-                        None,
-                        options,
+                    group.set_rule(
+                        slot,
+                        biome_config::RuleFixConfiguration::WithOptions(
+                            biome_config::RuleWithFixOptions {
+                                level,
+                                fix: None,
+                                options: conf.into(),
+                            },
+                        ),
                     );
                 }
             }
@@ -1036,17 +1038,21 @@ fn migrate_eslint_rule(
             };
             let rule_options: no_unused_variables::NoUnusedVariablesOptions = rule_options.into();
             let group = rules.correctness.get_or_insert_with(Default::default);
+            let slot = biome_config::analyzer::Correctness::NO_UNUSED_VARIABLES;
             if let SeverityOrGroup::Group(group) = group
-                && let Some(rule) = group
-                    .rule_slot(biome_config::analyzer::Correctness::NO_UNUSED_VARIABLES)
-                    .as_mut()
+                && let Some(level) = group.rule(slot).map(|rule| rule.level())
             {
-                match rule.options_mut::<no_unused_variables::NoUnusedVariablesOptions>() {
+                match group.rule_options_mut(slot) {
                     None => {
-                        *rule = biome_config::analyzer::RuleEntry::new_with_options(
-                            rule.level(),
-                            None,
-                            rule_options,
+                        group.set_rule(
+                            slot,
+                            biome_config::RuleFixConfiguration::WithOptions(
+                                biome_config::RuleWithFixOptions {
+                                    level,
+                                    fix: None,
+                                    options: rule_options,
+                                },
+                            ),
                         );
                     }
                     // Another enabled ESLint rule already migrated to this rule.
@@ -1439,24 +1445,20 @@ impl RestrictedElementsMigration {
         let SeverityOrGroup::Group(group) = group else {
             return;
         };
-        let Some(rule) =
-            group.rule_slot(biome_config::analyzer::Correctness::NO_RESTRICTED_ELEMENTS)
-        else {
+        let slot = biome_config::analyzer::Correctness::NO_RESTRICTED_ELEMENTS;
+        let Some(level) = group.rule(slot).map(|rule| rule.level()) else {
             return;
         };
-        if rule
-            .options::<biome_rule_options::no_restricted_elements::NoRestrictedElementsOptions>()
-            .is_none()
-        {
-            *rule = biome_config::analyzer::RuleEntry::new_with_options(
-                rule.level(),
-                None,
-                biome_rule_options::no_restricted_elements::NoRestrictedElementsOptions::default(),
+        if group.rule_options(slot).is_none() {
+            group.set_rule(
+                slot,
+                biome_config::RuleConfiguration::WithOptions(biome_config::RuleWithOptions {
+                    level,
+                    options: Default::default(),
+                }),
             );
         }
-        let Some(options) = rule
-            .options_mut::<biome_rule_options::no_restricted_elements::NoRestrictedElementsOptions>(
-        ) else {
+        let Some(options) = group.rule_options_mut(slot) else {
             return;
         };
         let configured = options.elements.get_or_insert_with(Default::default);
@@ -1825,22 +1827,22 @@ mod tests {
             .0
             .into_iter()
             .map(|pattern| {
-                let rule = pattern
+                let slot = biome_config::analyzer::Correctness::NO_UNUSED_VARIABLES;
+                let group = pattern
                     .linter
                     .unwrap()
                     .rules
                     .unwrap()
                     .correctness
                     .unwrap()
-                    .unwrap_group()
-                    .rule(biome_config::analyzer::Correctness::NO_UNUSED_VARIABLES)
-                    .cloned()
-                    .unwrap();
-                let Some(options) = rule.options::<no_unused_variables::NoUnusedVariablesOptions>()
-                else {
+                    .unwrap_group();
+                let Some(options) = group.rule_options(slot) else {
                     panic!("the override should set the options of the rule");
                 };
-                (rule.level(), options.ignore_rest_siblings)
+                (
+                    group.rule(slot).unwrap().level(),
+                    options.ignore_rest_siblings,
+                )
             });
         // `@typescript-eslint/no-unused-vars` inherits the options of the same rule.
         assert_eq!(

@@ -397,7 +397,7 @@ pub fn generate_group_struct(
                     <#table_ident as crate::analyzer::rule_entry::LintGroupTable>::RULES;
 
                 #(
-                    pub const #rule_slot_idents: crate::analyzer::rule_entry::RuleSlot<#table_ident, #rule_option_types> =
+                    pub const #rule_slot_idents: crate::analyzer::rule_entry::RuleSlot<#table_ident, #rule_option_types, #rule_has_fix> =
                         crate::analyzer::rule_entry::RuleSlot::new(#rule_positions);
                 )*
 

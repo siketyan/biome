@@ -143,9 +143,9 @@ impl LintGroupTable for TestTable {
 
 type Group = RuleGroupConfig<TestTable>;
 
-const NO_FIX: RuleSlot<TestTable, PlainOptions> = RuleSlot::new(0);
-const ORDERED: RuleSlot<TestTable, OrderedOptions> = RuleSlot::new(1);
-const WITH_FIX: RuleSlot<TestTable, PlainOptions> = RuleSlot::new(2);
+const NO_FIX: RuleSlot<TestTable, PlainOptions, false> = RuleSlot::new(0);
+const ORDERED: RuleSlot<TestTable, OrderedOptions, false> = RuleSlot::new(1);
+const WITH_FIX: RuleSlot<TestTable, PlainOptions, true> = RuleSlot::new(2);
 
 /// Reads a group the way a configuration file is read, and returns it with
 /// the number of diagnostics.
@@ -311,7 +311,7 @@ fn serde_keeps_the_order_of_the_properties_of_the_options() {
 }
 
 #[test]
-fn serde_rejects_what_the_typed_configuration_rejected() {
+fn serde_rejects_invalid_rules() {
     assert!(serde_json::from_str::<Group>(r#"{"unknown":"error"}"#).is_err());
     assert!(serde_json::from_str::<Group>(r#"{"noFix":{"options":{}}}"#).is_err());
     assert!(serde_json::from_str::<Group>(r#"{"noFix":{"level":"error","fix":"safe"}}"#).is_err());
@@ -419,7 +419,7 @@ fn merging_leaves_the_other_rules_alone() {
 fn groups_are_equal_whatever_the_rules_that_were_unset() {
     let mut group = Group::default();
     group.set_rule(WITH_FIX, RulePlainConfiguration::Error);
-    *group.rule_slot(WITH_FIX) = None;
+    group.unset_rule(WITH_FIX);
 
     assert_eq!(group, Group::default());
     assert_ne!(
@@ -432,14 +432,64 @@ fn groups_are_equal_whatever_the_rules_that_were_unset() {
 fn a_group_severity_configures_every_rule() {
     let group = Group::from_entry(GroupPlainConfiguration::Warn.into());
 
-    for slot in [NO_FIX, WITH_FIX] {
-        assert_eq!(
-            group.rule(slot).unwrap().level(),
-            RulePlainConfiguration::Warn
-        );
-    }
+    assert_eq!(
+        group.rule(NO_FIX).unwrap().level(),
+        RulePlainConfiguration::Warn
+    );
+    assert_eq!(
+        group.rule(WITH_FIX).unwrap().level(),
+        RulePlainConfiguration::Warn
+    );
     assert_eq!(
         group.rule(ORDERED).unwrap().level(),
         RulePlainConfiguration::Warn
     );
+}
+
+#[test]
+fn serde_rejects_a_property_given_twice() {
+    assert!(serde_json::from_str::<Group>(r#"{"noFix":"error","noFix":"warn"}"#).is_err());
+    assert!(
+        serde_json::from_str::<Group>(r#"{"noFix":{"level":"error","level":"warn"}}"#).is_err()
+    );
+}
+
+#[test]
+fn serde_reads_and_writes_values_like_text() {
+    let json = r#"{"noFix":"warn","withFix":{"level":"error","fix":"safe","options":{"zeta":true,"alpha":null}}}"#;
+    let group: Group = serde_json::from_str(json).unwrap();
+    let value = serde_json::to_value(&group).unwrap();
+
+    assert_eq!(
+        value,
+        serde_json::from_str::<serde_json::Value>(json).unwrap()
+    );
+    assert_eq!(serde_json::from_value::<Group>(value).unwrap(), group);
+}
+
+#[test]
+fn a_group_is_read_behind_a_severity_or_group() {
+    use crate::analyzer::SeverityOrGroup;
+
+    let json = r#"{"noFix":{"level":"error","options":{"zeta":true,"alpha":null}}}"#;
+    let group: Group = serde_json::from_str(json).unwrap();
+
+    assert_eq!(
+        serde_json::from_str::<SeverityOrGroup<Group>>(json).unwrap(),
+        SeverityOrGroup::Group(group.clone())
+    );
+    assert_eq!(
+        serde_json::from_str::<SeverityOrGroup<Group>>(r#""warn""#).unwrap(),
+        SeverityOrGroup::Plain(GroupPlainConfiguration::Warn)
+    );
+    assert_eq!(
+        serde_json::to_string(&SeverityOrGroup::Group(group.clone())).unwrap(),
+        json
+    );
+
+    let (read, diagnostics) =
+        deserialize_from_json_str::<SeverityOrGroup<Group>>(json, JsonParserOptions::default(), "")
+            .consume();
+    assert_eq!(diagnostics.len(), 0);
+    assert_eq!(read, Some(SeverityOrGroup::Group(group)));
 }

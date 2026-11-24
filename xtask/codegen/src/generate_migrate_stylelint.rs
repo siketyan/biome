@@ -18,7 +18,7 @@ fn generate_multi_mapping(stylelint_name: Box<str>, mapped_rules: Vec<RuleMappin
              group_name,
          }| {
             let rule_slot = format_ident!("{}", Case::Constant.convert(rule_name));
-    let group_type = format_ident!("{}", Case::Pascal.convert(group_name));
+            let group_type = format_ident!("{}", Case::Pascal.convert(group_name));
             let group_ident = format_ident!("{group_name}");
             let blocked_set = if source_kind.is_inspired() || *group_name == "nursery" {
                 quote! {
