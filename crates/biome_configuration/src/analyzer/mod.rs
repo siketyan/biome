@@ -1,10 +1,14 @@
 pub mod assist;
 pub mod linter;
 pub mod presets;
+pub mod rule_entry;
 
 use crate::analyzer::assist::Actions;
 pub use crate::analyzer::linter::*;
 use crate::analyzer::presets::PresetConfig;
+pub use crate::analyzer::rule_entry::{
+    ErasedRuleOptions, LintGroupTable, RuleEntry, RuleGroupConfig,
+};
 use biome_analyze::options::RuleOptions;
 use biome_analyze::{FixKind, PLUGIN_GROUP, Rule, RuleCategory, RuleDomain, RuleFilter};
 use biome_console::markup;

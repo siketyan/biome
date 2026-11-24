@@ -11,26 +11,17 @@ pub(crate) fn migrate_stylelint_any_rule(
     match stylelint_name {
         "at-rule-no-unknown" => {
             let group = rules.suspicious.get_or_insert_with(Default::default);
-            let rule = group
-                .unwrap_group_as_mut()
-                .no_unknown_at_rules
-                .get_or_insert(Default::default());
+            let rule = group.unwrap_group_as_mut().rule_mut("no_unknown_at_rules");
             rule.set_level(rule.level().max(rule_level));
         }
         "block-no-empty" => {
             let group = rules.suspicious.get_or_insert_with(Default::default);
-            let rule = group
-                .unwrap_group_as_mut()
-                .no_empty_block
-                .get_or_insert(Default::default());
+            let rule = group.unwrap_group_as_mut().rule_mut("no_empty_block");
             rule.set_level(rule.level().max(rule_level));
         }
         "color-no-hex" => {
             let group = rules.style.get_or_insert_with(Default::default);
-            let rule = group
-                .unwrap_group_as_mut()
-                .no_hex_colors
-                .get_or_insert(Default::default());
+            let rule = group.unwrap_group_as_mut().rule_mut("no_hex_colors");
             rule.set_level(rule.level().max(rule_level));
         }
         "csstools/use-logical" => {
@@ -44,64 +35,54 @@ pub(crate) fn migrate_stylelint_any_rule(
             let group = rules.nursery.get_or_insert_with(Default::default);
             let rule = group
                 .unwrap_group_as_mut()
-                .use_logical_properties
-                .get_or_insert(Default::default());
+                .rule_mut("use_logical_properties");
             rule.set_level(rule.level().max(rule_level));
         }
         "custom-property-no-missing-var-function" => {
             let group = rules.correctness.get_or_insert_with(Default::default);
             let rule = group
                 .unwrap_group_as_mut()
-                .no_missing_var_function
-                .get_or_insert(Default::default());
+                .rule_mut("no_missing_var_function");
             rule.set_level(rule.level().max(rule_level));
         }
         "declaration-block-no-duplicate-custom-properties" => {
             let group = rules.suspicious.get_or_insert_with(Default::default);
             let rule = group
                 .unwrap_group_as_mut()
-                .no_duplicate_custom_properties
-                .get_or_insert(Default::default());
+                .rule_mut("no_duplicate_custom_properties");
             rule.set_level(rule.level().max(rule_level));
         }
         "declaration-block-no-duplicate-properties" => {
             let group = rules.suspicious.get_or_insert_with(Default::default);
             let rule = group
                 .unwrap_group_as_mut()
-                .no_duplicate_properties
-                .get_or_insert(Default::default());
+                .rule_mut("no_duplicate_properties");
             rule.set_level(rule.level().max(rule_level));
         }
         "declaration-block-no-shorthand-property-overrides" => {
             let group = rules.suspicious.get_or_insert_with(Default::default);
             let rule = group
                 .unwrap_group_as_mut()
-                .no_shorthand_property_overrides
-                .get_or_insert(Default::default());
+                .rule_mut("no_shorthand_property_overrides");
             rule.set_level(rule.level().max(rule_level));
         }
         "declaration-no-important" => {
             let group = rules.complexity.get_or_insert_with(Default::default);
-            let rule = group
-                .unwrap_group_as_mut()
-                .no_important_styles
-                .get_or_insert(Default::default());
+            let rule = group.unwrap_group_as_mut().rule_mut("no_important_styles");
             rule.set_level(rule.level().max(rule_level));
         }
         "font-family-no-duplicate-names" => {
             let group = rules.suspicious.get_or_insert_with(Default::default);
             let rule = group
                 .unwrap_group_as_mut()
-                .no_duplicate_font_names
-                .get_or_insert(Default::default());
+                .rule_mut("no_duplicate_font_names");
             rule.set_level(rule.level().max(rule_level));
         }
         "font-family-no-missing-generic-family-keyword" => {
             let group = rules.a11y.get_or_insert_with(Default::default);
             let rule = group
                 .unwrap_group_as_mut()
-                .use_generic_font_names
-                .get_or_insert(Default::default());
+                .rule_mut("use_generic_font_names");
             rule.set_level(rule.level().max(rule_level));
         }
         "font-weight-notation" => {
@@ -115,40 +96,33 @@ pub(crate) fn migrate_stylelint_any_rule(
             let group = rules.nursery.get_or_insert_with(Default::default);
             let rule = group
                 .unwrap_group_as_mut()
-                .use_consistent_font_weight_notation
-                .get_or_insert(Default::default());
+                .rule_mut("use_consistent_font_weight_notation");
             rule.set_level(rule.level().max(rule_level));
         }
         "function-linear-gradient-no-nonstandard-direction" => {
             let group = rules.correctness.get_or_insert_with(Default::default);
             let rule = group
                 .unwrap_group_as_mut()
-                .no_invalid_direction_in_linear_gradient
-                .get_or_insert(Default::default());
+                .rule_mut("no_invalid_direction_in_linear_gradient");
             rule.set_level(rule.level().max(rule_level));
         }
         "function-no-unknown" => {
             let group = rules.correctness.get_or_insert_with(Default::default);
-            let rule = group
-                .unwrap_group_as_mut()
-                .no_unknown_function
-                .get_or_insert(Default::default());
+            let rule = group.unwrap_group_as_mut().rule_mut("no_unknown_function");
             rule.set_level(rule.level().max(rule_level));
         }
         "keyframe-block-no-duplicate-selectors" => {
             let group = rules.suspicious.get_or_insert_with(Default::default);
             let rule = group
                 .unwrap_group_as_mut()
-                .no_duplicate_selectors_keyframe_block
-                .get_or_insert(Default::default());
+                .rule_mut("no_duplicate_selectors_keyframe_block");
             rule.set_level(rule.level().max(rule_level));
         }
         "keyframe-declaration-no-important" => {
             let group = rules.suspicious.get_or_insert_with(Default::default);
             let rule = group
                 .unwrap_group_as_mut()
-                .no_important_in_keyframe
-                .get_or_insert(Default::default());
+                .rule_mut("no_important_in_keyframe");
             rule.set_level(rule.level().max(rule_level));
         }
         "length-zero-no-unit" => {
@@ -160,10 +134,7 @@ pub(crate) fn migrate_stylelint_any_rule(
                 return false;
             }
             let group = rules.nursery.get_or_insert_with(Default::default);
-            let rule = group
-                .unwrap_group_as_mut()
-                .no_zero_length_unit
-                .get_or_insert(Default::default());
+            let rule = group.unwrap_group_as_mut().rule_mut("no_zero_length_unit");
             rule.set_level(rule.level().max(rule_level));
         }
         "liberty/use-logical-spec" => {
@@ -177,8 +148,7 @@ pub(crate) fn migrate_stylelint_any_rule(
             let group = rules.nursery.get_or_insert_with(Default::default);
             let rule = group
                 .unwrap_group_as_mut()
-                .use_logical_properties
-                .get_or_insert(Default::default());
+                .rule_mut("use_logical_properties");
             rule.set_level(rule.level().max(rule_level));
         }
         "lightness-notation" => {
@@ -192,8 +162,7 @@ pub(crate) fn migrate_stylelint_any_rule(
             let group = rules.nursery.get_or_insert_with(Default::default);
             let rule = group
                 .unwrap_group_as_mut()
-                .use_consistent_lightness_notation
-                .get_or_insert(Default::default());
+                .rule_mut("use_consistent_lightness_notation");
             rule.set_level(rule.level().max(rule_level));
         }
         "max-nesting-depth" => {
@@ -207,88 +176,73 @@ pub(crate) fn migrate_stylelint_any_rule(
             let group = rules.nursery.get_or_insert_with(Default::default);
             let rule = group
                 .unwrap_group_as_mut()
-                .no_excessive_nested_blocks
-                .get_or_insert(Default::default());
+                .rule_mut("no_excessive_nested_blocks");
             rule.set_level(rule.level().max(rule_level));
         }
         "media-feature-name-no-unknown" => {
             let group = rules.correctness.get_or_insert_with(Default::default);
             let rule = group
                 .unwrap_group_as_mut()
-                .no_unknown_media_feature_name
-                .get_or_insert(Default::default());
+                .rule_mut("no_unknown_media_feature_name");
             rule.set_level(rule.level().max(rule_level));
         }
         "media-type-no-deprecated" => {
             let group = rules.suspicious.get_or_insert_with(Default::default);
             let rule = group
                 .unwrap_group_as_mut()
-                .no_deprecated_media_type
-                .get_or_insert(Default::default());
+                .rule_mut("no_deprecated_media_type");
             rule.set_level(rule.level().max(rule_level));
         }
         "named-grid-areas-no-invalid" => {
             let group = rules.correctness.get_or_insert_with(Default::default);
             let rule = group
                 .unwrap_group_as_mut()
-                .no_invalid_grid_areas
-                .get_or_insert(Default::default());
+                .rule_mut("no_invalid_grid_areas");
             rule.set_level(rule.level().max(rule_level));
         }
         "no-descending-specificity" => {
             let group = rules.style.get_or_insert_with(Default::default);
             let rule = group
                 .unwrap_group_as_mut()
-                .no_descending_specificity
-                .get_or_insert(Default::default());
+                .rule_mut("no_descending_specificity");
             rule.set_level(rule.level().max(rule_level));
         }
         "no-duplicate-at-import-rules" => {
             let group = rules.suspicious.get_or_insert_with(Default::default);
             let rule = group
                 .unwrap_group_as_mut()
-                .no_duplicate_at_import_rules
-                .get_or_insert(Default::default());
+                .rule_mut("no_duplicate_at_import_rules");
             rule.set_level(rule.level().max(rule_level));
         }
         "no-duplicate-selectors" => {
             let group = rules.suspicious.get_or_insert_with(Default::default);
             let rule = group
                 .unwrap_group_as_mut()
-                .no_duplicate_selectors
-                .get_or_insert(Default::default());
+                .rule_mut("no_duplicate_selectors");
             rule.set_level(rule.level().max(rule_level));
         }
         "no-empty-source" => {
             let group = rules.suspicious.get_or_insert_with(Default::default);
-            let rule = group
-                .unwrap_group_as_mut()
-                .no_empty_source
-                .get_or_insert(Default::default());
+            let rule = group.unwrap_group_as_mut().rule_mut("no_empty_source");
             rule.set_level(rule.level().max(rule_level));
         }
         "no-invalid-position-at-import-rule" => {
             let group = rules.correctness.get_or_insert_with(Default::default);
             let rule = group
                 .unwrap_group_as_mut()
-                .no_invalid_position_at_import_rule
-                .get_or_insert(Default::default());
+                .rule_mut("no_invalid_position_at_import_rule");
             rule.set_level(rule.level().max(rule_level));
         }
         "no-irregular-whitespace" => {
             let group = rules.suspicious.get_or_insert_with(Default::default);
             let rule = group
                 .unwrap_group_as_mut()
-                .no_irregular_whitespace
-                .get_or_insert(Default::default());
+                .rule_mut("no_irregular_whitespace");
             rule.set_level(rule.level().max(rule_level));
         }
         "property-no-unknown" => {
             let group = rules.correctness.get_or_insert_with(Default::default);
-            let rule = group
-                .unwrap_group_as_mut()
-                .no_unknown_property
-                .get_or_insert(Default::default());
+            let rule = group.unwrap_group_as_mut().rule_mut("no_unknown_property");
             rule.set_level(rule.level().max(rule_level));
         }
         "scss/at-if-no-null" => {
@@ -309,8 +263,7 @@ pub(crate) fn migrate_stylelint_any_rule(
             let group = rules.nursery.get_or_insert_with(Default::default);
             let rule = group
                 .unwrap_group_as_mut()
-                .no_scss_null_comparison
-                .get_or_insert(Default::default());
+                .rule_mut("no_scss_null_comparison");
             rule.set_level(rule.level().max(rule_level));
         }
         "scss/dollar-variable-no-missing-interpolation" => {
@@ -331,48 +284,42 @@ pub(crate) fn migrate_stylelint_any_rule(
             let group = rules.nursery.get_or_insert_with(Default::default);
             let rule = group
                 .unwrap_group_as_mut()
-                .no_missing_scss_interpolation
-                .get_or_insert(Default::default());
+                .rule_mut("no_missing_scss_interpolation");
             rule.set_level(rule.level().max(rule_level));
         }
         "selector-anb-no-unmatchable" => {
             let group = rules.correctness.get_or_insert_with(Default::default);
             let rule = group
                 .unwrap_group_as_mut()
-                .no_unmatchable_anb_selector
-                .get_or_insert(Default::default());
+                .rule_mut("no_unmatchable_anb_selector");
             rule.set_level(rule.level().max(rule_level));
         }
         "selector-max-class" => {
             let group = rules.complexity.get_or_insert_with(Default::default);
             let rule = group
                 .unwrap_group_as_mut()
-                .no_excessive_selector_classes
-                .get_or_insert(Default::default());
+                .rule_mut("no_excessive_selector_classes");
             rule.set_level(rule.level().max(rule_level));
         }
         "selector-pseudo-class-no-unknown" => {
             let group = rules.correctness.get_or_insert_with(Default::default);
             let rule = group
                 .unwrap_group_as_mut()
-                .no_unknown_pseudo_class
-                .get_or_insert(Default::default());
+                .rule_mut("no_unknown_pseudo_class");
             rule.set_level(rule.level().max(rule_level));
         }
         "selector-pseudo-element-no-unknown" => {
             let group = rules.correctness.get_or_insert_with(Default::default);
             let rule = group
                 .unwrap_group_as_mut()
-                .no_unknown_pseudo_element
-                .get_or_insert(Default::default());
+                .rule_mut("no_unknown_pseudo_element");
             rule.set_level(rule.level().max(rule_level));
         }
         "selector-type-no-unknown" => {
             let group = rules.correctness.get_or_insert_with(Default::default);
             let rule = group
                 .unwrap_group_as_mut()
-                .no_unknown_type_selector
-                .get_or_insert(Default::default());
+                .rule_mut("no_unknown_type_selector");
             rule.set_level(rule.level().max(rule_level));
         }
         "time-min-milliseconds" => {
@@ -384,18 +331,12 @@ pub(crate) fn migrate_stylelint_any_rule(
                 return false;
             }
             let group = rules.nursery.get_or_insert_with(Default::default);
-            let rule = group
-                .unwrap_group_as_mut()
-                .no_short_time_values
-                .get_or_insert(Default::default());
+            let rule = group.unwrap_group_as_mut().rule_mut("no_short_time_values");
             rule.set_level(rule.level().max(rule_level));
         }
         "unit-no-unknown" => {
             let group = rules.correctness.get_or_insert_with(Default::default);
-            let rule = group
-                .unwrap_group_as_mut()
-                .no_unknown_unit
-                .get_or_insert(Default::default());
+            let rule = group.unwrap_group_as_mut().rule_mut("no_unknown_unit");
             rule.set_level(rule.level().max(rule_level));
         }
         _ => {

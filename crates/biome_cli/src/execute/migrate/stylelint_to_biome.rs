@@ -325,8 +325,7 @@ impl stylelint_stylelint::PrimaryOption {
                 let group = rules.nursery.get_or_insert_with(Default::default);
                 let rule = group
                     .unwrap_group_as_mut()
-                    .use_consistent_lightness_notation
-                    .get_or_insert(Default::default());
+                    .rule_mut("use_consistent_lightness_notation");
                 *rule = biome_config::RuleFixConfiguration::WithOptions(
                     biome_config::RuleWithFixOptions {
                         level: rule.level(),
@@ -335,14 +334,14 @@ impl stylelint_stylelint::PrimaryOption {
                             notation: Some(notation.into()),
                         },
                     },
-                );
+                )
+                .into();
             }
             Self::MaxNestingDepth(max) => {
                 let group = rules.nursery.get_or_insert_with(Default::default);
                 let rule = group
                     .unwrap_group_as_mut()
-                    .no_excessive_nested_blocks
-                    .get_or_insert(Default::default());
+                    .rule_mut("no_excessive_nested_blocks");
                 *rule =
                     biome_config::RuleConfiguration::WithOptions(biome_config::RuleWithOptions {
                         level: rule.level(),
@@ -351,7 +350,8 @@ impl stylelint_stylelint::PrimaryOption {
                             ignore_at_rules: (!ignore_at_rules.is_empty())
                                 .then_some(ignore_at_rules),
                         },
-                    });
+                    })
+                    .into();
             }
             // Rules with an unsupported primary option are skipped before they are migrated.
             Self::Unsupported => {}

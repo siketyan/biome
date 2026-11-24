@@ -48,6 +48,7 @@ regex                      = { workspace = true }
 rustc-hash                 = { workspace = true }
 schemars                   = { workspace = true, optional = true }
 serde                      = { workspace = true, features = ["derive"] }
+serde_json                 = { workspace = true }
 
 [dev-dependencies]
 biome_json_parser = { path = "../biome_json_parser" }

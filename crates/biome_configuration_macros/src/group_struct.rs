@@ -19,6 +19,10 @@ pub fn generate_group_struct(
     let mut rule_disabled_check_line = Vec::new();
     let mut get_rule_configuration_line = Vec::new();
     let mut rule_identifiers = Vec::new();
+    let mut rule_positions = Vec::new();
+    let mut rule_option_types = Vec::new();
+    let mut rule_ident_names = Vec::new();
+    let mut rule_has_fix = Vec::new();
     let mut preset_rules_map: BTreeMap<String, Vec<TokenStream>> = BTreeMap::new();
 
     for (index, (rule, metadata)) in rules.iter().enumerate() {
@@ -143,6 +147,10 @@ pub fn generate_group_struct(
             #rule => self.#rule_identifier.as_ref().map(|conf| (conf.level(), conf.get_options()))
         });
 
+        rule_positions.push(rule_position.clone());
+        rule_option_types.push(rule_option_type.clone());
+        rule_ident_names.push(Case::Snake.convert(rule));
+        rule_has_fix.push(metadata.fix_kind != biome_analyze::FixKind::None);
         rule_identifiers.push(rule_identifier);
     }
 
@@ -175,14 +183,6 @@ pub fn generate_group_struct(
     }
 
     let group_pascal_ident = Ident::new(&to_capitalized(group), Span::call_site());
-    let nursery_preset_schema_skip = if group == "nursery" {
-        quote! {
-            #[cfg_attr(feature = "schema", schemars(skip))]
-        }
-    } else {
-        TokenStream::new()
-    };
-
     let get_configuration_function = if kind == biome_analyze::RuleCategory::Action {
         quote! {
             pub(crate) fn get_rule_configuration(&self, rule_name: &str) -> Option<(RuleAssistPlainConfiguration, Option<RuleOptions>)> {
@@ -307,29 +307,56 @@ pub fn generate_group_struct(
             }
         }
     } else {
+        let table_ident = quote::format_ident!("{}Table", to_capitalized(group));
         quote! {
-            #[derive(Clone, Debug, Default, Deserialize, Deserializable, Eq, Merge, PartialEq, Serialize)]
-            #[cfg_attr(feature = "schema", derive(JsonSchema))]
-            #[serde(rename_all = "camelCase", default, deny_unknown_fields)]
-            /// Configures all rules in one lint group.
-            pub struct #group_pascal_ident {
-                /// Enables or disables the recommended rules in a non-nursery group. The group's
-                /// `preset` setting takes precedence when both options are set.
-                #nursery_preset_schema_skip
-                #[serde(skip_serializing_if = "Option::is_none")]
-                pub recommended: Option<bool>,
+            /// Describes the rules of a lint group.
+            #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+            pub struct #table_ident;
 
-                /// Selects the baseline set of lint rules for a non-nursery group. `recommended`
-                /// enables the group's recommended rules, `all` enables all rules in the group, and
-                /// `none` starts with no rules enabled in the group. Explicit rule settings override
-                /// this group preset, which overrides `linter.rules.preset` for the group.
-                #nursery_preset_schema_skip
-                #[serde(skip_serializing_if = "Option::is_none")]
-                pub preset: Option<PresetConfig>,
+            impl crate::analyzer::rule_entry::LintGroupTable for #table_ident {
+                const NAME: &'static str = #group;
+                const RULES: &'static [&'static str] = &[
+                    #( #lines_rule ),*
+                ];
+                const RULE_IDENTS: &'static [&'static str] = &[
+                    #( #rule_ident_names ),*
+                ];
+                const HAS_FIX: &'static [bool] = &[
+                    #( #rule_has_fix ),*
+                ];
 
-                #( #schema_lines_rules ),*
+                fn default_options(index: usize) -> Box<dyn crate::analyzer::rule_entry::ErasedRuleOptions> {
+                    match index {
+                        #( #rule_positions => Box::new(<#rule_option_types>::default()), )*
+                        _ => unreachable!(),
+                    }
+                }
+
+                fn options_from_json(
+                    index: usize,
+                    value: serde_json::Value,
+                ) -> Result<Box<dyn crate::analyzer::rule_entry::ErasedRuleOptions>, serde_json::Error> {
+                    match index {
+                        #( #rule_positions => Ok(Box::new(serde_json::from_value::<#rule_option_types>(value)?)), )*
+                        _ => unreachable!(),
+                    }
+                }
+
+                fn deserialize_options<S>(
+                    index: usize,
+                    ctx: &mut dyn biome_deserialize::DeserializationContext<State = S>,
+                    value: &Box<dyn biome_deserialize::DeserializableValue<State = S>>,
+                    name: &str,
+                ) -> Option<Box<dyn crate::analyzer::rule_entry::ErasedRuleOptions>> {
+                    match index {
+                        #( #rule_positions => Some(Box::new(<#rule_option_types as biome_deserialize::Deserializable>::deserialize(ctx, value, name)?)), )*
+                        _ => unreachable!(),
+                    }
+                }
             }
 
+            /// Configures all rules in one lint group.
+            pub type #group_pascal_ident = crate::analyzer::rule_entry::RuleGroupConfig<#table_ident>;
 
             impl #group_pascal_ident {
 
@@ -364,15 +391,17 @@ pub fn generate_group_struct(
 
 
                 fn get_enabled_rules(&self) -> FxHashSet<RuleFilter<'static>> {
-                   let mut index_set = FxHashSet::default();
-                   #( #rule_enabled_check_line )*
-                   index_set
+                    self.entries()
+                        .filter(|(_, rule)| rule.is_enabled())
+                        .map(|(index, _)| RuleFilter::Rule(Self::GROUP_NAME, Self::GROUP_RULES[index]))
+                        .collect()
                 }
 
                 fn get_disabled_rules(&self) -> FxHashSet<RuleFilter<'static>> {
-                   let mut index_set = FxHashSet::default();
-                   #( #rule_disabled_check_line )*
-                   index_set
+                    self.entries()
+                        .filter(|(_, rule)| rule.is_disabled())
+                        .map(|(index, _)| RuleFilter::Rule(Self::GROUP_NAME, Self::GROUP_RULES[index]))
+                        .collect()
                 }
 
                 /// Checks if, given a rule name, matches one of the rules contained in this category
@@ -428,16 +457,14 @@ pub fn generate_group_struct(
                     self.recommended = value;
                 }
 
-                #get_configuration_function
+                fn get_rule_configuration(&self, rule_name: &str) -> Option<(RulePlainConfiguration, Option<RuleOptions>)> {
+                    self.get(rule_name).map(|conf| (conf.level(), conf.get_options()))
+                }
             }
 
             impl From<GroupPlainConfiguration> for #group_pascal_ident {
                 fn from(value: GroupPlainConfiguration) -> Self {
-                    Self {
-                        recommended: None,
-                        preset: None,
-                        #( #rule_identifiers: Some(value.into()), )*
-                    }
+                    Self::from_entry(value.into())
                 }
             }
         }

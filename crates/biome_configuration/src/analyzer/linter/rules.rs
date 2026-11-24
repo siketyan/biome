@@ -2,8 +2,7 @@
 
 use crate::analyzer::presets::PresetConfig;
 use crate::analyzer::{
-    GroupPlainConfiguration, RuleConfiguration, RuleFixConfiguration, RuleGroupExt,
-    RulePlainConfiguration, SeverityOrGroup,
+    GroupPlainConfiguration, RuleGroupExt, RulePlainConfiguration, SeverityOrGroup,
 };
 use biome_analyze::RulePreset;
 use biome_analyze::{RuleFilter, options::RuleOptions};
