@@ -29,7 +29,7 @@ pub trait ErasedRuleOptions: Any + Send + Sync + Debug {
     /// Merges `other` into `self`. Does nothing when `other` holds a different
     /// concrete type.
     fn merge_dyn(&mut self, other: Box<dyn ErasedRuleOptions>);
-    fn to_json(&self) -> SerializedOptions;
+    fn to_json(&self) -> OrderedJson;
     fn to_rule_options(&self, fix: Option<FixKind>) -> RuleOptions;
     fn as_any(&self) -> &dyn Any;
     fn as_any_mut(&mut self) -> &mut dyn Any;
@@ -57,11 +57,11 @@ where
         }
     }
 
-    fn to_json(&self) -> SerializedOptions {
+    fn to_json(&self) -> OrderedJson {
         serde_json::to_string(self)
             .ok()
             .and_then(|json| serde_json::from_str(&json).ok())
-            .unwrap_or(SerializedOptions::Null)
+            .unwrap_or(OrderedJson::Null)
     }
 
     fn to_rule_options(&self, fix: Option<FixKind>) -> RuleOptions {
@@ -81,11 +81,13 @@ where
     }
 }
 
-/// The options of a rule in a form that any serializer can write.
+/// A JSON value that keeps the properties of an object in their order.
 ///
-/// Unlike [serde_json::Value], it keeps the properties of an object in the
-/// order in which the options serialize them.
-pub enum SerializedOptions {
+/// The configuration of a rule goes through it when serde reads or writes a
+/// group, so that the code that handles the group doesn't depend on the
+/// serializer or the deserializer. [serde_json::Value] can't be used for
+/// that: it sorts the properties, and the order matters to some options.
+pub enum OrderedJson {
     Null,
     Bool(bool),
     Number(serde_json::Number),
@@ -94,7 +96,18 @@ pub enum SerializedOptions {
     Object(Vec<(String, Self)>),
 }
 
-impl serde::Serialize for SerializedOptions {
+impl OrderedJson {
+    fn to_text(&self) -> String {
+        serde_json::to_string(self).unwrap_or_default()
+    }
+
+    /// Deserializes the value into `T`.
+    fn parse<T: serde::de::DeserializeOwned>(&self) -> Result<T, String> {
+        serde_json::from_str(&self.to_text()).map_err(|error| error.to_string())
+    }
+}
+
+impl serde::Serialize for OrderedJson {
     fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         match self {
             Self::Null => serializer.serialize_unit(),
@@ -113,39 +126,39 @@ impl serde::Serialize for SerializedOptions {
     }
 }
 
-impl<'de> serde::Deserialize<'de> for SerializedOptions {
+impl<'de> serde::Deserialize<'de> for OrderedJson {
     fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
         struct Visitor;
         impl<'de> serde::de::Visitor<'de> for Visitor {
-            type Value = SerializedOptions;
+            type Value = OrderedJson;
 
             fn expecting(&self, formatter: &mut Formatter) -> std::fmt::Result {
                 formatter.write_str("a JSON value")
             }
 
             fn visit_unit<E>(self) -> Result<Self::Value, E> {
-                Ok(SerializedOptions::Null)
+                Ok(OrderedJson::Null)
             }
 
             fn visit_bool<E>(self, value: bool) -> Result<Self::Value, E> {
-                Ok(SerializedOptions::Bool(value))
+                Ok(OrderedJson::Bool(value))
             }
 
             fn visit_i64<E>(self, value: i64) -> Result<Self::Value, E> {
-                Ok(SerializedOptions::Number(value.into()))
+                Ok(OrderedJson::Number(value.into()))
             }
 
             fn visit_u64<E>(self, value: u64) -> Result<Self::Value, E> {
-                Ok(SerializedOptions::Number(value.into()))
+                Ok(OrderedJson::Number(value.into()))
             }
 
             fn visit_f64<E>(self, value: f64) -> Result<Self::Value, E> {
                 Ok(serde_json::Number::from_f64(value)
-                    .map_or(SerializedOptions::Null, SerializedOptions::Number))
+                    .map_or(OrderedJson::Null, OrderedJson::Number))
             }
 
             fn visit_str<E>(self, value: &str) -> Result<Self::Value, E> {
-                Ok(SerializedOptions::String(value.to_string()))
+                Ok(OrderedJson::String(value.to_string()))
             }
 
             fn visit_seq<A: serde::de::SeqAccess<'de>>(
@@ -156,7 +169,7 @@ impl<'de> serde::Deserialize<'de> for SerializedOptions {
                 while let Some(item) = seq.next_element()? {
                     items.push(item);
                 }
-                Ok(SerializedOptions::Array(items))
+                Ok(OrderedJson::Array(items))
             }
 
             fn visit_map<A: serde::de::MapAccess<'de>>(
@@ -167,7 +180,7 @@ impl<'de> serde::Deserialize<'de> for SerializedOptions {
                 while let Some(member) = map.next_entry()? {
                     members.push(member);
                 }
-                Ok(SerializedOptions::Object(members))
+                Ok(OrderedJson::Object(members))
             }
         }
 
@@ -336,15 +349,15 @@ impl serde::Serialize for RuleEntry {
 /// the position of the rule in the group. `RULES` is sorted.
 pub trait LintGroupTable: 'static {
     const NAME: &'static str;
+    /// Name of the group in pascal case, which names it in the JSON schema and
+    /// in its [Debug] output.
+    const TYPE_NAME: &'static str;
     /// Names of the rules, as written in the configuration file.
     const RULES: &'static [&'static str];
     /// Names of the rules in snake case.
     const RULE_IDENTS: &'static [&'static str];
     const HAS_FIX: &'static [bool];
 
-    /// Name of the group in the JSON schema.
-    #[cfg(feature = "schema")]
-    const SCHEMA_NAME: &'static str;
     /// Whether the JSON schema documents `recommended` and `preset`.
     #[cfg(feature = "schema")]
     const HAS_PRESET_IN_SCHEMA: bool;
@@ -358,9 +371,10 @@ pub trait LintGroupTable: 'static {
 
     fn default_options(index: usize) -> Box<dyn ErasedRuleOptions>;
 
+    /// Deserializes the options of a rule from JSON text.
     fn options_from_json(
         index: usize,
-        value: serde_json::Value,
+        json: &str,
     ) -> Result<Box<dyn ErasedRuleOptions>, serde_json::Error>;
 
     #[expect(
@@ -450,60 +464,110 @@ impl<G: LintGroupTable> RuleGroupConfig<G> {
         }
     }
 
-    fn index_of_ident(ident: &str) -> usize {
-        G::RULE_IDENTS
-            .iter()
-            .position(|candidate| *candidate == ident)
-            .unwrap_or_else(|| panic!("the group {} has no rule {ident}", G::NAME))
-    }
-
     /// Returns the configuration of the rule named `name` in the configuration file.
     pub fn get(&self, name: &str) -> Option<&RuleEntry> {
         self.get_at(G::RULES.binary_search(&name).ok()?)
     }
+}
 
-    /// Returns the configuration of the rule whose snake case name is `ident`.
-    ///
-    /// Panics when the group has no such rule.
-    pub fn rule(&self, ident: &str) -> Option<&RuleEntry> {
-        self.get_at(Self::index_of_ident(ident))
+/// Identifies a rule of the group described by `G`, whose options have the
+/// type `O`.
+///
+/// A group exposes one constant of this type per rule. Reaching a rule
+/// through its constant makes it a compile error to name a rule that the
+/// group doesn't have, or to give a rule options of another type.
+pub struct RuleSlot<G, O> {
+    index: usize,
+    types: PhantomData<fn() -> (G, O)>,
+}
+
+impl<G, O> RuleSlot<G, O> {
+    pub const fn new(index: usize) -> Self {
+        Self {
+            index,
+            types: PhantomData,
+        }
+    }
+}
+
+impl<G, O> Clone for RuleSlot<G, O> {
+    fn clone(&self) -> Self {
+        *self
+    }
+}
+
+impl<G, O> Copy for RuleSlot<G, O> {}
+
+impl<G> RuleGroupConfig<G> {
+    /// Returns the configuration of a rule, if it's configured.
+    pub fn rule<O>(&self, slot: RuleSlot<G, O>) -> Option<&RuleEntry> {
+        self.get_at(slot.index)
     }
 
-    /// Returns the slot of the rule whose snake case name is `ident`.
-    ///
-    /// Panics when the group has no such rule.
-    pub fn rule_slot(&mut self, ident: &str) -> &mut Option<RuleEntry> {
-        self.slot_at(Self::index_of_ident(ident))
+    /// Returns the configuration of a rule, to set, change or unset it.
+    pub fn rule_slot<O>(&mut self, slot: RuleSlot<G, O>) -> &mut Option<RuleEntry> {
+        self.slot_at(slot.index)
     }
 
-    /// Configures the rule whose snake case name is `ident`.
-    ///
-    /// Panics when the group has no such rule.
-    pub fn set_rule(&mut self, ident: &str, entry: impl Into<RuleEntry>) {
-        *self.rule_slot(ident) = Some(entry.into());
+    /// Returns the configuration of a rule, configuring the rule with its
+    /// default configuration when it's unset.
+    pub fn rule_mut<O>(&mut self, slot: RuleSlot<G, O>) -> &mut RuleEntry {
+        self.slot_at(slot.index)
+            .get_or_insert_with(RuleEntry::default)
     }
 
-    /// Returns the group with the rule whose snake case name is `ident`
-    /// configured with `entry`.
-    ///
-    /// Panics when the group has no such rule.
-    pub fn with_rule(mut self, ident: &str, entry: impl Into<RuleEntry>) -> Self {
-        self.set_rule(ident, entry);
+    /// Configures a rule.
+    pub fn set_rule<O>(&mut self, slot: RuleSlot<G, O>, configuration: impl IntoRuleEntry<O>) {
+        *self.slot_at(slot.index) = Some(configuration.into_rule_entry());
+    }
+
+    /// Returns the group with a rule configured.
+    pub fn with_rule<O>(
+        mut self,
+        slot: RuleSlot<G, O>,
+        configuration: impl IntoRuleEntry<O>,
+    ) -> Self {
+        self.set_rule(slot, configuration);
         self
     }
 
-    /// Returns the configuration of the rule whose snake case name is `ident`,
-    /// configuring the rule with its default configuration when it's unset.
-    ///
-    /// Panics when the group has no such rule.
-    pub fn rule_mut(&mut self, ident: &str) -> &mut RuleEntry {
-        self.rule_slot(ident).get_or_insert_with(RuleEntry::default)
+    /// Returns the options of a rule, if it's configured with options.
+    pub fn rule_options<O: 'static>(&self, slot: RuleSlot<G, O>) -> Option<&O> {
+        self.get_at(slot.index)?.options()
+    }
+
+    /// Mutable counterpart of [`Self::rule_options`].
+    pub fn rule_options_mut<O: 'static>(&mut self, slot: RuleSlot<G, O>) -> Option<&mut O> {
+        self.slot_at(slot.index).as_mut()?.options_mut()
+    }
+}
+
+/// A configuration that a rule whose options have the type `O` accepts.
+pub trait IntoRuleEntry<O> {
+    fn into_rule_entry(self) -> RuleEntry;
+}
+
+impl<O> IntoRuleEntry<O> for RulePlainConfiguration {
+    fn into_rule_entry(self) -> RuleEntry {
+        self.into()
+    }
+}
+
+impl<O: Default + Merge + ErasedRuleOptions> IntoRuleEntry<O> for RuleConfiguration<O> {
+    fn into_rule_entry(self) -> RuleEntry {
+        self.into()
+    }
+}
+
+impl<O: Default + Merge + ErasedRuleOptions> IntoRuleEntry<O> for RuleFixConfiguration<O> {
+    fn into_rule_entry(self) -> RuleEntry {
+        self.into()
     }
 }
 
 impl<G: LintGroupTable> Debug for RuleGroupConfig<G> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        let mut debug = f.debug_struct(G::NAME);
+        let mut debug = f.debug_struct(G::TYPE_NAME);
         debug.field("recommended", &self.recommended);
         debug.field("preset", &self.preset);
         for (index, entry) in self.entries() {
@@ -543,29 +607,26 @@ impl<G: LintGroupTable> serde::Serialize for RuleGroupConfig<G> {
 
 impl<'de, G: LintGroupTable> serde::Deserialize<'de> for RuleGroupConfig<G> {
     fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        let map = serde_json::Map::<String, serde_json::Value>::deserialize(deserializer)?;
-        Self::from_json(map).map_err(serde::de::Error::custom)
+        let json = OrderedJson::deserialize(deserializer)?;
+        Self::from_json(json).map_err(serde::de::Error::custom)
     }
 }
 
 impl<G: LintGroupTable> RuleGroupConfig<G> {
-    fn from_json(map: serde_json::Map<String, serde_json::Value>) -> Result<Self, String> {
+    fn from_json(json: OrderedJson) -> Result<Self, String> {
+        let OrderedJson::Object(members) = json else {
+            return Err(format!("invalid type: expected the rules of `{}`", G::NAME));
+        };
         let mut result = Self::default();
-        for (key, value) in map {
+        for (key, value) in members {
             match key.as_str() {
-                "recommended" => {
-                    result.recommended =
-                        serde_json::from_value(value).map_err(|error| error.to_string())?;
-                }
-                "preset" => {
-                    result.preset =
-                        serde_json::from_value(value).map_err(|error| error.to_string())?;
-                }
+                "recommended" => result.recommended = value.parse()?,
+                "preset" => result.preset = value.parse()?,
                 name => {
                     let Ok(index) = G::RULES.binary_search(&name) else {
                         return Err(format!("unknown field `{name}`"));
                     };
-                    if !value.is_null() {
+                    if !matches!(value, OrderedJson::Null) {
                         *result.slot_at(index) = Some(Self::entry_from_json(index, value)?);
                     }
                 }
@@ -574,29 +635,22 @@ impl<G: LintGroupTable> RuleGroupConfig<G> {
         Ok(result)
     }
 
-    fn entry_from_json(index: usize, value: serde_json::Value) -> Result<RuleEntry, String> {
+    fn entry_from_json(index: usize, value: OrderedJson) -> Result<RuleEntry, String> {
         let members = match value {
-            serde_json::Value::Object(members) => members,
-            value => {
-                let level: RulePlainConfiguration =
-                    serde_json::from_value(value).map_err(|error| error.to_string())?;
-                return Ok(level.into());
-            }
+            OrderedJson::Object(members) => members,
+            value => return Ok(value.parse::<RulePlainConfiguration>()?.into()),
         };
         let mut level = None;
         let mut fix = None;
         let mut options = None;
         for (key, value) in members {
             match key.as_str() {
-                "level" => {
-                    level = Some(serde_json::from_value(value).map_err(|error| error.to_string())?);
-                }
-                "fix" if G::HAS_FIX[index] => {
-                    fix = serde_json::from_value(value).map_err(|error| error.to_string())?;
-                }
+                "level" => level = Some(value.parse()?),
+                "fix" if G::HAS_FIX[index] => fix = value.parse()?,
                 "options" => {
                     options = Some(
-                        G::options_from_json(index, value).map_err(|error| error.to_string())?,
+                        G::options_from_json(index, &value.to_text())
+                            .map_err(|error| error.to_string())?,
                     );
                 }
                 name => return Err(format!("unknown field `{name}`")),
@@ -633,37 +687,45 @@ impl<G: LintGroupTable> Deserializable for RuleGroupConfig<G> {
                         continue;
                     };
                     let key_text = key_text.text();
-                    match key_text {
-                        "recommended" => {
-                            if let Some(value) = Deserializable::deserialize(ctx, &value, key_text)
-                            {
-                                result.recommended = Some(value);
+                    let Ok(index) = G::RULES.binary_search(&key_text) else {
+                        match key_text {
+                            "recommended" | "preset" => {
+                                ctx.enter_property(key_text, key.range(), value.range());
+                                if key_text == "recommended" {
+                                    if let Some(recommended) =
+                                        Deserializable::deserialize(ctx, &value, key_text)
+                                    {
+                                        result.recommended = recommended;
+                                    }
+                                } else if let Some(preset) =
+                                    Deserializable::deserialize(ctx, &value, key_text)
+                                {
+                                    result.preset = preset;
+                                }
+                                ctx.exit_property();
                             }
-                        }
-                        "preset" => {
-                            if let Some(value) = Deserializable::deserialize(ctx, &value, key_text)
-                            {
-                                result.preset = Some(value);
-                            }
-                        }
-                        rule_name => {
-                            let Ok(index) = G::RULES.binary_search(&rule_name) else {
+                            unknown_key => {
                                 let allowed_keys: Vec<_> = ["recommended", "preset"]
                                     .into_iter()
                                     .chain(G::RULES.iter().copied())
                                     .collect();
                                 ctx.report(DeserializationDiagnostic::new_unknown_key(
-                                    rule_name,
+                                    unknown_key,
                                     key.range(),
                                     &allowed_keys,
                                 ));
-                                continue;
-                            };
-                            if let Some(entry) = deserialize_entry::<G, S>(index, ctx, &value) {
-                                *result.slot_at(index) = Some(entry);
                             }
                         }
+                        continue;
+                    };
+                    ctx.enter_property(key_text, key.range(), value.range());
+                    // Like for any optional property, `null` leaves the rule unset.
+                    if value.visitable_type(ctx) != Some(DeserializableType::Null)
+                        && let Some(entry) = deserialize_entry::<G, S>(index, ctx, &value)
+                    {
+                        *result.slot_at(index) = Some(entry);
                     }
+                    ctx.exit_property();
                 }
                 Some(result)
             }
@@ -703,12 +765,30 @@ fn deserialize_entry<G: LintGroupTable, S>(
                 };
                 let key_text = key_text.text();
                 match key_text {
-                    "level" => level = Deserializable::deserialize(ctx, &value, key_text),
+                    "level" => {
+                        ctx.enter_property(key_text, key.range(), value.range());
+                        let deserialized = Deserializable::deserialize(ctx, &value, key_text);
+                        ctx.exit_property();
+                        // The level is required: without it, the rule isn't configured.
+                        level = Some(deserialized?);
+                    }
                     "fix" if G::HAS_FIX[index] => {
-                        fix = Deserializable::deserialize(ctx, &value, key_text);
+                        ctx.enter_property(key_text, key.range(), value.range());
+                        if let Some(deserialized) =
+                            Deserializable::deserialize(ctx, &value, key_text)
+                        {
+                            fix = deserialized;
+                        }
+                        ctx.exit_property();
                     }
                     "options" => {
-                        options = G::deserialize_options(index, ctx, &value, key_text);
+                        ctx.enter_property(key_text, key.range(), value.range());
+                        if let Some(deserialized) =
+                            G::deserialize_options(index, ctx, &value, key_text)
+                        {
+                            options = Some(deserialized);
+                        }
+                        ctx.exit_property();
                     }
                     unknown_key => {
                         let allowed_keys: &[&str] = if G::HAS_FIX[index] {
@@ -724,16 +804,15 @@ fn deserialize_entry<G: LintGroupTable, S>(
                     }
                 }
             }
-            let Some(level) = level else {
+            if level.is_none() {
                 ctx.report(DeserializationDiagnostic::new_missing_key(
                     "level",
                     range,
                     &["level"],
                 ));
-                return None;
-            };
+            }
             Some(RuleEntry {
-                level,
+                level: level.unwrap_or_default(),
                 fix,
                 options: Some(options.unwrap_or_else(|| G::default_options(index))),
             })
@@ -751,7 +830,7 @@ fn deserialize_entry<G: LintGroupTable, S>(
 #[cfg(feature = "schema")]
 impl<G: LintGroupTable> schemars::JsonSchema for RuleGroupConfig<G> {
     fn schema_name() -> std::borrow::Cow<'static, str> {
-        std::borrow::Cow::Borrowed(G::SCHEMA_NAME)
+        std::borrow::Cow::Borrowed(G::TYPE_NAME)
     }
 
     fn json_schema(generator: &mut schemars::SchemaGenerator) -> schemars::Schema {
@@ -896,3 +975,7 @@ impl<N: RuleOptionsSchema> schemars::JsonSchema for RuleOptionsNameSchema<N> {
         <N::Options as schemars::JsonSchema>::json_schema(generator)
     }
 }
+
+#[cfg(test)]
+#[path = "rule_entry.tests.rs"]
+mod tests;

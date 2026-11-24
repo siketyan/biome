@@ -16,7 +16,7 @@ use biome_configuration::max_size::MaxSize;
 use biome_configuration::{
     Configuration, FormatterConfiguration, JsConfiguration, JsonConfiguration, LinterConfiguration,
     OverrideFilesConfiguration, OverrideGlobs, OverrideLinterConfiguration, OverridePattern,
-    Overrides, RuleConfiguration, RulePlainConfiguration, Rules,
+    Overrides, RulePlainConfiguration, Rules,
 };
 use biome_fs::BiomePath;
 use biome_html_parser::{HtmlParserOptions, parse_html};
@@ -193,7 +193,7 @@ fn merge_override_linter_group_rule() {
                 rules: Some(Rules {
                     style: Some(SeverityOrGroup::Group(
                         Style::default()
-                            .with_rule("no_default_export", RulePlainConfiguration::Off),
+                            .with_rule(Style::NO_DEFAULT_EXPORT, RulePlainConfiguration::Off),
                     )),
                     ..Rules::default()
                 }),

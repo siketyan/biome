@@ -325,7 +325,7 @@ impl stylelint_stylelint::PrimaryOption {
                 let group = rules.nursery.get_or_insert_with(Default::default);
                 let rule = group
                     .unwrap_group_as_mut()
-                    .rule_mut("use_consistent_lightness_notation");
+                    .rule_mut(biome_config::analyzer::Nursery::USE_CONSISTENT_LIGHTNESS_NOTATION);
                 *rule = biome_config::RuleFixConfiguration::WithOptions(
                     biome_config::RuleWithFixOptions {
                         level: rule.level(),
@@ -341,7 +341,7 @@ impl stylelint_stylelint::PrimaryOption {
                 let group = rules.nursery.get_or_insert_with(Default::default);
                 let rule = group
                     .unwrap_group_as_mut()
-                    .rule_mut("no_excessive_nested_blocks");
+                    .rule_mut(biome_config::analyzer::Nursery::NO_EXCESSIVE_NESTED_BLOCKS);
                 *rule =
                     biome_config::RuleConfiguration::WithOptions(biome_config::RuleWithOptions {
                         level: rule.level(),

@@ -743,8 +743,9 @@ fn migrate_block_lang(
     if migrate_eslint_any_rule(rules, name, severity, opts, results) {
         let group = rules.nursery.get_or_insert_with(Default::default);
         if let SeverityOrGroup::Group(group) = group {
-            group.set_rule("use_consistent_block_lang", 
-                biome_config::RuleFixConfiguration::WithOptions(biome_config::RuleWithFixOptions::<biome_rule_options::use_consistent_block_lang::UseConsistentBlockLangOptions> {
+            group.set_rule(
+                biome_config::analyzer::Nursery::USE_CONSISTENT_BLOCK_LANG,
+                biome_config::RuleFixConfiguration::WithOptions(biome_config::RuleWithFixOptions {
                     level: severity.into(),
                     fix: None,
                     options,
@@ -781,12 +782,15 @@ fn migrate_eslint_rule(
             if migrate_eslint_any_rule(rules, &name, conf.severity(), opts, results) {
                 let group = rules.suspicious.get_or_insert_with(Default::default);
                 if let SeverityOrGroup::Group(group) = group {
-                    group.set_rule("use_iterable_callback_return", biome_config::RuleConfiguration::WithOptions(
-                            biome_config::RuleWithOptions::<biome_rule_options::use_iterable_callback_return::UseIterableCallbackReturnOptions> {
+                    group.set_rule(
+                        biome_config::analyzer::Suspicious::USE_ITERABLE_CALLBACK_RETURN,
+                        biome_config::RuleConfiguration::WithOptions(
+                            biome_config::RuleWithOptions {
                                 level: conf.severity().into(),
                                 options: conf.option_or_default().into(),
                             },
-                        ));
+                        ),
+                    );
                 }
             }
         }
@@ -798,12 +802,15 @@ fn migrate_eslint_rule(
                 {
                     let group = rules.style.get_or_insert_with(Default::default);
                     if let SeverityOrGroup::Group(group) = group {
-                        group.set_rule("use_this_in_class_methods", biome_config::RuleConfiguration::WithOptions(
-                                biome_config::RuleWithOptions::<biome_rule_options::use_this_in_class_methods::UseThisInClassMethodsOptions> {
+                        group.set_rule(
+                            biome_config::analyzer::Style::USE_THIS_IN_CLASS_METHODS,
+                            biome_config::RuleConfiguration::WithOptions(
+                                biome_config::RuleWithOptions {
                                     level: severity.into(),
                                     options: rule_options,
                                 },
-                            ));
+                            ),
+                        );
                     }
                 }
             }
@@ -812,7 +819,9 @@ fn migrate_eslint_rule(
             if migrate_eslint_any_rule(rules, &name, conf.severity(), opts, results) {
                 let group = rules.suspicious.get_or_insert_with(Default::default);
                 if let SeverityOrGroup::Group(group) = group
-                    && let Some(rule) = group.rule_slot("no_double_equals").as_mut()
+                    && let Some(rule) = group
+                        .rule_slot(biome_config::analyzer::Suspicious::NO_DOUBLE_EQUALS)
+                        .as_mut()
                 {
                     let options: biome_rule_options::no_double_equals::NoDoubleEqualsOptions =
                         conf.into();
@@ -838,12 +847,15 @@ fn migrate_eslint_rule(
                 };
                 let group = rules.nursery.get_or_insert_with(Default::default);
                 if let SeverityOrGroup::Group(group) = group {
-                    group.set_rule("use_consistent_function_style", biome_config::RuleConfiguration::WithOptions(
-                            biome_config::RuleWithOptions::<biome_rule_options::use_consistent_function_style::UseConsistentFunctionStyleOptions> {
+                    group.set_rule(
+                        biome_config::analyzer::Nursery::USE_CONSISTENT_FUNCTION_STYLE,
+                        biome_config::RuleConfiguration::WithOptions(
+                            biome_config::RuleWithOptions {
                                 level: severity.into(),
                                 options,
                             },
-                        ));
+                        ),
+                    );
                 }
             }
         }
@@ -856,12 +868,15 @@ fn migrate_eslint_rule(
                 if options.max.is_some() {
                     let group = rules.nursery.get_or_insert_with(Default::default);
                     if let SeverityOrGroup::Group(group) = group {
-                        group.set_rule("no_excessive_nested_blocks", biome_config::RuleConfiguration::WithOptions(
-                                biome_config::RuleWithOptions::<biome_rule_options::no_excessive_nested_blocks::NoExcessiveNestedBlocksOptions> {
+                        group.set_rule(
+                            biome_config::analyzer::Nursery::NO_EXCESSIVE_NESTED_BLOCKS,
+                            biome_config::RuleConfiguration::WithOptions(
+                                biome_config::RuleWithOptions {
                                     level: severity.into(),
                                     options,
                                 },
-                            ));
+                            ),
+                        );
                     }
                 }
             }
@@ -870,12 +885,15 @@ fn migrate_eslint_rule(
             if migrate_eslint_any_rule(rules, &name, conf.severity(), opts, results) {
                 let group = rules.complexity.get_or_insert_with(Default::default);
                 if let SeverityOrGroup::Group(group) = group {
-                    group.set_rule("no_excessive_nested_callbacks", biome_config::RuleConfiguration::WithOptions(
-                            biome_config::RuleWithOptions::<biome_rule_options::no_excessive_nested_callbacks::NoExcessiveNestedCallbacksOptions> {
+                    group.set_rule(
+                        biome_config::analyzer::Complexity::NO_EXCESSIVE_NESTED_CALLBACKS,
+                        biome_config::RuleConfiguration::WithOptions(
+                            biome_config::RuleWithOptions {
                                 level: conf.severity().into(),
                                 options: conf.option_or_default().into(),
                             },
-                        ));
+                        ),
+                    );
                 }
             }
         }
@@ -897,12 +915,15 @@ fn migrate_eslint_rule(
                 };
                 let group = rules.nursery.get_or_insert_with(Default::default);
                 if let SeverityOrGroup::Group(group) = group {
-                    group.set_rule("no_excessive_statements_per_function", biome_config::RuleConfiguration::WithOptions(
-                            biome_config::RuleWithOptions::<biome_rule_options::no_excessive_statements_per_function::NoExcessiveStatementsPerFunctionOptions> {
+                    group.set_rule(
+                        biome_config::analyzer::Nursery::NO_EXCESSIVE_STATEMENTS_PER_FUNCTION,
+                        biome_config::RuleConfiguration::WithOptions(
+                            biome_config::RuleWithOptions {
                                 level: severity.into(),
                                 options,
                             },
-                        ));
+                        ),
+                    );
                 }
             }
         }
@@ -913,7 +934,7 @@ fn migrate_eslint_rule(
                 let group = rules.suspicious.get_or_insert_with(Default::default);
                 if let SeverityOrGroup::Group(group) = group {
                     group.set_rule(
-                        "no_console",
+                        biome_config::analyzer::Suspicious::NO_CONSOLE,
                         biome_config::RuleFixConfiguration::WithOptions(
                             biome_config::RuleWithFixOptions::<
                                 biome_rule_options::no_console::NoConsoleOptions,
@@ -938,8 +959,10 @@ fn migrate_eslint_rule(
                     .into_boxed_slice();
                 let group = rules.nursery.get_or_insert_with(Default::default);
                 if let SeverityOrGroup::Group(group) = group {
-                    group.set_rule("no_js_restricted_properties", biome_config::RuleConfiguration::WithOptions(
-                            biome_config::RuleWithOptions::<biome_rule_options::no_js_restricted_properties::NoJsRestrictedPropertiesOptions> {
+                    group.set_rule(
+                        biome_config::analyzer::Nursery::NO_JS_RESTRICTED_PROPERTIES,
+                        biome_config::RuleConfiguration::WithOptions(
+                            biome_config::RuleWithOptions {
                                 level: severity.into(),
                                 options: *Box::new(
                                     no_js_restricted_properties::NoJsRestrictedPropertiesOptions {
@@ -947,7 +970,8 @@ fn migrate_eslint_rule(
                                     },
                                 ),
                             },
-                        ));
+                        ),
+                    );
                 }
             }
         }
@@ -968,8 +992,10 @@ fn migrate_eslint_rule(
                 let group = rules.style.get_or_insert_with(Default::default);
                 if let SeverityOrGroup::Group(group) = group {
                     let globals = globals.collect::<FxHashMap<_, _>>();
-                    group.set_rule("no_restricted_globals", biome_config::RuleConfiguration::WithOptions(
-                            biome_config::RuleWithOptions::<biome_rule_options::no_restricted_globals::NoRestrictedGlobalsOptions> {
+                    group.set_rule(
+                        biome_config::analyzer::Style::NO_RESTRICTED_GLOBALS,
+                        biome_config::RuleConfiguration::WithOptions(
+                            biome_config::RuleWithOptions {
                                 level: severity.into(),
                                 options: *Box::new(
                                     no_restricted_globals::NoRestrictedGlobalsOptions {
@@ -977,7 +1003,8 @@ fn migrate_eslint_rule(
                                     },
                                 ),
                             },
-                        ));
+                        ),
+                    );
                 }
             }
         }
@@ -1010,7 +1037,9 @@ fn migrate_eslint_rule(
             let rule_options: no_unused_variables::NoUnusedVariablesOptions = rule_options.into();
             let group = rules.correctness.get_or_insert_with(Default::default);
             if let SeverityOrGroup::Group(group) = group
-                && let Some(rule) = group.rule_slot("no_unused_variables").as_mut()
+                && let Some(rule) = group
+                    .rule_slot(biome_config::analyzer::Correctness::NO_UNUSED_VARIABLES)
+                    .as_mut()
             {
                 match rule.options_mut::<no_unused_variables::NoUnusedVariablesOptions>() {
                     None => {
@@ -1066,8 +1095,8 @@ fn migrate_eslint_rule(
             {
                 let group = rules.nursery.get_or_insert_with(Default::default);
                 if let SeverityOrGroup::Group(group) = group {
-                    group.set_rule("use_consistent_unicode_bom", biome_config::RuleFixConfiguration::WithOptions(
-                        biome_config::RuleWithFixOptions::<biome_rule_options::use_consistent_unicode_bom::UseConsistentUnicodeBomOptions> {
+                    group.set_rule(biome_config::analyzer::Nursery::USE_CONSISTENT_UNICODE_BOM, biome_config::RuleFixConfiguration::WithOptions(
+                        biome_config::RuleWithFixOptions {
                             level: severity.into(),
                             fix: None,
                             options: biome_rule_options::use_consistent_unicode_bom::UseConsistentUnicodeBomOptions {
@@ -1089,13 +1118,16 @@ fn migrate_eslint_rule(
                         } else {
                             eslint_jest::ConsistentTestItOptions::default().into()
                         };
-                    group.set_rule("use_consistent_test_it", biome_config::RuleFixConfiguration::WithOptions(
-                            biome_config::RuleWithFixOptions::<biome_rule_options::use_consistent_test_it::UseConsistentTestItOptions> {
+                    group.set_rule(
+                        biome_config::analyzer::Style::USE_CONSISTENT_TEST_IT,
+                        biome_config::RuleFixConfiguration::WithOptions(
+                            biome_config::RuleWithFixOptions {
                                 level: severity.into(),
                                 fix: None,
                                 options: rule_options,
                             },
-                        ));
+                        ),
+                    );
                 }
                 results.add(&name, RuleMigrationResult::Migrated);
             }
@@ -1107,7 +1139,7 @@ fn migrate_eslint_rule(
                 let group = rules.a11y.get_or_insert_with(Default::default);
                 if let SeverityOrGroup::Group(group) = group {
                     group.set_rule(
-                        "use_valid_aria_role",
+                        biome_config::analyzer::A11y::USE_VALID_ARIA_ROLE,
                         biome_config::RuleFixConfiguration::WithOptions(
                             biome_config::RuleWithFixOptions::<
                                 biome_rule_options::use_valid_aria_role::UseValidAriaRoleOptions,
@@ -1127,13 +1159,16 @@ fn migrate_eslint_rule(
             {
                 let group = rules.style.get_or_insert_with(Default::default);
                 if let SeverityOrGroup::Group(group) = group {
-                    group.set_rule("use_consistent_array_type", biome_config::RuleFixConfiguration::WithOptions(
-                            biome_config::RuleWithFixOptions::<biome_rule_options::use_consistent_array_type::UseConsistentArrayTypeOptions> {
+                    group.set_rule(
+                        biome_config::analyzer::Style::USE_CONSISTENT_ARRAY_TYPE,
+                        biome_config::RuleFixConfiguration::WithOptions(
+                            biome_config::RuleWithFixOptions {
                                 level: severity.into(),
                                 fix: None,
                                 options: rule_options.into(),
                             },
-                        ));
+                        ),
+                    );
                 }
             }
         }
@@ -1144,7 +1179,7 @@ fn migrate_eslint_rule(
                 let group = rules.style.get_or_insert_with(Default::default);
                 if let SeverityOrGroup::Group(group) = group {
                     group.set_rule(
-                        "use_import_type",
+                        biome_config::analyzer::Style::USE_IMPORT_TYPE,
                         biome_config::RuleFixConfiguration::WithOptions(
                             biome_config::RuleWithFixOptions::<
                                 biome_rule_options::use_import_type::UseImportTypeOptions,
@@ -1164,12 +1199,15 @@ fn migrate_eslint_rule(
             {
                 let group = rules.style.get_or_insert_with(Default::default);
                 if let SeverityOrGroup::Group(group) = group {
-                    group.set_rule("use_consistent_member_accessibility", biome_config::RuleConfiguration::WithOptions(
-                            biome_config::RuleWithOptions::<biome_rule_options::use_consistent_member_accessibility::UseConsistentMemberAccessibilityOptions> {
+                    group.set_rule(
+                        biome_config::analyzer::Style::USE_CONSISTENT_MEMBER_ACCESSIBILITY,
+                        biome_config::RuleConfiguration::WithOptions(
+                            biome_config::RuleWithOptions {
                                 level: severity.into(),
                                 options: rule_options.into(),
                             },
-                        ));
+                        ),
+                    );
                 }
             }
         }
@@ -1180,7 +1218,7 @@ fn migrate_eslint_rule(
                 let group = rules.nursery.get_or_insert_with(Default::default);
                 if let SeverityOrGroup::Group(group) = group {
                     group.set_rule(
-                        "no_base_to_string",
+                        biome_config::analyzer::Nursery::NO_BASE_TO_STRING,
                         biome_config::RuleConfiguration::WithOptions(
                             biome_config::RuleWithOptions::<
                                 biome_rule_options::no_base_to_string::NoBaseToStringOptions,
@@ -1201,13 +1239,16 @@ fn migrate_eslint_rule(
                 );
                 let group = rules.style.get_or_insert_with(Default::default);
                 if let SeverityOrGroup::Group(group) = group {
-                    group.set_rule("use_naming_convention", biome_config::RuleFixConfiguration::WithOptions(
-                            biome_config::RuleWithFixOptions::<biome_rule_options::use_naming_convention::UseNamingConventionOptions> {
+                    group.set_rule(
+                        biome_config::analyzer::Style::USE_NAMING_CONVENTION,
+                        biome_config::RuleFixConfiguration::WithOptions(
+                            biome_config::RuleWithFixOptions {
                                 level: severity.into(),
                                 fix: None,
                                 options: options.into(),
                             },
-                        ));
+                        ),
+                    );
                 }
             }
         }
@@ -1218,7 +1259,7 @@ fn migrate_eslint_rule(
                 if let SeverityOrGroup::Group(group) = group {
                     let options = conf.option_or_default();
                     group.set_rule(
-                        "no_shadow",
+                        biome_config::analyzer::Suspicious::NO_SHADOW,
                         biome_config::RuleConfiguration::WithOptions(
                             biome_config::RuleWithOptions::<
                                 biome_rule_options::no_shadow::NoShadowOptions,
@@ -1236,13 +1277,16 @@ fn migrate_eslint_rule(
             if migrate_eslint_any_rule(rules, &name, conf.severity(), opts, results) {
                 let group = rules.nursery.get_or_insert_with(Default::default);
                 if let SeverityOrGroup::Group(group) = group {
-                    group.set_rule("use_exhaustive_switch_cases", biome_config::RuleFixConfiguration::WithOptions(
-                            biome_config::RuleWithFixOptions::<biome_rule_options::use_exhaustive_switch_cases::UseExhaustiveSwitchCasesOptions> {
+                    group.set_rule(
+                        biome_config::analyzer::Nursery::USE_EXHAUSTIVE_SWITCH_CASES,
+                        biome_config::RuleFixConfiguration::WithOptions(
+                            biome_config::RuleWithFixOptions {
                                 level: conf.severity().into(),
                                 fix: None,
                                 options: conf.option_or_default().into(),
                             },
-                        ));
+                        ),
+                    );
                 }
             }
         }
@@ -1250,13 +1294,16 @@ fn migrate_eslint_rule(
             if migrate_eslint_any_rule(rules, &name, conf.severity(), opts, results) {
                 let group = rules.style.get_or_insert_with(Default::default);
                 if let SeverityOrGroup::Group(group) = group {
-                    group.set_rule("use_numeric_separators", biome_config::RuleFixConfiguration::WithOptions(
-                            biome_config::RuleWithFixOptions::<biome_rule_options::use_numeric_separators::UseNumericSeparatorsOptions> {
+                    group.set_rule(
+                        biome_config::analyzer::Style::USE_NUMERIC_SEPARATORS,
+                        biome_config::RuleFixConfiguration::WithOptions(
+                            biome_config::RuleWithFixOptions {
                                 level: conf.severity().into(),
                                 fix: None,
                                 options: conf.option_or_default().into(),
                             },
-                        ));
+                        ),
+                    );
                 }
             }
         }
@@ -1267,13 +1314,16 @@ fn migrate_eslint_rule(
             {
                 let group = rules.nursery.get_or_insert_with(Default::default);
                 if let SeverityOrGroup::Group(group) = group {
-                    group.set_rule("use_consistent_json_file_read", biome_config::RuleFixConfiguration::WithOptions(
-                            biome_config::RuleWithFixOptions::<biome_rule_options::use_consistent_json_file_read::UseConsistentJsonFileReadOptions> {
+                    group.set_rule(
+                        biome_config::analyzer::Nursery::USE_CONSISTENT_JSON_FILE_READ,
+                        biome_config::RuleFixConfiguration::WithOptions(
+                            biome_config::RuleWithFixOptions {
                                 level: severity.into(),
                                 fix: None,
                                 options: option.into(),
                             },
-                        ));
+                        ),
+                    );
                 }
             }
         }
@@ -1281,12 +1331,15 @@ fn migrate_eslint_rule(
             if migrate_eslint_any_rule(rules, &name, conf.severity(), opts, results) {
                 let group = rules.style.get_or_insert_with(Default::default);
                 if let SeverityOrGroup::Group(group) = group {
-                    group.set_rule("use_filenaming_convention", biome_config::RuleConfiguration::WithOptions(
-                            biome_config::RuleWithOptions::<biome_rule_options::use_filenaming_convention::UseFilenamingConventionOptions> {
+                    group.set_rule(
+                        biome_config::analyzer::Style::USE_FILENAMING_CONVENTION,
+                        biome_config::RuleConfiguration::WithOptions(
+                            biome_config::RuleWithOptions {
                                 level: conf.severity().into(),
                                 options: conf.option_or_default().into(),
                             },
-                        ));
+                        ),
+                    );
                 }
             }
         }
@@ -1318,12 +1371,15 @@ fn migrate_eslint_rule(
                 {
                     let group = rules.nursery.get_or_insert_with(Default::default);
                     if let SeverityOrGroup::Group(group) = group {
-                        group.set_rule("no_vue_undeclared_properties", biome_config::RuleConfiguration::WithOptions(
-                                biome_config::RuleWithOptions::<biome_rule_options::no_vue_undeclared_properties::NoVueUndeclaredPropertiesOptions> {
+                        group.set_rule(
+                            biome_config::analyzer::Nursery::NO_VUE_UNDECLARED_PROPERTIES,
+                            biome_config::RuleConfiguration::WithOptions(
+                                biome_config::RuleWithOptions {
                                     level: severity.into(),
                                     options: rule_options,
                                 },
-                            ));
+                            ),
+                        );
                     }
                 }
             }
@@ -1332,13 +1388,16 @@ fn migrate_eslint_rule(
             if migrate_eslint_any_rule(rules, &name, conf.severity(), opts, results) {
                 let group = rules.nursery.get_or_insert_with(Default::default);
                 if let SeverityOrGroup::Group(group) = group {
-                    group.set_rule("no_svelte_unnecessary_state_wrap", biome_config::RuleFixConfiguration::WithOptions(
-                            biome_config::RuleWithFixOptions::<biome_rule_options::no_svelte_unnecessary_state_wrap::NoSvelteUnnecessaryStateWrapOptions> {
+                    group.set_rule(
+                        biome_config::analyzer::Nursery::NO_SVELTE_UNNECESSARY_STATE_WRAP,
+                        biome_config::RuleFixConfiguration::WithOptions(
+                            biome_config::RuleWithFixOptions {
                                 level: conf.severity().into(),
                                 fix: None,
                                 options: conf.option_or_default().into(),
                             },
-                        ));
+                        ),
+                    );
                 }
             }
         }
@@ -1380,7 +1439,9 @@ impl RestrictedElementsMigration {
         let SeverityOrGroup::Group(group) = group else {
             return;
         };
-        let Some(rule) = group.rule_slot("no_restricted_elements") else {
+        let Some(rule) =
+            group.rule_slot(biome_config::analyzer::Correctness::NO_RESTRICTED_ELEMENTS)
+        else {
             return;
         };
         if rule
@@ -1680,7 +1741,7 @@ mod tests {
                 .suspicious
                 .unwrap()
                 .unwrap_group()
-                .rule("no_double_equals")
+                .rule(biome_config::analyzer::Suspicious::NO_DOUBLE_EQUALS)
                 .cloned(),
             Some(biome_config::analyzer::RuleEntry::from(
                 biome_config::RulePlainConfiguration::Error
@@ -1702,7 +1763,7 @@ mod tests {
                 .suspicious
                 .unwrap()
                 .unwrap_group()
-                .rule("no_double_equals")
+                .rule(biome_config::analyzer::Suspicious::NO_DOUBLE_EQUALS)
                 .cloned(),
             Some(biome_config::analyzer::RuleEntry::from(
                 biome_config::RulePlainConfiguration::Off
@@ -1772,7 +1833,7 @@ mod tests {
                     .correctness
                     .unwrap()
                     .unwrap_group()
-                    .rule("no_unused_variables")
+                    .rule(biome_config::analyzer::Correctness::NO_UNUSED_VARIABLES)
                     .cloned()
                     .unwrap();
                 let Some(options) = rule.options::<no_unused_variables::NoUnusedVariablesOptions>()
@@ -1964,7 +2025,7 @@ mod tests {
             let has_rule = rules.nursery.is_some_and(|nursery| {
                 nursery
                     .unwrap_group()
-                    .rule("no_excessive_nested_blocks")
+                    .rule(biome_config::analyzer::Nursery::NO_EXCESSIVE_NESTED_BLOCKS)
                     .is_some()
             });
             assert_eq!(has_rule, is_migrated, "{rule_conf}");

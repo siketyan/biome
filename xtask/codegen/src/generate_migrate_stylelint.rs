@@ -17,7 +17,8 @@ fn generate_multi_mapping(stylelint_name: Box<str>, mapped_rules: Vec<RuleMappin
              rule_name,
              group_name,
          }| {
-            let rule_ident = Case::Snake.convert(rule_name);
+            let rule_slot = format_ident!("{}", Case::Constant.convert(rule_name));
+    let group_type = format_ident!("{}", Case::Pascal.convert(group_name));
             let group_ident = format_ident!("{group_name}");
             let blocked_set = if source_kind.is_inspired() || *group_name == "nursery" {
                 quote! {
@@ -50,7 +51,7 @@ fn generate_multi_mapping(stylelint_name: Box<str>, mapped_rules: Vec<RuleMappin
                 quote! {
                     if !blocked {
                         let group = rules.#group_ident.get_or_insert_with(Default::default);
-                        let rule = group.unwrap_group_as_mut().rule_mut(#rule_ident);
+                        let rule = group.unwrap_group_as_mut().rule_mut(biome_configuration::analyzer::#group_type::#rule_slot);
                         rule.set_level(rule.level().max(rule_level));
                         migrated = true;
                     }
@@ -58,7 +59,7 @@ fn generate_multi_mapping(stylelint_name: Box<str>, mapped_rules: Vec<RuleMappin
             } else {
                 quote! {
                     let group = rules.#group_ident.get_or_insert_with(Default::default);
-                    let rule = group.unwrap_group_as_mut().rule_mut(#rule_ident);
+                    let rule = group.unwrap_group_as_mut().rule_mut(biome_configuration::analyzer::#group_type::#rule_slot);
                     rule.set_level(rule.level().max(rule_level));
                     migrated = true;
                 }
@@ -99,7 +100,8 @@ fn generate_single_mapping(
         return quote! {};
     };
 
-    let rule_ident = Case::Snake.convert(rule_name);
+    let rule_slot = format_ident!("{}", Case::Constant.convert(rule_name));
+    let group_type = format_ident!("{}", Case::Pascal.convert(group_name));
     let group_ident = format_ident!("{group_name}");
     let check_inspired = if source_kind.is_inspired() {
         quote! {
@@ -127,7 +129,7 @@ fn generate_single_mapping(
             #check_inspired
             #check_nursery
             let group = rules.#group_ident.get_or_insert_with(Default::default);
-            let rule = group.unwrap_group_as_mut().rule_mut(#rule_ident);
+            let rule = group.unwrap_group_as_mut().rule_mut(biome_configuration::analyzer::#group_type::#rule_slot);
             rule.set_level(rule.level().max(rule_level));
         }
     }

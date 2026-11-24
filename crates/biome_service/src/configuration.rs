@@ -1869,7 +1869,7 @@ mod tests {
     };
     use biome_configuration::{
         LinterConfiguration, OverrideLinterConfiguration, OverridePattern, Overrides,
-        RuleConfiguration, RulePlainConfiguration, Rules,
+        RulePlainConfiguration, Rules,
     };
     use rustc_hash::FxHashMap;
 
@@ -1913,10 +1913,10 @@ mod tests {
         let configuration = Configuration {
             linter: Some(LinterConfiguration {
                 rules: Some(Rules {
-                    correctness: Some(SeverityOrGroup::Group(
-                        Correctness::default()
-                            .with_rule("no_private_imports", RulePlainConfiguration::Error),
-                    )),
+                    correctness: Some(SeverityOrGroup::Group(Correctness::default().with_rule(
+                        Correctness::NO_PRIVATE_IMPORTS,
+                        RulePlainConfiguration::Error,
+                    ))),
                     ..Default::default()
                 }),
                 ..Default::default()
@@ -1935,10 +1935,10 @@ mod tests {
         let configuration = Configuration {
             linter: Some(LinterConfiguration {
                 rules: Some(Rules {
-                    correctness: Some(SeverityOrGroup::Group(
-                        Correctness::default()
-                            .with_rule("no_private_imports", RulePlainConfiguration::Error),
-                    )),
+                    correctness: Some(SeverityOrGroup::Group(Correctness::default().with_rule(
+                        Correctness::NO_PRIVATE_IMPORTS,
+                        RulePlainConfiguration::Error,
+                    ))),
                     ..Default::default()
                 }),
                 ..Default::default()
@@ -1963,8 +1963,10 @@ mod tests {
             linter: Some(LinterConfiguration {
                 rules: Some(Rules {
                     correctness: Some(SeverityOrGroup::Group(
-                        Correctness::default()
-                            .with_rule("no_private_imports", RulePlainConfiguration::Off),
+                        Correctness::default().with_rule(
+                            Correctness::NO_PRIVATE_IMPORTS,
+                            RulePlainConfiguration::Off,
+                        ),
                     )),
                     ..Default::default()
                 }),

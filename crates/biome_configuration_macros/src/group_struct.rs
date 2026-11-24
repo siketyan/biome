@@ -18,12 +18,12 @@ pub fn generate_group_struct(
     let mut rule_enabled_check_line = Vec::new();
     let mut rule_disabled_check_line = Vec::new();
     let mut get_rule_configuration_line = Vec::new();
-    let mut rule_identifiers = Vec::new();
     let mut rule_positions = Vec::new();
     let mut rule_option_types = Vec::new();
     let mut rule_ident_names = Vec::new();
     let mut rule_has_fix = Vec::new();
     let mut rule_summaries = Vec::new();
+    let mut rule_slot_idents = Vec::new();
     let mut rule_option_names = Vec::new();
     let mut preset_rules_map: BTreeMap<String, Vec<TokenStream>> = BTreeMap::new();
 
@@ -154,8 +154,8 @@ pub fn generate_group_struct(
         rule_ident_names.push(Case::Snake.convert(rule));
         rule_has_fix.push(metadata.fix_kind != biome_analyze::FixKind::None);
         rule_summaries.push(summary.trim().to_string());
+        rule_slot_idents.push(quote::format_ident!("{}", Case::Constant.convert(rule)));
         rule_option_names.push(rule_name.to_string());
-        rule_identifiers.push(rule_identifier);
     }
 
     // Generate per-preset constants and match arms for preset_as_filters.
@@ -321,6 +321,7 @@ pub fn generate_group_struct(
 
             impl crate::analyzer::rule_entry::LintGroupTable for #table_ident {
                 const NAME: &'static str = #group;
+                const TYPE_NAME: &'static str = #group_schema_name;
                 const RULES: &'static [&'static str] = &[
                     #( #lines_rule ),*
                 ];
@@ -331,8 +332,6 @@ pub fn generate_group_struct(
                     #( #rule_has_fix ),*
                 ];
 
-                #[cfg(feature = "schema")]
-                const SCHEMA_NAME: &'static str = #group_schema_name;
                 #[cfg(feature = "schema")]
                 const HAS_PRESET_IN_SCHEMA: bool = #has_preset_in_schema;
 
@@ -367,10 +366,10 @@ pub fn generate_group_struct(
 
                 fn options_from_json(
                     index: usize,
-                    value: serde_json::Value,
+                    json: &str,
                 ) -> Result<Box<dyn crate::analyzer::rule_entry::ErasedRuleOptions>, serde_json::Error> {
                     match index {
-                        #( #rule_positions => Ok(Box::new(serde_json::from_value::<#rule_option_types>(value)?)), )*
+                        #( #rule_positions => Ok(Box::new(serde_json::from_str::<#rule_option_types>(json)?)), )*
                         _ => unreachable!(),
                     }
                 }
@@ -394,9 +393,13 @@ pub fn generate_group_struct(
             impl #group_pascal_ident {
 
                 const GROUP_NAME: &'static str = #group;
-                pub(crate) const GROUP_RULES: &'static [&'static str] = &[
-                    #( #lines_rule ),*
-                ];
+                pub(crate) const GROUP_RULES: &'static [&'static str] =
+                    <#table_ident as crate::analyzer::rule_entry::LintGroupTable>::RULES;
+
+                #(
+                    pub const #rule_slot_idents: crate::analyzer::rule_entry::RuleSlot<#table_ident, #rule_option_types> =
+                        crate::analyzer::rule_entry::RuleSlot::new(#rule_positions);
+                )*
 
                 const NON_DOMAIN_RULES_AS_FILTERS: &'static [RuleFilter<'static>] = &[
                     #( #lines_non_domain_rule_as_filter ),*

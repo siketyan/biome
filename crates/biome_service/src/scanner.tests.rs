@@ -1,6 +1,5 @@
 use biome_configuration::Configuration;
 use biome_configuration::vcs::{VcsClientKind, VcsConfiguration};
-use biome_deserialize::json::deserialize_from_json_str;
 use biome_fs::{BiomePath, FileSystem, MemoryFileSystem, OsFileSystem};
 use biome_json_parser::JsonParserOptions;
 use camino::{Utf8Path, Utf8PathBuf};
