@@ -7,7 +7,6 @@ use crate::{
     CssSyntaxElementChildren as SyntaxElementChildren,
     CssSyntaxKind::{self as SyntaxKind, *},
     CssSyntaxList as SyntaxList, CssSyntaxNode as SyntaxNode, CssSyntaxToken as SyntaxToken,
-    macros::map_syntax_node,
 };
 use biome_rowan::{
     AstNode, AstNodeList, AstNodeListIterator, AstNodeSlotMap, AstSeparatedList,
@@ -19145,15 +19144,7 @@ impl AstNode for CssAtRule {
 }
 impl std::fmt::Debug for CssAtRule {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssAtRule",
-            &DEPTH,
-            &[("at_token", false), ("rule", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssAtRule> for SyntaxNode {
@@ -19189,15 +19180,7 @@ impl AstNode for CssAtRuleDeclarator {
 }
 impl std::fmt::Debug for CssAtRuleDeclarator {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssAtRuleDeclarator",
-            &DEPTH,
-            &[("at_token", false), ("declarator", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssAtRuleDeclarator> for SyntaxNode {
@@ -19233,15 +19216,7 @@ impl AstNode for CssAttrFallbackValue {
 }
 impl std::fmt::Debug for CssAttrFallbackValue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssAttrFallbackValue",
-            &DEPTH,
-            &[("comma_token", false), ("value", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssAttrFallbackValue> for SyntaxNode {
@@ -19277,22 +19252,7 @@ impl AstNode for CssAttrFunction {
 }
 impl std::fmt::Debug for CssAttrFunction {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssAttrFunction",
-            &DEPTH,
-            &[
-                ("name_token", false),
-                ("l_paren_token", false),
-                ("attr_name", false),
-                ("attr_type", true),
-                ("fallback_value", true),
-                ("r_paren_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssAttrFunction> for SyntaxNode {
@@ -19328,15 +19288,7 @@ impl AstNode for CssAttributeMatcher {
 }
 impl std::fmt::Debug for CssAttributeMatcher {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssAttributeMatcher",
-            &DEPTH,
-            &[("operator", false), ("value", false), ("modifier", true)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssAttributeMatcher> for SyntaxNode {
@@ -19372,15 +19324,7 @@ impl AstNode for CssAttributeMatcherValue {
 }
 impl std::fmt::Debug for CssAttributeMatcherValue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssAttributeMatcherValue",
-            &DEPTH,
-            &[("name", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssAttributeMatcherValue> for SyntaxNode {
@@ -19416,15 +19360,7 @@ impl AstNode for CssAttributeModifier {
 }
 impl std::fmt::Debug for CssAttributeModifier {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssAttributeModifier",
-            &DEPTH,
-            &[("value", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssAttributeModifier> for SyntaxNode {
@@ -19460,15 +19396,7 @@ impl AstNode for CssAttributeName {
 }
 impl std::fmt::Debug for CssAttributeName {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssAttributeName",
-            &DEPTH,
-            &[("namespace", true), ("name", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssAttributeName> for SyntaxNode {
@@ -19504,20 +19432,7 @@ impl AstNode for CssAttributeSelector {
 }
 impl std::fmt::Debug for CssAttributeSelector {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssAttributeSelector",
-            &DEPTH,
-            &[
-                ("l_brack_token", false),
-                ("name", false),
-                ("matcher", true),
-                ("r_brack_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssAttributeSelector> for SyntaxNode {
@@ -19553,15 +19468,7 @@ impl AstNode for CssBinaryExpression {
 }
 impl std::fmt::Debug for CssBinaryExpression {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssBinaryExpression",
-            &DEPTH,
-            &[("left", false), ("operator", false), ("right", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssBinaryExpression> for SyntaxNode {
@@ -19597,15 +19504,7 @@ impl AstNode for CssBooleanMediaQuery {
 }
 impl std::fmt::Debug for CssBooleanMediaQuery {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssBooleanMediaQuery",
-            &DEPTH,
-            &[("boolean", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssBooleanMediaQuery> for SyntaxNode {
@@ -19641,19 +19540,7 @@ impl AstNode for CssBracketedValue {
 }
 impl std::fmt::Debug for CssBracketedValue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssBracketedValue",
-            &DEPTH,
-            &[
-                ("l_brack_token", false),
-                ("items", false),
-                ("r_brack_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssBracketedValue> for SyntaxNode {
@@ -19689,19 +19576,7 @@ impl AstNode for CssCharsetAtRule {
 }
 impl std::fmt::Debug for CssCharsetAtRule {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssCharsetAtRule",
-            &DEPTH,
-            &[
-                ("charset_token", false),
-                ("encoding", false),
-                ("semicolon_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssCharsetAtRule> for SyntaxNode {
@@ -19737,15 +19612,7 @@ impl AstNode for CssClassSelector {
 }
 impl std::fmt::Debug for CssClassSelector {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssClassSelector",
-            &DEPTH,
-            &[("dot_token", false), ("name", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssClassSelector> for SyntaxNode {
@@ -19781,15 +19648,7 @@ impl AstNode for CssColor {
 }
 impl std::fmt::Debug for CssColor {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssColor",
-            &DEPTH,
-            &[("hash_token", false), ("value_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssColor> for SyntaxNode {
@@ -19825,15 +19684,7 @@ impl AstNode for CssColorProfileAtRule {
 }
 impl std::fmt::Debug for CssColorProfileAtRule {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssColorProfileAtRule",
-            &DEPTH,
-            &[("declarator", false), ("block", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssColorProfileAtRule> for SyntaxNode {
@@ -19869,15 +19720,7 @@ impl AstNode for CssColorProfileAtRuleDeclarator {
 }
 impl std::fmt::Debug for CssColorProfileAtRuleDeclarator {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssColorProfileAtRuleDeclarator",
-            &DEPTH,
-            &[("color_profile_token", false), ("name", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssColorProfileAtRuleDeclarator> for SyntaxNode {
@@ -19913,19 +19756,7 @@ impl AstNode for CssCommaSeparatedValue {
 }
 impl std::fmt::Debug for CssCommaSeparatedValue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssCommaSeparatedValue",
-            &DEPTH,
-            &[
-                ("l_curly_token", false),
-                ("items", false),
-                ("r_curly_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssCommaSeparatedValue> for SyntaxNode {
@@ -19961,15 +19792,7 @@ impl AstNode for CssComplexSelector {
 }
 impl std::fmt::Debug for CssComplexSelector {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssComplexSelector",
-            &DEPTH,
-            &[("left", false), ("combinator", false), ("right", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssComplexSelector> for SyntaxNode {
@@ -20005,15 +19828,7 @@ impl AstNode for CssComposesImportSpecifier {
 }
 impl std::fmt::Debug for CssComposesImportSpecifier {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssComposesImportSpecifier",
-            &DEPTH,
-            &[("from_token", false), ("source", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssComposesImportSpecifier> for SyntaxNode {
@@ -20049,15 +19864,7 @@ impl AstNode for CssComposesProperty {
 }
 impl std::fmt::Debug for CssComposesProperty {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssComposesProperty",
-            &DEPTH,
-            &[("name", false), ("colon_token", false), ("values", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssComposesProperty> for SyntaxNode {
@@ -20093,15 +19900,7 @@ impl AstNode for CssComposesPropertyValue {
 }
 impl std::fmt::Debug for CssComposesPropertyValue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssComposesPropertyValue",
-            &DEPTH,
-            &[("classes", false), ("specifier", true)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssComposesPropertyValue> for SyntaxNode {
@@ -20137,19 +19936,7 @@ impl AstNode for CssCompoundSelector {
 }
 impl std::fmt::Debug for CssCompoundSelector {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssCompoundSelector",
-            &DEPTH,
-            &[
-                ("nesting_selectors", false),
-                ("simple_selector", true),
-                ("sub_selectors", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssCompoundSelector> for SyntaxNode {
@@ -20185,15 +19972,7 @@ impl AstNode for CssContainerAndQuery {
 }
 impl std::fmt::Debug for CssContainerAndQuery {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssContainerAndQuery",
-            &DEPTH,
-            &[("left", false), ("and_token", false), ("right", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssContainerAndQuery> for SyntaxNode {
@@ -20229,15 +20008,7 @@ impl AstNode for CssContainerAtRule {
 }
 impl std::fmt::Debug for CssContainerAtRule {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssContainerAtRule",
-            &DEPTH,
-            &[("declarator", false), ("block", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssContainerAtRule> for SyntaxNode {
@@ -20273,15 +20044,7 @@ impl AstNode for CssContainerAtRuleDeclarator {
 }
 impl std::fmt::Debug for CssContainerAtRuleDeclarator {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssContainerAtRuleDeclarator",
-            &DEPTH,
-            &[("container_token", false), ("name", true), ("query", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssContainerAtRuleDeclarator> for SyntaxNode {
@@ -20317,15 +20080,7 @@ impl AstNode for CssContainerNotQuery {
 }
 impl std::fmt::Debug for CssContainerNotQuery {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssContainerNotQuery",
-            &DEPTH,
-            &[("not_token", false), ("query", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssContainerNotQuery> for SyntaxNode {
@@ -20361,15 +20116,7 @@ impl AstNode for CssContainerOrQuery {
 }
 impl std::fmt::Debug for CssContainerOrQuery {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssContainerOrQuery",
-            &DEPTH,
-            &[("left", false), ("or_token", false), ("right", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssContainerOrQuery> for SyntaxNode {
@@ -20405,19 +20152,7 @@ impl AstNode for CssContainerQueryInParens {
 }
 impl std::fmt::Debug for CssContainerQueryInParens {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssContainerQueryInParens",
-            &DEPTH,
-            &[
-                ("l_paren_token", false),
-                ("query", false),
-                ("r_paren_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssContainerQueryInParens> for SyntaxNode {
@@ -20453,15 +20188,7 @@ impl AstNode for CssContainerScrollStateAndQuery {
 }
 impl std::fmt::Debug for CssContainerScrollStateAndQuery {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssContainerScrollStateAndQuery",
-            &DEPTH,
-            &[("left", false), ("and_token", false), ("right", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssContainerScrollStateAndQuery> for SyntaxNode {
@@ -20497,19 +20224,7 @@ impl AstNode for CssContainerScrollStateInParens {
 }
 impl std::fmt::Debug for CssContainerScrollStateInParens {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssContainerScrollStateInParens",
-            &DEPTH,
-            &[
-                ("l_paren_token", false),
-                ("query", false),
-                ("r_paren_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssContainerScrollStateInParens> for SyntaxNode {
@@ -20545,15 +20260,7 @@ impl AstNode for CssContainerScrollStateNotQuery {
 }
 impl std::fmt::Debug for CssContainerScrollStateNotQuery {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssContainerScrollStateNotQuery",
-            &DEPTH,
-            &[("not_token", false), ("query", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssContainerScrollStateNotQuery> for SyntaxNode {
@@ -20589,15 +20296,7 @@ impl AstNode for CssContainerScrollStateOrQuery {
 }
 impl std::fmt::Debug for CssContainerScrollStateOrQuery {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssContainerScrollStateOrQuery",
-            &DEPTH,
-            &[("left", false), ("or_token", false), ("right", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssContainerScrollStateOrQuery> for SyntaxNode {
@@ -20634,20 +20333,7 @@ impl AstNode for CssContainerScrollStateQueryInParens {
 }
 impl std::fmt::Debug for CssContainerScrollStateQueryInParens {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssContainerScrollStateQueryInParens",
-            &DEPTH,
-            &[
-                ("name", false),
-                ("l_paren_token", false),
-                ("query", false),
-                ("r_paren_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssContainerScrollStateQueryInParens> for SyntaxNode {
@@ -20683,19 +20369,7 @@ impl AstNode for CssContainerSizeFeatureInParens {
 }
 impl std::fmt::Debug for CssContainerSizeFeatureInParens {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssContainerSizeFeatureInParens",
-            &DEPTH,
-            &[
-                ("l_paren_token", false),
-                ("feature", false),
-                ("r_paren_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssContainerSizeFeatureInParens> for SyntaxNode {
@@ -20731,15 +20405,7 @@ impl AstNode for CssContainerStyleAndQuery {
 }
 impl std::fmt::Debug for CssContainerStyleAndQuery {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssContainerStyleAndQuery",
-            &DEPTH,
-            &[("left", false), ("and_token", false), ("right", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssContainerStyleAndQuery> for SyntaxNode {
@@ -20775,19 +20441,7 @@ impl AstNode for CssContainerStyleInParens {
 }
 impl std::fmt::Debug for CssContainerStyleInParens {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssContainerStyleInParens",
-            &DEPTH,
-            &[
-                ("l_paren_token", false),
-                ("query", false),
-                ("r_paren_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssContainerStyleInParens> for SyntaxNode {
@@ -20823,15 +20477,7 @@ impl AstNode for CssContainerStyleNotQuery {
 }
 impl std::fmt::Debug for CssContainerStyleNotQuery {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssContainerStyleNotQuery",
-            &DEPTH,
-            &[("not_token", false), ("query", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssContainerStyleNotQuery> for SyntaxNode {
@@ -20867,15 +20513,7 @@ impl AstNode for CssContainerStyleOrQuery {
 }
 impl std::fmt::Debug for CssContainerStyleOrQuery {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssContainerStyleOrQuery",
-            &DEPTH,
-            &[("left", false), ("or_token", false), ("right", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssContainerStyleOrQuery> for SyntaxNode {
@@ -20911,20 +20549,7 @@ impl AstNode for CssContainerStyleQueryInParens {
 }
 impl std::fmt::Debug for CssContainerStyleQueryInParens {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssContainerStyleQueryInParens",
-            &DEPTH,
-            &[
-                ("style_token", false),
-                ("l_paren_token", false),
-                ("query", false),
-                ("r_paren_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssContainerStyleQueryInParens> for SyntaxNode {
@@ -20960,15 +20585,7 @@ impl AstNode for CssCounterStyleAtRule {
 }
 impl std::fmt::Debug for CssCounterStyleAtRule {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssCounterStyleAtRule",
-            &DEPTH,
-            &[("declarator", false), ("block", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssCounterStyleAtRule> for SyntaxNode {
@@ -21004,15 +20621,7 @@ impl AstNode for CssCounterStyleAtRuleDeclarator {
 }
 impl std::fmt::Debug for CssCounterStyleAtRuleDeclarator {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssCounterStyleAtRuleDeclarator",
-            &DEPTH,
-            &[("counter_style_token", false), ("name", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssCounterStyleAtRuleDeclarator> for SyntaxNode {
@@ -21048,15 +20657,7 @@ impl AstNode for CssCustomIdentifier {
 }
 impl std::fmt::Debug for CssCustomIdentifier {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssCustomIdentifier",
-            &DEPTH,
-            &[("value_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssCustomIdentifier> for SyntaxNode {
@@ -21092,15 +20693,7 @@ impl AstNode for CssCustomMediaAtRule {
 }
 impl std::fmt::Debug for CssCustomMediaAtRule {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssCustomMediaAtRule",
-            &DEPTH,
-            &[("declarator", false), ("semicolon_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssCustomMediaAtRule> for SyntaxNode {
@@ -21136,19 +20729,7 @@ impl AstNode for CssCustomMediaAtRuleDeclarator {
 }
 impl std::fmt::Debug for CssCustomMediaAtRuleDeclarator {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssCustomMediaAtRuleDeclarator",
-            &DEPTH,
-            &[
-                ("custom_media_token", false),
-                ("name", false),
-                ("queries", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssCustomMediaAtRuleDeclarator> for SyntaxNode {
@@ -21184,19 +20765,7 @@ impl AstNode for CssCustomPropertyBracedBlock {
 }
 impl std::fmt::Debug for CssCustomPropertyBracedBlock {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssCustomPropertyBracedBlock",
-            &DEPTH,
-            &[
-                ("l_curly_token", false),
-                ("components", false),
-                ("r_curly_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssCustomPropertyBracedBlock> for SyntaxNode {
@@ -21232,19 +20801,7 @@ impl AstNode for CssCustomPropertyBracketedBlock {
 }
 impl std::fmt::Debug for CssCustomPropertyBracketedBlock {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssCustomPropertyBracketedBlock",
-            &DEPTH,
-            &[
-                ("l_brack_token", false),
-                ("components", false),
-                ("r_brack_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssCustomPropertyBracketedBlock> for SyntaxNode {
@@ -21280,15 +20837,7 @@ impl AstNode for CssCustomPropertyDelimiter {
 }
 impl std::fmt::Debug for CssCustomPropertyDelimiter {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssCustomPropertyDelimiter",
-            &DEPTH,
-            &[("value", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssCustomPropertyDelimiter> for SyntaxNode {
@@ -21324,20 +20873,7 @@ impl AstNode for CssCustomPropertyFunction {
 }
 impl std::fmt::Debug for CssCustomPropertyFunction {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssCustomPropertyFunction",
-            &DEPTH,
-            &[
-                ("name", false),
-                ("l_paren_token", false),
-                ("components", false),
-                ("r_paren_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssCustomPropertyFunction> for SyntaxNode {
@@ -21374,19 +20910,7 @@ impl AstNode for CssCustomPropertyParenthesizedBlock {
 }
 impl std::fmt::Debug for CssCustomPropertyParenthesizedBlock {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssCustomPropertyParenthesizedBlock",
-            &DEPTH,
-            &[
-                ("l_paren_token", false),
-                ("components", false),
-                ("r_paren_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssCustomPropertyParenthesizedBlock> for SyntaxNode {
@@ -21422,15 +20946,7 @@ impl AstNode for CssCustomPropertyValue {
 }
 impl std::fmt::Debug for CssCustomPropertyValue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssCustomPropertyValue",
-            &DEPTH,
-            &[("components", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssCustomPropertyValue> for SyntaxNode {
@@ -21466,15 +20982,7 @@ impl AstNode for CssDashedIdentifier {
 }
 impl std::fmt::Debug for CssDashedIdentifier {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssDashedIdentifier",
-            &DEPTH,
-            &[("value_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssDashedIdentifier> for SyntaxNode {
@@ -21510,15 +21018,7 @@ impl AstNode for CssDeclaration {
 }
 impl std::fmt::Debug for CssDeclaration {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssDeclaration",
-            &DEPTH,
-            &[("property", false), ("important", true)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssDeclaration> for SyntaxNode {
@@ -21554,19 +21054,7 @@ impl AstNode for CssDeclarationBlock {
 }
 impl std::fmt::Debug for CssDeclarationBlock {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssDeclarationBlock",
-            &DEPTH,
-            &[
-                ("l_curly_token", false),
-                ("declarations", false),
-                ("r_curly_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssDeclarationBlock> for SyntaxNode {
@@ -21602,15 +21090,7 @@ impl AstNode for CssDeclarationImportant {
 }
 impl std::fmt::Debug for CssDeclarationImportant {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssDeclarationImportant",
-            &DEPTH,
-            &[("excl_token", false), ("important_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssDeclarationImportant> for SyntaxNode {
@@ -21646,19 +21126,7 @@ impl AstNode for CssDeclarationOrAtRuleBlock {
 }
 impl std::fmt::Debug for CssDeclarationOrAtRuleBlock {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssDeclarationOrAtRuleBlock",
-            &DEPTH,
-            &[
-                ("l_curly_token", false),
-                ("items", false),
-                ("r_curly_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssDeclarationOrAtRuleBlock> for SyntaxNode {
@@ -21694,19 +21162,7 @@ impl AstNode for CssDeclarationOrRuleBlock {
 }
 impl std::fmt::Debug for CssDeclarationOrRuleBlock {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssDeclarationOrRuleBlock",
-            &DEPTH,
-            &[
-                ("l_curly_token", false),
-                ("items", false),
-                ("r_curly_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssDeclarationOrRuleBlock> for SyntaxNode {
@@ -21742,15 +21198,7 @@ impl AstNode for CssDeclarationSnippetRoot {
 }
 impl std::fmt::Debug for CssDeclarationSnippetRoot {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssDeclarationSnippetRoot",
-            &DEPTH,
-            &[("declarations", false), ("eof_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssDeclarationSnippetRoot> for SyntaxNode {
@@ -21786,15 +21234,7 @@ impl AstNode for CssDeclarationWithSemicolon {
 }
 impl std::fmt::Debug for CssDeclarationWithSemicolon {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssDeclarationWithSemicolon",
-            &DEPTH,
-            &[("declaration", false), ("semicolon_token", true)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssDeclarationWithSemicolon> for SyntaxNode {
@@ -21830,19 +21270,7 @@ impl AstNode for CssDocumentAtRule {
 }
 impl std::fmt::Debug for CssDocumentAtRule {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssDocumentAtRule",
-            &DEPTH,
-            &[
-                ("document_token", false),
-                ("matchers", false),
-                ("block", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssDocumentAtRule> for SyntaxNode {
@@ -21878,20 +21306,7 @@ impl AstNode for CssDocumentCustomMatcher {
 }
 impl std::fmt::Debug for CssDocumentCustomMatcher {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssDocumentCustomMatcher",
-            &DEPTH,
-            &[
-                ("name", false),
-                ("l_paren_token", false),
-                ("value", true),
-                ("r_paren_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssDocumentCustomMatcher> for SyntaxNode {
@@ -21927,15 +21342,7 @@ impl AstNode for CssElseKeyword {
 }
 impl std::fmt::Debug for CssElseKeyword {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssElseKeyword",
-            &DEPTH,
-            &[("else_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssElseKeyword> for SyntaxNode {
@@ -21971,15 +21378,7 @@ impl AstNode for CssEmptyDeclaration {
 }
 impl std::fmt::Debug for CssEmptyDeclaration {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssEmptyDeclaration",
-            &DEPTH,
-            &[("semicolon_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssEmptyDeclaration> for SyntaxNode {
@@ -22015,15 +21414,7 @@ impl AstNode for CssFontFaceAtRule {
 }
 impl std::fmt::Debug for CssFontFaceAtRule {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssFontFaceAtRule",
-            &DEPTH,
-            &[("declarator", false), ("block", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssFontFaceAtRule> for SyntaxNode {
@@ -22059,15 +21450,7 @@ impl AstNode for CssFontFaceAtRuleDeclarator {
 }
 impl std::fmt::Debug for CssFontFaceAtRuleDeclarator {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssFontFaceAtRuleDeclarator",
-            &DEPTH,
-            &[("font_face_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssFontFaceAtRuleDeclarator> for SyntaxNode {
@@ -22103,15 +21486,7 @@ impl AstNode for CssFontFamilyName {
 }
 impl std::fmt::Debug for CssFontFamilyName {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssFontFamilyName",
-            &DEPTH,
-            &[("names", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssFontFamilyName> for SyntaxNode {
@@ -22147,19 +21522,7 @@ impl AstNode for CssFontFeatureValuesAtRule {
 }
 impl std::fmt::Debug for CssFontFeatureValuesAtRule {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssFontFeatureValuesAtRule",
-            &DEPTH,
-            &[
-                ("font_feature_values_token", false),
-                ("names", false),
-                ("block", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssFontFeatureValuesAtRule> for SyntaxNode {
@@ -22195,19 +21558,7 @@ impl AstNode for CssFontFeatureValuesBlock {
 }
 impl std::fmt::Debug for CssFontFeatureValuesBlock {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssFontFeatureValuesBlock",
-            &DEPTH,
-            &[
-                ("l_curly_token", false),
-                ("items", false),
-                ("r_curly_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssFontFeatureValuesBlock> for SyntaxNode {
@@ -22243,15 +21594,7 @@ impl AstNode for CssFontFeatureValuesItem {
 }
 impl std::fmt::Debug for CssFontFeatureValuesItem {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssFontFeatureValuesItem",
-            &DEPTH,
-            &[("at_token", false), ("name", false), ("block", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssFontFeatureValuesItem> for SyntaxNode {
@@ -22287,15 +21630,7 @@ impl AstNode for CssFontPaletteValuesAtRule {
 }
 impl std::fmt::Debug for CssFontPaletteValuesAtRule {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssFontPaletteValuesAtRule",
-            &DEPTH,
-            &[("declarator", false), ("block", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssFontPaletteValuesAtRule> for SyntaxNode {
@@ -22332,15 +21667,7 @@ impl AstNode for CssFontPaletteValuesAtRuleDeclarator {
 }
 impl std::fmt::Debug for CssFontPaletteValuesAtRuleDeclarator {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssFontPaletteValuesAtRuleDeclarator",
-            &DEPTH,
-            &[("font_palette_values_token", false), ("name", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssFontPaletteValuesAtRuleDeclarator> for SyntaxNode {
@@ -22376,20 +21703,7 @@ impl AstNode for CssFunction {
 }
 impl std::fmt::Debug for CssFunction {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssFunction",
-            &DEPTH,
-            &[
-                ("name", false),
-                ("l_paren_token", false),
-                ("items", false),
-                ("r_paren_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssFunction> for SyntaxNode {
@@ -22425,15 +21739,7 @@ impl AstNode for CssFunctionAtRule {
 }
 impl std::fmt::Debug for CssFunctionAtRule {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssFunctionAtRule",
-            &DEPTH,
-            &[("declarator", false), ("block", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssFunctionAtRule> for SyntaxNode {
@@ -22469,22 +21775,7 @@ impl AstNode for CssFunctionAtRuleDeclarator {
 }
 impl std::fmt::Debug for CssFunctionAtRuleDeclarator {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssFunctionAtRuleDeclarator",
-            &DEPTH,
-            &[
-                ("function_token", false),
-                ("name", false),
-                ("l_paren_token", false),
-                ("parameters", false),
-                ("r_paren_token", false),
-                ("returns", true),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssFunctionAtRuleDeclarator> for SyntaxNode {
@@ -22520,15 +21811,7 @@ impl AstNode for CssFunctionParameter {
 }
 impl std::fmt::Debug for CssFunctionParameter {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssFunctionParameter",
-            &DEPTH,
-            &[("name", false), ("ty", true), ("default_value", true)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssFunctionParameter> for SyntaxNode {
@@ -22564,15 +21847,7 @@ impl AstNode for CssFunctionParameterDefaultValue {
 }
 impl std::fmt::Debug for CssFunctionParameterDefaultValue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssFunctionParameterDefaultValue",
-            &DEPTH,
-            &[("colon_token", false), ("value", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssFunctionParameterDefaultValue> for SyntaxNode {
@@ -22608,15 +21883,7 @@ impl AstNode for CssGenericDelimiter {
 }
 impl std::fmt::Debug for CssGenericDelimiter {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssGenericDelimiter",
-            &DEPTH,
-            &[("value", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssGenericDelimiter> for SyntaxNode {
@@ -22652,15 +21919,7 @@ impl AstNode for CssGenericProperty {
 }
 impl std::fmt::Debug for CssGenericProperty {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssGenericProperty",
-            &DEPTH,
-            &[("name", false), ("colon_token", false), ("value", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssGenericProperty> for SyntaxNode {
@@ -22696,15 +21955,7 @@ impl AstNode for CssIdSelector {
 }
 impl std::fmt::Debug for CssIdSelector {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssIdSelector",
-            &DEPTH,
-            &[("hash_token", false), ("name", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssIdSelector> for SyntaxNode {
@@ -22740,15 +21991,7 @@ impl AstNode for CssIdentifier {
 }
 impl std::fmt::Debug for CssIdentifier {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssIdentifier",
-            &DEPTH,
-            &[("value_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssIdentifier> for SyntaxNode {
@@ -22784,19 +22027,7 @@ impl AstNode for CssIfBranch {
 }
 impl std::fmt::Debug for CssIfBranch {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssIfBranch",
-            &DEPTH,
-            &[
-                ("condition", false),
-                ("colon_token", false),
-                ("value", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssIfBranch> for SyntaxNode {
@@ -22832,20 +22063,7 @@ impl AstNode for CssIfFunction {
 }
 impl std::fmt::Debug for CssIfFunction {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssIfFunction",
-            &DEPTH,
-            &[
-                ("if_token", false),
-                ("l_paren_token", false),
-                ("css_if_branch_list", false),
-                ("r_paren_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssIfFunction> for SyntaxNode {
@@ -22881,20 +22099,7 @@ impl AstNode for CssIfMediaTest {
 }
 impl std::fmt::Debug for CssIfMediaTest {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssIfMediaTest",
-            &DEPTH,
-            &[
-                ("media_token", false),
-                ("l_paren_token", false),
-                ("test", false),
-                ("r_paren_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssIfMediaTest> for SyntaxNode {
@@ -22930,20 +22135,7 @@ impl AstNode for CssIfSassTest {
 }
 impl std::fmt::Debug for CssIfSassTest {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssIfSassTest",
-            &DEPTH,
-            &[
-                ("sass_token", false),
-                ("l_paren_token", false),
-                ("test", false),
-                ("r_paren_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssIfSassTest> for SyntaxNode {
@@ -22979,20 +22171,7 @@ impl AstNode for CssIfStyleTest {
 }
 impl std::fmt::Debug for CssIfStyleTest {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssIfStyleTest",
-            &DEPTH,
-            &[
-                ("style_token", false),
-                ("l_paren_token", false),
-                ("test", false),
-                ("r_paren_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssIfStyleTest> for SyntaxNode {
@@ -23028,15 +22207,7 @@ impl AstNode for CssIfSupportsIdentifierTest {
 }
 impl std::fmt::Debug for CssIfSupportsIdentifierTest {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssIfSupportsIdentifierTest",
-            &DEPTH,
-            &[("ident", false), ("colon_token", false), ("value", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssIfSupportsIdentifierTest> for SyntaxNode {
@@ -23072,20 +22243,7 @@ impl AstNode for CssIfSupportsTest {
 }
 impl std::fmt::Debug for CssIfSupportsTest {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssIfSupportsTest",
-            &DEPTH,
-            &[
-                ("supports_token", false),
-                ("l_paren_token", false),
-                ("test", false),
-                ("r_paren_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssIfSupportsTest> for SyntaxNode {
@@ -23121,15 +22279,7 @@ impl AstNode for CssIfTestBooleanAndExpr {
 }
 impl std::fmt::Debug for CssIfTestBooleanAndExpr {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssIfTestBooleanAndExpr",
-            &DEPTH,
-            &[("left", false), ("and_token", false), ("right", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssIfTestBooleanAndExpr> for SyntaxNode {
@@ -23165,19 +22315,7 @@ impl AstNode for CssIfTestBooleanExprInParens {
 }
 impl std::fmt::Debug for CssIfTestBooleanExprInParens {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssIfTestBooleanExprInParens",
-            &DEPTH,
-            &[
-                ("l_paren_token", false),
-                ("expression", false),
-                ("r_paren_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssIfTestBooleanExprInParens> for SyntaxNode {
@@ -23213,15 +22351,7 @@ impl AstNode for CssIfTestBooleanNotExpr {
 }
 impl std::fmt::Debug for CssIfTestBooleanNotExpr {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssIfTestBooleanNotExpr",
-            &DEPTH,
-            &[("not_token", false), ("expression", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssIfTestBooleanNotExpr> for SyntaxNode {
@@ -23257,15 +22387,7 @@ impl AstNode for CssIfTestBooleanOrExpr {
 }
 impl std::fmt::Debug for CssIfTestBooleanOrExpr {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssIfTestBooleanOrExpr",
-            &DEPTH,
-            &[("left", false), ("or_token", false), ("right", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssIfTestBooleanOrExpr> for SyntaxNode {
@@ -23301,15 +22423,7 @@ impl AstNode for CssImportAnonymousLayer {
 }
 impl std::fmt::Debug for CssImportAnonymousLayer {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssImportAnonymousLayer",
-            &DEPTH,
-            &[("layer_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssImportAnonymousLayer> for SyntaxNode {
@@ -23345,22 +22459,7 @@ impl AstNode for CssImportAtRule {
 }
 impl std::fmt::Debug for CssImportAtRule {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssImportAtRule",
-            &DEPTH,
-            &[
-                ("import_token", false),
-                ("url", false),
-                ("layer", true),
-                ("supports", true),
-                ("media", false),
-                ("semicolon_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssImportAtRule> for SyntaxNode {
@@ -23396,20 +22495,7 @@ impl AstNode for CssImportNamedLayer {
 }
 impl std::fmt::Debug for CssImportNamedLayer {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssImportNamedLayer",
-            &DEPTH,
-            &[
-                ("layer_token", false),
-                ("l_paren_token", false),
-                ("name", false),
-                ("r_paren_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssImportNamedLayer> for SyntaxNode {
@@ -23445,20 +22531,7 @@ impl AstNode for CssImportSupports {
 }
 impl std::fmt::Debug for CssImportSupports {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssImportSupports",
-            &DEPTH,
-            &[
-                ("supports_token", false),
-                ("l_paren_token", false),
-                ("condition", false),
-                ("r_paren_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssImportSupports> for SyntaxNode {
@@ -23494,19 +22567,7 @@ impl AstNode for CssKeyframesAtRule {
 }
 impl std::fmt::Debug for CssKeyframesAtRule {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssKeyframesAtRule",
-            &DEPTH,
-            &[
-                ("keyframes_token", false),
-                ("name", false),
-                ("block", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssKeyframesAtRule> for SyntaxNode {
@@ -23542,19 +22603,7 @@ impl AstNode for CssKeyframesBlock {
 }
 impl std::fmt::Debug for CssKeyframesBlock {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssKeyframesBlock",
-            &DEPTH,
-            &[
-                ("l_curly_token", false),
-                ("items", false),
-                ("r_curly_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssKeyframesBlock> for SyntaxNode {
@@ -23590,15 +22639,7 @@ impl AstNode for CssKeyframesIdentSelector {
 }
 impl std::fmt::Debug for CssKeyframesIdentSelector {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssKeyframesIdentSelector",
-            &DEPTH,
-            &[("selector", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssKeyframesIdentSelector> for SyntaxNode {
@@ -23634,15 +22675,7 @@ impl AstNode for CssKeyframesItem {
 }
 impl std::fmt::Debug for CssKeyframesItem {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssKeyframesItem",
-            &DEPTH,
-            &[("selectors", false), ("block", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssKeyframesItem> for SyntaxNode {
@@ -23678,15 +22711,7 @@ impl AstNode for CssKeyframesPercentageSelector {
 }
 impl std::fmt::Debug for CssKeyframesPercentageSelector {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssKeyframesPercentageSelector",
-            &DEPTH,
-            &[("selector", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssKeyframesPercentageSelector> for SyntaxNode {
@@ -23722,15 +22747,7 @@ impl AstNode for CssKeyframesRangeSelector {
 }
 impl std::fmt::Debug for CssKeyframesRangeSelector {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssKeyframesRangeSelector",
-            &DEPTH,
-            &[("name", false), ("percentage", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssKeyframesRangeSelector> for SyntaxNode {
@@ -23766,20 +22783,7 @@ impl AstNode for CssKeyframesScopeFunction {
 }
 impl std::fmt::Debug for CssKeyframesScopeFunction {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssKeyframesScopeFunction",
-            &DEPTH,
-            &[
-                ("scope", false),
-                ("l_paren_token", false),
-                ("name", false),
-                ("r_paren_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssKeyframesScopeFunction> for SyntaxNode {
@@ -23815,15 +22819,7 @@ impl AstNode for CssKeyframesScopePrefix {
 }
 impl std::fmt::Debug for CssKeyframesScopePrefix {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssKeyframesScopePrefix",
-            &DEPTH,
-            &[("scope", false), ("name", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssKeyframesScopePrefix> for SyntaxNode {
@@ -23859,15 +22855,7 @@ impl AstNode for CssKeyframesScopedName {
 }
 impl std::fmt::Debug for CssKeyframesScopedName {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssKeyframesScopedName",
-            &DEPTH,
-            &[("colon_token", false), ("scope", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssKeyframesScopedName> for SyntaxNode {
@@ -23903,15 +22891,7 @@ impl AstNode for CssLayerAtRule {
 }
 impl std::fmt::Debug for CssLayerAtRule {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssLayerAtRule",
-            &DEPTH,
-            &[("layer_token", false), ("layer", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssLayerAtRule> for SyntaxNode {
@@ -23947,15 +22927,7 @@ impl AstNode for CssLayerDeclaration {
 }
 impl std::fmt::Debug for CssLayerDeclaration {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssLayerDeclaration",
-            &DEPTH,
-            &[("references", false), ("block", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssLayerDeclaration> for SyntaxNode {
@@ -23991,15 +22963,7 @@ impl AstNode for CssLayerReference {
 }
 impl std::fmt::Debug for CssLayerReference {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssLayerReference",
-            &DEPTH,
-            &[("references", false), ("semicolon_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssLayerReference> for SyntaxNode {
@@ -24035,15 +22999,7 @@ impl AstNode for CssLegacyFilterValue {
 }
 impl std::fmt::Debug for CssLegacyFilterValue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssLegacyFilterValue",
-            &DEPTH,
-            &[("components", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssLegacyFilterValue> for SyntaxNode {
@@ -24080,15 +23036,7 @@ impl AstNode for CssListOfComponentValuesExpression {
 }
 impl std::fmt::Debug for CssListOfComponentValuesExpression {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssListOfComponentValuesExpression",
-            &DEPTH,
-            &[("css_component_value_list", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssListOfComponentValuesExpression> for SyntaxNode {
@@ -24124,15 +23072,7 @@ impl AstNode for CssMarginAtRule {
 }
 impl std::fmt::Debug for CssMarginAtRule {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssMarginAtRule",
-            &DEPTH,
-            &[("at_token", false), ("name", false), ("block", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssMarginAtRule> for SyntaxNode {
@@ -24168,15 +23108,7 @@ impl AstNode for CssMediaAndCondition {
 }
 impl std::fmt::Debug for CssMediaAndCondition {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssMediaAndCondition",
-            &DEPTH,
-            &[("left", false), ("and_token", false), ("right", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssMediaAndCondition> for SyntaxNode {
@@ -24212,15 +23144,7 @@ impl AstNode for CssMediaAndTypeQuery {
 }
 impl std::fmt::Debug for CssMediaAndTypeQuery {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssMediaAndTypeQuery",
-            &DEPTH,
-            &[("left", false), ("and_token", false), ("right", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssMediaAndTypeQuery> for SyntaxNode {
@@ -24256,15 +23180,7 @@ impl AstNode for CssMediaAtRule {
 }
 impl std::fmt::Debug for CssMediaAtRule {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssMediaAtRule",
-            &DEPTH,
-            &[("declarator", false), ("block", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssMediaAtRule> for SyntaxNode {
@@ -24300,15 +23216,7 @@ impl AstNode for CssMediaAtRuleDeclarator {
 }
 impl std::fmt::Debug for CssMediaAtRuleDeclarator {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssMediaAtRuleDeclarator",
-            &DEPTH,
-            &[("media_token", false), ("queries", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssMediaAtRuleDeclarator> for SyntaxNode {
@@ -24344,19 +23252,7 @@ impl AstNode for CssMediaConditionInParens {
 }
 impl std::fmt::Debug for CssMediaConditionInParens {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssMediaConditionInParens",
-            &DEPTH,
-            &[
-                ("l_paren_token", false),
-                ("condition", false),
-                ("r_paren_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssMediaConditionInParens> for SyntaxNode {
@@ -24392,15 +23288,7 @@ impl AstNode for CssMediaConditionQuery {
 }
 impl std::fmt::Debug for CssMediaConditionQuery {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssMediaConditionQuery",
-            &DEPTH,
-            &[("condition", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssMediaConditionQuery> for SyntaxNode {
@@ -24436,19 +23324,7 @@ impl AstNode for CssMediaFeatureInParens {
 }
 impl std::fmt::Debug for CssMediaFeatureInParens {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssMediaFeatureInParens",
-            &DEPTH,
-            &[
-                ("l_paren_token", false),
-                ("feature", false),
-                ("r_paren_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssMediaFeatureInParens> for SyntaxNode {
@@ -24484,15 +23360,7 @@ impl AstNode for CssMediaNotCondition {
 }
 impl std::fmt::Debug for CssMediaNotCondition {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssMediaNotCondition",
-            &DEPTH,
-            &[("not_token", false), ("condition", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssMediaNotCondition> for SyntaxNode {
@@ -24528,15 +23396,7 @@ impl AstNode for CssMediaOrCondition {
 }
 impl std::fmt::Debug for CssMediaOrCondition {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssMediaOrCondition",
-            &DEPTH,
-            &[("left", false), ("or_token", false), ("right", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssMediaOrCondition> for SyntaxNode {
@@ -24572,15 +23432,7 @@ impl AstNode for CssMediaType {
 }
 impl std::fmt::Debug for CssMediaType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssMediaType",
-            &DEPTH,
-            &[("value", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssMediaType> for SyntaxNode {
@@ -24616,15 +23468,7 @@ impl AstNode for CssMediaTypeQuery {
 }
 impl std::fmt::Debug for CssMediaTypeQuery {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssMediaTypeQuery",
-            &DEPTH,
-            &[("modifier", true), ("ty", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssMediaTypeQuery> for SyntaxNode {
@@ -24660,15 +23504,7 @@ impl AstNode for CssMetavariable {
 }
 impl std::fmt::Debug for CssMetavariable {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssMetavariable",
-            &DEPTH,
-            &[("value_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssMetavariable> for SyntaxNode {
@@ -24704,15 +23540,7 @@ impl AstNode for CssNamedNamespacePrefix {
 }
 impl std::fmt::Debug for CssNamedNamespacePrefix {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssNamedNamespacePrefix",
-            &DEPTH,
-            &[("name", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssNamedNamespacePrefix> for SyntaxNode {
@@ -24748,15 +23576,7 @@ impl AstNode for CssNamespace {
 }
 impl std::fmt::Debug for CssNamespace {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssNamespace",
-            &DEPTH,
-            &[("prefix", true), ("bitwise_or_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssNamespace> for SyntaxNode {
@@ -24792,20 +23612,7 @@ impl AstNode for CssNamespaceAtRule {
 }
 impl std::fmt::Debug for CssNamespaceAtRule {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssNamespaceAtRule",
-            &DEPTH,
-            &[
-                ("namespace_token", false),
-                ("prefix", true),
-                ("url", false),
-                ("semicolon_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssNamespaceAtRule> for SyntaxNode {
@@ -24841,15 +23648,7 @@ impl AstNode for CssNestedQualifiedRule {
 }
 impl std::fmt::Debug for CssNestedQualifiedRule {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssNestedQualifiedRule",
-            &DEPTH,
-            &[("prelude", false), ("block", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssNestedQualifiedRule> for SyntaxNode {
@@ -24885,15 +23684,7 @@ impl AstNode for CssNestedSelector {
 }
 impl std::fmt::Debug for CssNestedSelector {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssNestedSelector",
-            &DEPTH,
-            &[("amp_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssNestedSelector> for SyntaxNode {
@@ -24929,15 +23720,7 @@ impl AstNode for CssNthOffset {
 }
 impl std::fmt::Debug for CssNthOffset {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssNthOffset",
-            &DEPTH,
-            &[("sign", false), ("value", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssNthOffset> for SyntaxNode {
@@ -24973,15 +23756,7 @@ impl AstNode for CssNumber {
 }
 impl std::fmt::Debug for CssNumber {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssNumber",
-            &DEPTH,
-            &[("value_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssNumber> for SyntaxNode {
@@ -25017,15 +23792,7 @@ impl AstNode for CssNumberDeclarator {
 }
 impl std::fmt::Debug for CssNumberDeclarator {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssNumberDeclarator",
-            &DEPTH,
-            &[("number_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssNumberDeclarator> for SyntaxNode {
@@ -25061,19 +23828,7 @@ impl AstNode for CssPageAtRule {
 }
 impl std::fmt::Debug for CssPageAtRule {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssPageAtRule",
-            &DEPTH,
-            &[
-                ("page_token", false),
-                ("selectors", false),
-                ("block", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssPageAtRule> for SyntaxNode {
@@ -25109,19 +23864,7 @@ impl AstNode for CssPageAtRuleBlock {
 }
 impl std::fmt::Debug for CssPageAtRuleBlock {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssPageAtRuleBlock",
-            &DEPTH,
-            &[
-                ("l_curly_token", false),
-                ("items", false),
-                ("r_curly_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssPageAtRuleBlock> for SyntaxNode {
@@ -25157,15 +23900,7 @@ impl AstNode for CssPageSelector {
 }
 impl std::fmt::Debug for CssPageSelector {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssPageSelector",
-            &DEPTH,
-            &[("ty", true), ("pseudos", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssPageSelector> for SyntaxNode {
@@ -25201,15 +23936,7 @@ impl AstNode for CssPageSelectorPseudo {
 }
 impl std::fmt::Debug for CssPageSelectorPseudo {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssPageSelectorPseudo",
-            &DEPTH,
-            &[("colon_token", false), ("selector", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssPageSelectorPseudo> for SyntaxNode {
@@ -25245,19 +23972,7 @@ impl AstNode for CssParenthesizedExpression {
 }
 impl std::fmt::Debug for CssParenthesizedExpression {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssParenthesizedExpression",
-            &DEPTH,
-            &[
-                ("l_paren_token", false),
-                ("expression", true),
-                ("r_paren_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssParenthesizedExpression> for SyntaxNode {
@@ -25293,15 +24008,7 @@ impl AstNode for CssPercentage {
 }
 impl std::fmt::Debug for CssPercentage {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssPercentage",
-            &DEPTH,
-            &[("value_token", false), ("percent_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssPercentage> for SyntaxNode {
@@ -25337,15 +24044,7 @@ impl AstNode for CssPositionTryAtRule {
 }
 impl std::fmt::Debug for CssPositionTryAtRule {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssPositionTryAtRule",
-            &DEPTH,
-            &[("declarator", false), ("block", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssPositionTryAtRule> for SyntaxNode {
@@ -25381,15 +24080,7 @@ impl AstNode for CssPositionTryAtRuleDeclarator {
 }
 impl std::fmt::Debug for CssPositionTryAtRuleDeclarator {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssPositionTryAtRuleDeclarator",
-            &DEPTH,
-            &[("position_try_token", false), ("name", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssPositionTryAtRuleDeclarator> for SyntaxNode {
@@ -25425,15 +24116,7 @@ impl AstNode for CssPropertyAtRule {
 }
 impl std::fmt::Debug for CssPropertyAtRule {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssPropertyAtRule",
-            &DEPTH,
-            &[("declarator", false), ("block", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssPropertyAtRule> for SyntaxNode {
@@ -25469,15 +24152,7 @@ impl AstNode for CssPropertyAtRuleDeclarator {
 }
 impl std::fmt::Debug for CssPropertyAtRuleDeclarator {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssPropertyAtRuleDeclarator",
-            &DEPTH,
-            &[("property_token", false), ("name", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssPropertyAtRuleDeclarator> for SyntaxNode {
@@ -25514,20 +24189,7 @@ impl AstNode for CssPseudoClassFunctionCompoundSelector {
 }
 impl std::fmt::Debug for CssPseudoClassFunctionCompoundSelector {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssPseudoClassFunctionCompoundSelector",
-            &DEPTH,
-            &[
-                ("name", false),
-                ("l_paren_token", false),
-                ("selector", false),
-                ("r_paren_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssPseudoClassFunctionCompoundSelector> for SyntaxNode {
@@ -25564,20 +24226,7 @@ impl AstNode for CssPseudoClassFunctionCompoundSelectorList {
 }
 impl std::fmt::Debug for CssPseudoClassFunctionCompoundSelectorList {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssPseudoClassFunctionCompoundSelectorList",
-            &DEPTH,
-            &[
-                ("name", false),
-                ("l_paren_token", false),
-                ("compound_selectors", false),
-                ("r_paren_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssPseudoClassFunctionCompoundSelectorList> for SyntaxNode {
@@ -25614,20 +24263,7 @@ impl AstNode for CssPseudoClassFunctionCustomIdentifier {
 }
 impl std::fmt::Debug for CssPseudoClassFunctionCustomIdentifier {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssPseudoClassFunctionCustomIdentifier",
-            &DEPTH,
-            &[
-                ("name", false),
-                ("l_paren_token", false),
-                ("ident", false),
-                ("r_paren_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssPseudoClassFunctionCustomIdentifier> for SyntaxNode {
@@ -25664,20 +24300,7 @@ impl AstNode for CssPseudoClassFunctionCustomIdentifierList {
 }
 impl std::fmt::Debug for CssPseudoClassFunctionCustomIdentifierList {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssPseudoClassFunctionCustomIdentifierList",
-            &DEPTH,
-            &[
-                ("name", false),
-                ("l_paren_token", false),
-                ("items", false),
-                ("r_paren_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssPseudoClassFunctionCustomIdentifierList> for SyntaxNode {
@@ -25713,20 +24336,7 @@ impl AstNode for CssPseudoClassFunctionIdentifier {
 }
 impl std::fmt::Debug for CssPseudoClassFunctionIdentifier {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssPseudoClassFunctionIdentifier",
-            &DEPTH,
-            &[
-                ("name", false),
-                ("l_paren_token", false),
-                ("ident", false),
-                ("r_paren_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssPseudoClassFunctionIdentifier> for SyntaxNode {
@@ -25762,20 +24372,7 @@ impl AstNode for CssPseudoClassFunctionNth {
 }
 impl std::fmt::Debug for CssPseudoClassFunctionNth {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssPseudoClassFunctionNth",
-            &DEPTH,
-            &[
-                ("name", false),
-                ("l_paren_token", false),
-                ("selector", false),
-                ("r_paren_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssPseudoClassFunctionNth> for SyntaxNode {
@@ -25812,20 +24409,7 @@ impl AstNode for CssPseudoClassFunctionRelativeSelectorList {
 }
 impl std::fmt::Debug for CssPseudoClassFunctionRelativeSelectorList {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssPseudoClassFunctionRelativeSelectorList",
-            &DEPTH,
-            &[
-                ("name", false),
-                ("l_paren_token", false),
-                ("relative_selectors", false),
-                ("r_paren_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssPseudoClassFunctionRelativeSelectorList> for SyntaxNode {
@@ -25861,20 +24445,7 @@ impl AstNode for CssPseudoClassFunctionSelector {
 }
 impl std::fmt::Debug for CssPseudoClassFunctionSelector {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssPseudoClassFunctionSelector",
-            &DEPTH,
-            &[
-                ("name", false),
-                ("l_paren_token", false),
-                ("selector", false),
-                ("r_paren_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssPseudoClassFunctionSelector> for SyntaxNode {
@@ -25911,20 +24482,7 @@ impl AstNode for CssPseudoClassFunctionSelectorList {
 }
 impl std::fmt::Debug for CssPseudoClassFunctionSelectorList {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssPseudoClassFunctionSelectorList",
-            &DEPTH,
-            &[
-                ("name", false),
-                ("l_paren_token", false),
-                ("selectors", false),
-                ("r_paren_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssPseudoClassFunctionSelectorList> for SyntaxNode {
@@ -25960,20 +24518,7 @@ impl AstNode for CssPseudoClassFunctionValueList {
 }
 impl std::fmt::Debug for CssPseudoClassFunctionValueList {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssPseudoClassFunctionValueList",
-            &DEPTH,
-            &[
-                ("name", false),
-                ("l_paren_token", false),
-                ("values", false),
-                ("r_paren_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssPseudoClassFunctionValueList> for SyntaxNode {
@@ -26009,15 +24554,7 @@ impl AstNode for CssPseudoClassIdentifier {
 }
 impl std::fmt::Debug for CssPseudoClassIdentifier {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssPseudoClassIdentifier",
-            &DEPTH,
-            &[("name", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssPseudoClassIdentifier> for SyntaxNode {
@@ -26053,20 +24590,7 @@ impl AstNode for CssPseudoClassNth {
 }
 impl std::fmt::Debug for CssPseudoClassNth {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssPseudoClassNth",
-            &DEPTH,
-            &[
-                ("sign", true),
-                ("value", true),
-                ("symbol_token", false),
-                ("offset", true),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssPseudoClassNth> for SyntaxNode {
@@ -26102,15 +24626,7 @@ impl AstNode for CssPseudoClassNthIdentifier {
 }
 impl std::fmt::Debug for CssPseudoClassNthIdentifier {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssPseudoClassNthIdentifier",
-            &DEPTH,
-            &[("value", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssPseudoClassNthIdentifier> for SyntaxNode {
@@ -26146,15 +24662,7 @@ impl AstNode for CssPseudoClassNthNumber {
 }
 impl std::fmt::Debug for CssPseudoClassNthNumber {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssPseudoClassNthNumber",
-            &DEPTH,
-            &[("sign", true), ("value", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssPseudoClassNthNumber> for SyntaxNode {
@@ -26190,15 +24698,7 @@ impl AstNode for CssPseudoClassNthSelector {
 }
 impl std::fmt::Debug for CssPseudoClassNthSelector {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssPseudoClassNthSelector",
-            &DEPTH,
-            &[("nth", false), ("of_selector", true)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssPseudoClassNthSelector> for SyntaxNode {
@@ -26234,15 +24734,7 @@ impl AstNode for CssPseudoClassOfNthSelector {
 }
 impl std::fmt::Debug for CssPseudoClassOfNthSelector {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssPseudoClassOfNthSelector",
-            &DEPTH,
-            &[("of_token", false), ("selectors", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssPseudoClassOfNthSelector> for SyntaxNode {
@@ -26278,15 +24770,7 @@ impl AstNode for CssPseudoClassSelector {
 }
 impl std::fmt::Debug for CssPseudoClassSelector {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssPseudoClassSelector",
-            &DEPTH,
-            &[("colon_token", false), ("class", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssPseudoClassSelector> for SyntaxNode {
@@ -26322,20 +24806,7 @@ impl AstNode for CssPseudoElementFunction {
 }
 impl std::fmt::Debug for CssPseudoElementFunction {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssPseudoElementFunction",
-            &DEPTH,
-            &[
-                ("name", false),
-                ("l_paren_token", false),
-                ("items", false),
-                ("r_paren_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssPseudoElementFunction> for SyntaxNode {
@@ -26372,20 +24843,7 @@ impl AstNode for CssPseudoElementFunctionCustomIdentifier {
 }
 impl std::fmt::Debug for CssPseudoElementFunctionCustomIdentifier {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssPseudoElementFunctionCustomIdentifier",
-            &DEPTH,
-            &[
-                ("name", false),
-                ("l_paren_token", false),
-                ("ident", false),
-                ("r_paren_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssPseudoElementFunctionCustomIdentifier> for SyntaxNode {
@@ -26421,20 +24879,7 @@ impl AstNode for CssPseudoElementFunctionSelector {
 }
 impl std::fmt::Debug for CssPseudoElementFunctionSelector {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssPseudoElementFunctionSelector",
-            &DEPTH,
-            &[
-                ("name", false),
-                ("l_paren_token", false),
-                ("selector", false),
-                ("r_paren_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssPseudoElementFunctionSelector> for SyntaxNode {
@@ -26470,15 +24915,7 @@ impl AstNode for CssPseudoElementIdentifier {
 }
 impl std::fmt::Debug for CssPseudoElementIdentifier {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssPseudoElementIdentifier",
-            &DEPTH,
-            &[("name", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssPseudoElementIdentifier> for SyntaxNode {
@@ -26514,15 +24951,7 @@ impl AstNode for CssPseudoElementSelector {
 }
 impl std::fmt::Debug for CssPseudoElementSelector {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssPseudoElementSelector",
-            &DEPTH,
-            &[("double_colon_token", false), ("element", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssPseudoElementSelector> for SyntaxNode {
@@ -26558,15 +24987,7 @@ impl AstNode for CssQualifiedRule {
 }
 impl std::fmt::Debug for CssQualifiedRule {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssQualifiedRule",
-            &DEPTH,
-            &[("prelude", false), ("block", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssQualifiedRule> for SyntaxNode {
@@ -26602,15 +25023,7 @@ impl AstNode for CssQueryFeatureBoolean {
 }
 impl std::fmt::Debug for CssQueryFeatureBoolean {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssQueryFeatureBoolean",
-            &DEPTH,
-            &[("name", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssQueryFeatureBoolean> for SyntaxNode {
@@ -26646,15 +25059,7 @@ impl AstNode for CssQueryFeaturePlain {
 }
 impl std::fmt::Debug for CssQueryFeaturePlain {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssQueryFeaturePlain",
-            &DEPTH,
-            &[("name", false), ("colon_token", false), ("value", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssQueryFeaturePlain> for SyntaxNode {
@@ -26690,15 +25095,7 @@ impl AstNode for CssQueryFeatureRange {
 }
 impl std::fmt::Debug for CssQueryFeatureRange {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssQueryFeatureRange",
-            &DEPTH,
-            &[("left", false), ("comparison", false), ("right", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssQueryFeatureRange> for SyntaxNode {
@@ -26734,15 +25131,7 @@ impl AstNode for CssQueryFeatureRangeComparison {
 }
 impl std::fmt::Debug for CssQueryFeatureRangeComparison {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssQueryFeatureRangeComparison",
-            &DEPTH,
-            &[("operator", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssQueryFeatureRangeComparison> for SyntaxNode {
@@ -26778,21 +25167,7 @@ impl AstNode for CssQueryFeatureRangeInterval {
 }
 impl std::fmt::Debug for CssQueryFeatureRangeInterval {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssQueryFeatureRangeInterval",
-            &DEPTH,
-            &[
-                ("left", false),
-                ("left_comparison", false),
-                ("name", false),
-                ("right_comparison", false),
-                ("right", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssQueryFeatureRangeInterval> for SyntaxNode {
@@ -26828,15 +25203,7 @@ impl AstNode for CssQueryFeatureReverseRange {
 }
 impl std::fmt::Debug for CssQueryFeatureReverseRange {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssQueryFeatureReverseRange",
-            &DEPTH,
-            &[("left", false), ("comparison", false), ("right", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssQueryFeatureReverseRange> for SyntaxNode {
@@ -26872,19 +25239,7 @@ impl AstNode for CssRatio {
 }
 impl std::fmt::Debug for CssRatio {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssRatio",
-            &DEPTH,
-            &[
-                ("numerator", false),
-                ("slash_token", false),
-                ("denominator", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssRatio> for SyntaxNode {
@@ -26920,15 +25275,7 @@ impl AstNode for CssRawStringDeclarator {
 }
 impl std::fmt::Debug for CssRawStringDeclarator {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssRawStringDeclarator",
-            &DEPTH,
-            &[("raw_string_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssRawStringDeclarator> for SyntaxNode {
@@ -26964,15 +25311,7 @@ impl AstNode for CssRegularAttrUnit {
 }
 impl std::fmt::Debug for CssRegularAttrUnit {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssRegularAttrUnit",
-            &DEPTH,
-            &[("unit_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssRegularAttrUnit> for SyntaxNode {
@@ -27008,15 +25347,7 @@ impl AstNode for CssRegularDimension {
 }
 impl std::fmt::Debug for CssRegularDimension {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssRegularDimension",
-            &DEPTH,
-            &[("value_token", false), ("unit_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssRegularDimension> for SyntaxNode {
@@ -27052,15 +25383,7 @@ impl AstNode for CssRegularSyntaxTypeName {
 }
 impl std::fmt::Debug for CssRegularSyntaxTypeName {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssRegularSyntaxTypeName",
-            &DEPTH,
-            &[("name_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssRegularSyntaxTypeName> for SyntaxNode {
@@ -27096,15 +25419,7 @@ impl AstNode for CssRelativeSelector {
 }
 impl std::fmt::Debug for CssRelativeSelector {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssRelativeSelector",
-            &DEPTH,
-            &[("combinator", true), ("selector", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssRelativeSelector> for SyntaxNode {
@@ -27140,15 +25455,7 @@ impl AstNode for CssReturnsStatement {
 }
 impl std::fmt::Debug for CssReturnsStatement {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssReturnsStatement",
-            &DEPTH,
-            &[("returns_token", false), ("ty", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssReturnsStatement> for SyntaxNode {
@@ -27184,15 +25491,7 @@ impl AstNode for CssRoot {
 }
 impl std::fmt::Debug for CssRoot {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssRoot",
-            &DEPTH,
-            &[("bom_token", true), ("items", false), ("eof_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssRoot> for SyntaxNode {
@@ -27228,19 +25527,7 @@ impl AstNode for CssRuleBlock {
 }
 impl std::fmt::Debug for CssRuleBlock {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssRuleBlock",
-            &DEPTH,
-            &[
-                ("l_curly_token", false),
-                ("rules", false),
-                ("r_curly_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssRuleBlock> for SyntaxNode {
@@ -27276,15 +25563,7 @@ impl AstNode for CssScopeAtRule {
 }
 impl std::fmt::Debug for CssScopeAtRule {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssScopeAtRule",
-            &DEPTH,
-            &[("declarator", false), ("block", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssScopeAtRule> for SyntaxNode {
@@ -27320,15 +25599,7 @@ impl AstNode for CssScopeAtRuleDeclarator {
 }
 impl std::fmt::Debug for CssScopeAtRuleDeclarator {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssScopeAtRuleDeclarator",
-            &DEPTH,
-            &[("scope_token", false), ("range", true)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssScopeAtRuleDeclarator> for SyntaxNode {
@@ -27364,19 +25635,7 @@ impl AstNode for CssScopeEdge {
 }
 impl std::fmt::Debug for CssScopeEdge {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssScopeEdge",
-            &DEPTH,
-            &[
-                ("l_paren_token", false),
-                ("selectors", false),
-                ("r_paren_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssScopeEdge> for SyntaxNode {
@@ -27412,15 +25671,7 @@ impl AstNode for CssScopeRangeEnd {
 }
 impl std::fmt::Debug for CssScopeRangeEnd {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssScopeRangeEnd",
-            &DEPTH,
-            &[("to_token", false), ("end", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssScopeRangeEnd> for SyntaxNode {
@@ -27456,15 +25707,7 @@ impl AstNode for CssScopeRangeInterval {
 }
 impl std::fmt::Debug for CssScopeRangeInterval {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssScopeRangeInterval",
-            &DEPTH,
-            &[("start", false), ("to_token", false), ("end", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssScopeRangeInterval> for SyntaxNode {
@@ -27500,15 +25743,7 @@ impl AstNode for CssScopeRangeStart {
 }
 impl std::fmt::Debug for CssScopeRangeStart {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssScopeRangeStart",
-            &DEPTH,
-            &[("start", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssScopeRangeStart> for SyntaxNode {
@@ -27544,15 +25779,7 @@ impl AstNode for CssSnippetRoot {
 }
 impl std::fmt::Debug for CssSnippetRoot {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssSnippetRoot",
-            &DEPTH,
-            &[("items", false), ("eof_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssSnippetRoot> for SyntaxNode {
@@ -27588,15 +25815,7 @@ impl AstNode for CssStartingStyleAtRule {
 }
 impl std::fmt::Debug for CssStartingStyleAtRule {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssStartingStyleAtRule",
-            &DEPTH,
-            &[("declarator", false), ("block", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssStartingStyleAtRule> for SyntaxNode {
@@ -27632,15 +25851,7 @@ impl AstNode for CssStartingStyleAtRuleDeclarator {
 }
 impl std::fmt::Debug for CssStartingStyleAtRuleDeclarator {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssStartingStyleAtRuleDeclarator",
-            &DEPTH,
-            &[("starting_style_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssStartingStyleAtRuleDeclarator> for SyntaxNode {
@@ -27676,15 +25887,7 @@ impl AstNode for CssString {
 }
 impl std::fmt::Debug for CssString {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssString",
-            &DEPTH,
-            &[("value_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssString> for SyntaxNode {
@@ -27720,15 +25923,7 @@ impl AstNode for CssSupportsAndCondition {
 }
 impl std::fmt::Debug for CssSupportsAndCondition {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssSupportsAndCondition",
-            &DEPTH,
-            &[("left", false), ("and_token", false), ("right", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssSupportsAndCondition> for SyntaxNode {
@@ -27764,15 +25959,7 @@ impl AstNode for CssSupportsAtRule {
 }
 impl std::fmt::Debug for CssSupportsAtRule {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssSupportsAtRule",
-            &DEPTH,
-            &[("declarator", false), ("block", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssSupportsAtRule> for SyntaxNode {
@@ -27808,15 +25995,7 @@ impl AstNode for CssSupportsAtRuleDeclarator {
 }
 impl std::fmt::Debug for CssSupportsAtRuleDeclarator {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssSupportsAtRuleDeclarator",
-            &DEPTH,
-            &[("supports_token", false), ("condition", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssSupportsAtRuleDeclarator> for SyntaxNode {
@@ -27852,19 +26031,7 @@ impl AstNode for CssSupportsConditionInParens {
 }
 impl std::fmt::Debug for CssSupportsConditionInParens {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssSupportsConditionInParens",
-            &DEPTH,
-            &[
-                ("l_paren_token", false),
-                ("condition", false),
-                ("r_paren_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssSupportsConditionInParens> for SyntaxNode {
@@ -27900,19 +26067,7 @@ impl AstNode for CssSupportsFeatureDeclaration {
 }
 impl std::fmt::Debug for CssSupportsFeatureDeclaration {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssSupportsFeatureDeclaration",
-            &DEPTH,
-            &[
-                ("l_paren_token", false),
-                ("declaration", false),
-                ("r_paren_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssSupportsFeatureDeclaration> for SyntaxNode {
@@ -27948,20 +26103,7 @@ impl AstNode for CssSupportsFeatureSelector {
 }
 impl std::fmt::Debug for CssSupportsFeatureSelector {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssSupportsFeatureSelector",
-            &DEPTH,
-            &[
-                ("selector_token", false),
-                ("l_paren_token", false),
-                ("selector", false),
-                ("r_paren_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssSupportsFeatureSelector> for SyntaxNode {
@@ -27997,15 +26139,7 @@ impl AstNode for CssSupportsNotCondition {
 }
 impl std::fmt::Debug for CssSupportsNotCondition {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssSupportsNotCondition",
-            &DEPTH,
-            &[("not_token", false), ("query", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssSupportsNotCondition> for SyntaxNode {
@@ -28041,15 +26175,7 @@ impl AstNode for CssSupportsOrCondition {
 }
 impl std::fmt::Debug for CssSupportsOrCondition {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssSupportsOrCondition",
-            &DEPTH,
-            &[("left", false), ("or_token", false), ("right", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssSupportsOrCondition> for SyntaxNode {
@@ -28085,15 +26211,7 @@ impl AstNode for CssSyntaxComponent {
 }
 impl std::fmt::Debug for CssSyntaxComponent {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssSyntaxComponent",
-            &DEPTH,
-            &[("component", false), ("multiplier", true)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssSyntaxComponent> for SyntaxNode {
@@ -28130,19 +26248,7 @@ impl AstNode for CssSyntaxComponentWithoutMultiplier {
 }
 impl std::fmt::Debug for CssSyntaxComponentWithoutMultiplier {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssSyntaxComponentWithoutMultiplier",
-            &DEPTH,
-            &[
-                ("l_angle_token", false),
-                ("type_name_token", false),
-                ("r_angle_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssSyntaxComponentWithoutMultiplier> for SyntaxNode {
@@ -28178,15 +26284,7 @@ impl AstNode for CssSyntaxMultiplier {
 }
 impl std::fmt::Debug for CssSyntaxMultiplier {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssSyntaxMultiplier",
-            &DEPTH,
-            &[("multiplier", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssSyntaxMultiplier> for SyntaxNode {
@@ -28222,19 +26320,7 @@ impl AstNode for CssSyntaxType {
 }
 impl std::fmt::Debug for CssSyntaxType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssSyntaxType",
-            &DEPTH,
-            &[
-                ("l_angle_token", false),
-                ("type_name", false),
-                ("r_angle_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssSyntaxType> for SyntaxNode {
@@ -28270,20 +26356,7 @@ impl AstNode for CssTypeFunction {
 }
 impl std::fmt::Debug for CssTypeFunction {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssTypeFunction",
-            &DEPTH,
-            &[
-                ("name_token", false),
-                ("l_paren_token", false),
-                ("ty", false),
-                ("r_paren_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssTypeFunction> for SyntaxNode {
@@ -28319,15 +26392,7 @@ impl AstNode for CssTypeSelector {
 }
 impl std::fmt::Debug for CssTypeSelector {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssTypeSelector",
-            &DEPTH,
-            &[("namespace", true), ("ident", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssTypeSelector> for SyntaxNode {
@@ -28363,15 +26428,7 @@ impl AstNode for CssUnaryExpression {
 }
 impl std::fmt::Debug for CssUnaryExpression {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssUnaryExpression",
-            &DEPTH,
-            &[("operator", false), ("expression", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssUnaryExpression> for SyntaxNode {
@@ -28407,15 +26464,7 @@ impl AstNode for CssUnicodeCodepoint {
 }
 impl std::fmt::Debug for CssUnicodeCodepoint {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssUnicodeCodepoint",
-            &DEPTH,
-            &[("value_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssUnicodeCodepoint> for SyntaxNode {
@@ -28451,15 +26500,7 @@ impl AstNode for CssUnicodeRange {
 }
 impl std::fmt::Debug for CssUnicodeRange {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssUnicodeRange",
-            &DEPTH,
-            &[("prefix_token", false), ("value", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssUnicodeRange> for SyntaxNode {
@@ -28495,15 +26536,7 @@ impl AstNode for CssUnicodeRangeInterval {
 }
 impl std::fmt::Debug for CssUnicodeRangeInterval {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssUnicodeRangeInterval",
-            &DEPTH,
-            &[("start", false), ("minus_token", false), ("end", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssUnicodeRangeInterval> for SyntaxNode {
@@ -28539,15 +26572,7 @@ impl AstNode for CssUnicodeRangeWildcard {
 }
 impl std::fmt::Debug for CssUnicodeRangeWildcard {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssUnicodeRangeWildcard",
-            &DEPTH,
-            &[("value_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssUnicodeRangeWildcard> for SyntaxNode {
@@ -28583,15 +26608,7 @@ impl AstNode for CssUniversalNamespacePrefix {
 }
 impl std::fmt::Debug for CssUniversalNamespacePrefix {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssUniversalNamespacePrefix",
-            &DEPTH,
-            &[("star_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssUniversalNamespacePrefix> for SyntaxNode {
@@ -28627,15 +26644,7 @@ impl AstNode for CssUniversalSelector {
 }
 impl std::fmt::Debug for CssUniversalSelector {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssUniversalSelector",
-            &DEPTH,
-            &[("namespace", true), ("star_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssUniversalSelector> for SyntaxNode {
@@ -28671,15 +26680,7 @@ impl AstNode for CssUniversalSyntax {
 }
 impl std::fmt::Debug for CssUniversalSyntax {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssUniversalSyntax",
-            &DEPTH,
-            &[("star_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssUniversalSyntax> for SyntaxNode {
@@ -28715,15 +26716,7 @@ impl AstNode for CssUnknownAttrUnit {
 }
 impl std::fmt::Debug for CssUnknownAttrUnit {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssUnknownAttrUnit",
-            &DEPTH,
-            &[("unit_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssUnknownAttrUnit> for SyntaxNode {
@@ -28759,15 +26752,7 @@ impl AstNode for CssUnknownBlockAtRule {
 }
 impl std::fmt::Debug for CssUnknownBlockAtRule {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssUnknownBlockAtRule",
-            &DEPTH,
-            &[("name", false), ("components", false), ("block", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssUnknownBlockAtRule> for SyntaxNode {
@@ -28803,15 +26788,7 @@ impl AstNode for CssUnknownDimension {
 }
 impl std::fmt::Debug for CssUnknownDimension {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssUnknownDimension",
-            &DEPTH,
-            &[("value_token", false), ("unit_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssUnknownDimension> for SyntaxNode {
@@ -28847,15 +26824,7 @@ impl AstNode for CssUnknownSyntaxTypeName {
 }
 impl std::fmt::Debug for CssUnknownSyntaxTypeName {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssUnknownSyntaxTypeName",
-            &DEPTH,
-            &[("name_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssUnknownSyntaxTypeName> for SyntaxNode {
@@ -28891,19 +26860,7 @@ impl AstNode for CssUnknownValueAtRule {
 }
 impl std::fmt::Debug for CssUnknownValueAtRule {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssUnknownValueAtRule",
-            &DEPTH,
-            &[
-                ("name", false),
-                ("components", false),
-                ("semicolon_token", true),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssUnknownValueAtRule> for SyntaxNode {
@@ -28939,21 +26896,7 @@ impl AstNode for CssUrlFunction {
 }
 impl std::fmt::Debug for CssUrlFunction {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssUrlFunction",
-            &DEPTH,
-            &[
-                ("name", false),
-                ("l_paren_token", false),
-                ("value", true),
-                ("modifiers", false),
-                ("r_paren_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssUrlFunction> for SyntaxNode {
@@ -28989,15 +26932,7 @@ impl AstNode for CssUrlValueRaw {
 }
 impl std::fmt::Debug for CssUrlValueRaw {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssUrlValueRaw",
-            &DEPTH,
-            &[("value_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssUrlValueRaw> for SyntaxNode {
@@ -29033,19 +26968,7 @@ impl AstNode for CssValueAtRule {
 }
 impl std::fmt::Debug for CssValueAtRule {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssValueAtRule",
-            &DEPTH,
-            &[
-                ("value_token", false),
-                ("clause", false),
-                ("semicolon_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssValueAtRule> for SyntaxNode {
@@ -29081,15 +27004,7 @@ impl AstNode for CssValueAtRuleDeclarationClause {
 }
 impl std::fmt::Debug for CssValueAtRuleDeclarationClause {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssValueAtRuleDeclarationClause",
-            &DEPTH,
-            &[("properties", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssValueAtRuleDeclarationClause> for SyntaxNode {
@@ -29125,15 +27040,7 @@ impl AstNode for CssValueAtRuleGenericProperty {
 }
 impl std::fmt::Debug for CssValueAtRuleGenericProperty {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssValueAtRuleGenericProperty",
-            &DEPTH,
-            &[("name", false), ("colon_token", false), ("value", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssValueAtRuleGenericProperty> for SyntaxNode {
@@ -29169,19 +27076,7 @@ impl AstNode for CssValueAtRuleImportClause {
 }
 impl std::fmt::Debug for CssValueAtRuleImportClause {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssValueAtRuleImportClause",
-            &DEPTH,
-            &[
-                ("specifiers", false),
-                ("from_token", false),
-                ("source", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssValueAtRuleImportClause> for SyntaxNode {
@@ -29217,15 +27112,7 @@ impl AstNode for CssValueAtRuleImportSpecifier {
 }
 impl std::fmt::Debug for CssValueAtRuleImportSpecifier {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssValueAtRuleImportSpecifier",
-            &DEPTH,
-            &[("name", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssValueAtRuleImportSpecifier> for SyntaxNode {
@@ -29262,15 +27149,7 @@ impl AstNode for CssValueAtRuleNamedImportSpecifier {
 }
 impl std::fmt::Debug for CssValueAtRuleNamedImportSpecifier {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssValueAtRuleNamedImportSpecifier",
-            &DEPTH,
-            &[("name", false), ("as_token", false), ("local_name", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssValueAtRuleNamedImportSpecifier> for SyntaxNode {
@@ -29306,15 +27185,7 @@ impl AstNode for CssViewTransitionAtRule {
 }
 impl std::fmt::Debug for CssViewTransitionAtRule {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssViewTransitionAtRule",
-            &DEPTH,
-            &[("declarator", false), ("block", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssViewTransitionAtRule> for SyntaxNode {
@@ -29350,15 +27221,7 @@ impl AstNode for CssViewTransitionAtRuleDeclarator {
 }
 impl std::fmt::Debug for CssViewTransitionAtRuleDeclarator {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssViewTransitionAtRuleDeclarator",
-            &DEPTH,
-            &[("view_transition_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssViewTransitionAtRuleDeclarator> for SyntaxNode {
@@ -29394,15 +27257,7 @@ impl AstNode for ScssArbitraryArgument {
 }
 impl std::fmt::Debug for ScssArbitraryArgument {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssArbitraryArgument",
-            &DEPTH,
-            &[("value", false), ("dotdotdot_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssArbitraryArgument> for SyntaxNode {
@@ -29438,20 +27293,7 @@ impl AstNode for ScssAtRootAtRule {
 }
 impl std::fmt::Debug for ScssAtRootAtRule {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssAtRootAtRule",
-            &DEPTH,
-            &[
-                ("at_root_token", false),
-                ("query", true),
-                ("selector", true),
-                ("block", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssAtRootAtRule> for SyntaxNode {
@@ -29487,19 +27329,7 @@ impl AstNode for ScssAtRootQuery {
 }
 impl std::fmt::Debug for ScssAtRootQuery {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssAtRootQuery",
-            &DEPTH,
-            &[
-                ("l_paren_token", false),
-                ("query", false),
-                ("r_paren_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssAtRootQuery> for SyntaxNode {
@@ -29535,19 +27365,7 @@ impl AstNode for ScssAtRootQueryClause {
 }
 impl std::fmt::Debug for ScssAtRootQueryClause {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssAtRootQueryClause",
-            &DEPTH,
-            &[
-                ("modifier", false),
-                ("colon_token", false),
-                ("rules", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssAtRootQueryClause> for SyntaxNode {
@@ -29583,15 +27401,7 @@ impl AstNode for ScssAtRootSelector {
 }
 impl std::fmt::Debug for ScssAtRootSelector {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssAtRootSelector",
-            &DEPTH,
-            &[("selector", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssAtRootSelector> for SyntaxNode {
@@ -29627,15 +27437,7 @@ impl AstNode for ScssBinaryExpression {
 }
 impl std::fmt::Debug for ScssBinaryExpression {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssBinaryExpression",
-            &DEPTH,
-            &[("left", false), ("operator", false), ("right", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssBinaryExpression> for SyntaxNode {
@@ -29671,15 +27473,7 @@ impl AstNode for ScssContainerInterpolatedQuery {
 }
 impl std::fmt::Debug for ScssContainerInterpolatedQuery {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssContainerInterpolatedQuery",
-            &DEPTH,
-            &[("query", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssContainerInterpolatedQuery> for SyntaxNode {
@@ -29715,19 +27509,7 @@ impl AstNode for ScssContentAtRule {
 }
 impl std::fmt::Debug for ScssContentAtRule {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssContentAtRule",
-            &DEPTH,
-            &[
-                ("content_token", false),
-                ("arguments", true),
-                ("semicolon_token", true),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssContentAtRule> for SyntaxNode {
@@ -29763,19 +27545,7 @@ impl AstNode for ScssDebugAtRule {
 }
 impl std::fmt::Debug for ScssDebugAtRule {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssDebugAtRule",
-            &DEPTH,
-            &[
-                ("debug_token", false),
-                ("value", false),
-                ("semicolon_token", true),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssDebugAtRule> for SyntaxNode {
@@ -29811,15 +27581,7 @@ impl AstNode for ScssEachAtRule {
 }
 impl std::fmt::Debug for ScssEachAtRule {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssEachAtRule",
-            &DEPTH,
-            &[("each_token", false), ("header", false), ("block", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssEachAtRule> for SyntaxNode {
@@ -29855,15 +27617,7 @@ impl AstNode for ScssEachHeader {
 }
 impl std::fmt::Debug for ScssEachHeader {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssEachHeader",
-            &DEPTH,
-            &[("bindings", false), ("in_token", false), ("values", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssEachHeader> for SyntaxNode {
@@ -29899,15 +27653,7 @@ impl AstNode for ScssElseClause {
 }
 impl std::fmt::Debug for ScssElseClause {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssElseClause",
-            &DEPTH,
-            &[("at_token", false), ("else_token", false), ("body", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssElseClause> for SyntaxNode {
@@ -29943,19 +27689,7 @@ impl AstNode for ScssErrorAtRule {
 }
 impl std::fmt::Debug for ScssErrorAtRule {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssErrorAtRule",
-            &DEPTH,
-            &[
-                ("error_token", false),
-                ("value", false),
-                ("semicolon_token", true),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssErrorAtRule> for SyntaxNode {
@@ -29991,15 +27725,7 @@ impl AstNode for ScssExpression {
 }
 impl std::fmt::Debug for ScssExpression {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssExpression",
-            &DEPTH,
-            &[("items", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssExpression> for SyntaxNode {
@@ -30035,20 +27761,7 @@ impl AstNode for ScssExtendAtRule {
 }
 impl std::fmt::Debug for ScssExtendAtRule {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssExtendAtRule",
-            &DEPTH,
-            &[
-                ("extend_token", false),
-                ("css_selector_list", false),
-                ("optional_modifier", true),
-                ("semicolon_token", true),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssExtendAtRule> for SyntaxNode {
@@ -30084,15 +27797,7 @@ impl AstNode for ScssExtendOptionalModifier {
 }
 impl std::fmt::Debug for ScssExtendOptionalModifier {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssExtendOptionalModifier",
-            &DEPTH,
-            &[("excl_token", false), ("optional_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssExtendOptionalModifier> for SyntaxNode {
@@ -30128,23 +27833,7 @@ impl AstNode for ScssForAtRule {
 }
 impl std::fmt::Debug for ScssForAtRule {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssForAtRule",
-            &DEPTH,
-            &[
-                ("for_token", false),
-                ("variable", false),
-                ("from_token", false),
-                ("lower_bound", false),
-                ("operator", false),
-                ("upper_bound", false),
-                ("block", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssForAtRule> for SyntaxNode {
@@ -30180,19 +27869,7 @@ impl AstNode for ScssForwardAsClause {
 }
 impl std::fmt::Debug for ScssForwardAsClause {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssForwardAsClause",
-            &DEPTH,
-            &[
-                ("as_token", false),
-                ("prefix", false),
-                ("star_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssForwardAsClause> for SyntaxNode {
@@ -30228,22 +27905,7 @@ impl AstNode for ScssForwardAtRule {
 }
 impl std::fmt::Debug for ScssForwardAtRule {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssForwardAtRule",
-            &DEPTH,
-            &[
-                ("forward_token", false),
-                ("url", false),
-                ("as_clause", true),
-                ("visibility_clause", true),
-                ("with_clause", true),
-                ("semicolon_token", true),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssForwardAtRule> for SyntaxNode {
@@ -30279,20 +27941,7 @@ impl AstNode for ScssFunctionAtRule {
 }
 impl std::fmt::Debug for ScssFunctionAtRule {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssFunctionAtRule",
-            &DEPTH,
-            &[
-                ("function_token", false),
-                ("name", false),
-                ("parameters", true),
-                ("block", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssFunctionAtRule> for SyntaxNode {
@@ -30328,15 +27977,7 @@ impl AstNode for ScssHashValue {
 }
 impl std::fmt::Debug for ScssHashValue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssHashValue",
-            &DEPTH,
-            &[("hash_token", false), ("value_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssHashValue> for SyntaxNode {
@@ -30372,15 +28013,7 @@ impl AstNode for ScssHideClause {
 }
 impl std::fmt::Debug for ScssHideClause {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssHideClause",
-            &DEPTH,
-            &[("hide_token", false), ("members", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssHideClause> for SyntaxNode {
@@ -30416,20 +28049,7 @@ impl AstNode for ScssIfAtRule {
 }
 impl std::fmt::Debug for ScssIfAtRule {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssIfAtRule",
-            &DEPTH,
-            &[
-                ("if_token", false),
-                ("condition", false),
-                ("block", false),
-                ("else_clause", true),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssIfAtRule> for SyntaxNode {
@@ -30465,19 +28085,7 @@ impl AstNode for ScssImportAtRule {
 }
 impl std::fmt::Debug for ScssImportAtRule {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssImportAtRule",
-            &DEPTH,
-            &[
-                ("import_token", false),
-                ("imports", false),
-                ("semicolon_token", true),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssImportAtRule> for SyntaxNode {
@@ -30513,19 +28121,7 @@ impl AstNode for ScssIncludeArgumentList {
 }
 impl std::fmt::Debug for ScssIncludeArgumentList {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssIncludeArgumentList",
-            &DEPTH,
-            &[
-                ("l_paren_token", false),
-                ("items", false),
-                ("r_paren_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssIncludeArgumentList> for SyntaxNode {
@@ -30561,22 +28157,7 @@ impl AstNode for ScssIncludeAtRule {
 }
 impl std::fmt::Debug for ScssIncludeAtRule {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssIncludeAtRule",
-            &DEPTH,
-            &[
-                ("include_token", false),
-                ("name", false),
-                ("arguments", true),
-                ("using_clause", true),
-                ("block", true),
-                ("semicolon_token", true),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssIncludeAtRule> for SyntaxNode {
@@ -30612,15 +28193,7 @@ impl AstNode for ScssIncludeUsingClause {
 }
 impl std::fmt::Debug for ScssIncludeUsingClause {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssIncludeUsingClause",
-            &DEPTH,
-            &[("using_token", false), ("parameters", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssIncludeUsingClause> for SyntaxNode {
@@ -30656,15 +28229,7 @@ impl AstNode for ScssInterpolatedDashedIdentifier {
 }
 impl std::fmt::Debug for ScssInterpolatedDashedIdentifier {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssInterpolatedDashedIdentifier",
-            &DEPTH,
-            &[("items", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssInterpolatedDashedIdentifier> for SyntaxNode {
@@ -30700,15 +28265,7 @@ impl AstNode for ScssInterpolatedIdentifier {
 }
 impl std::fmt::Debug for ScssInterpolatedIdentifier {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssInterpolatedIdentifier",
-            &DEPTH,
-            &[("items", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssInterpolatedIdentifier> for SyntaxNode {
@@ -30744,15 +28301,7 @@ impl AstNode for ScssInterpolatedIdentifierHyphen {
 }
 impl std::fmt::Debug for ScssInterpolatedIdentifierHyphen {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssInterpolatedIdentifierHyphen",
-            &DEPTH,
-            &[("minus_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssInterpolatedIdentifierHyphen> for SyntaxNode {
@@ -30788,15 +28337,7 @@ impl AstNode for ScssInterpolatedNthValue {
 }
 impl std::fmt::Debug for ScssInterpolatedNthValue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssInterpolatedNthValue",
-            &DEPTH,
-            &[("items", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssInterpolatedNthValue> for SyntaxNode {
@@ -30833,20 +28374,7 @@ impl AstNode for ScssInterpolatedPseudoClassFunction {
 }
 impl std::fmt::Debug for ScssInterpolatedPseudoClassFunction {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssInterpolatedPseudoClassFunction",
-            &DEPTH,
-            &[
-                ("name", false),
-                ("l_paren_token", false),
-                ("arguments", true),
-                ("r_paren_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssInterpolatedPseudoClassFunction> for SyntaxNode {
@@ -30883,15 +28411,7 @@ impl AstNode for ScssInterpolatedPseudoClassNthArguments {
 }
 impl std::fmt::Debug for ScssInterpolatedPseudoClassNthArguments {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssInterpolatedPseudoClassNthArguments",
-            &DEPTH,
-            &[("selector", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssInterpolatedPseudoClassNthArguments> for SyntaxNode {
@@ -30928,15 +28448,7 @@ impl AstNode for ScssInterpolatedPseudoClassRelativeSelectorArguments {
 }
 impl std::fmt::Debug for ScssInterpolatedPseudoClassRelativeSelectorArguments {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssInterpolatedPseudoClassRelativeSelectorArguments",
-            &DEPTH,
-            &[("selectors", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssInterpolatedPseudoClassRelativeSelectorArguments> for SyntaxNode {
@@ -30973,15 +28485,7 @@ impl AstNode for ScssInterpolatedPseudoClassSelectorArguments {
 }
 impl std::fmt::Debug for ScssInterpolatedPseudoClassSelectorArguments {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssInterpolatedPseudoClassSelectorArguments",
-            &DEPTH,
-            &[("selectors", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssInterpolatedPseudoClassSelectorArguments> for SyntaxNode {
@@ -31018,15 +28522,7 @@ impl AstNode for ScssInterpolatedPseudoClassValueArguments {
 }
 impl std::fmt::Debug for ScssInterpolatedPseudoClassValueArguments {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssInterpolatedPseudoClassValueArguments",
-            &DEPTH,
-            &[("values", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssInterpolatedPseudoClassValueArguments> for SyntaxNode {
@@ -31063,20 +28559,7 @@ impl AstNode for ScssInterpolatedPseudoElementFunction {
 }
 impl std::fmt::Debug for ScssInterpolatedPseudoElementFunction {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssInterpolatedPseudoElementFunction",
-            &DEPTH,
-            &[
-                ("name", false),
-                ("l_paren_token", false),
-                ("arguments", true),
-                ("r_paren_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssInterpolatedPseudoElementFunction> for SyntaxNode {
@@ -31113,15 +28596,7 @@ impl AstNode for ScssInterpolatedPseudoElementSelectorArguments {
 }
 impl std::fmt::Debug for ScssInterpolatedPseudoElementSelectorArguments {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssInterpolatedPseudoElementSelectorArguments",
-            &DEPTH,
-            &[("selectors", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssInterpolatedPseudoElementSelectorArguments> for SyntaxNode {
@@ -31158,15 +28633,7 @@ impl AstNode for ScssInterpolatedPseudoElementValueArguments {
 }
 impl std::fmt::Debug for ScssInterpolatedPseudoElementValueArguments {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssInterpolatedPseudoElementValueArguments",
-            &DEPTH,
-            &[("values", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssInterpolatedPseudoElementValueArguments> for SyntaxNode {
@@ -31202,19 +28669,7 @@ impl AstNode for ScssInterpolatedString {
 }
 impl std::fmt::Debug for ScssInterpolatedString {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssInterpolatedString",
-            &DEPTH,
-            &[
-                ("opening_quote_token", false),
-                ("parts", false),
-                ("closing_quote_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssInterpolatedString> for SyntaxNode {
@@ -31250,15 +28705,7 @@ impl AstNode for ScssInterpolatedSubSelector {
 }
 impl std::fmt::Debug for ScssInterpolatedSubSelector {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssInterpolatedSubSelector",
-            &DEPTH,
-            &[("name", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssInterpolatedSubSelector> for SyntaxNode {
@@ -31294,15 +28741,7 @@ impl AstNode for ScssInterpolatedUrlValue {
 }
 impl std::fmt::Debug for ScssInterpolatedUrlValue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssInterpolatedUrlValue",
-            &DEPTH,
-            &[("parts", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssInterpolatedUrlValue> for SyntaxNode {
@@ -31338,15 +28777,7 @@ impl AstNode for ScssInterpolatedValue {
 }
 impl std::fmt::Debug for ScssInterpolatedValue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssInterpolatedValue",
-            &DEPTH,
-            &[("items", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssInterpolatedValue> for SyntaxNode {
@@ -31382,20 +28813,7 @@ impl AstNode for ScssInterpolation {
 }
 impl std::fmt::Debug for ScssInterpolation {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssInterpolation",
-            &DEPTH,
-            &[
-                ("hash_token", false),
-                ("l_curly_token", false),
-                ("value", false),
-                ("r_curly_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssInterpolation> for SyntaxNode {
@@ -31431,15 +28849,7 @@ impl AstNode for ScssKeyframesName {
 }
 impl std::fmt::Debug for ScssKeyframesName {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssKeyframesName",
-            &DEPTH,
-            &[("name", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssKeyframesName> for SyntaxNode {
@@ -31475,15 +28885,7 @@ impl AstNode for ScssKeyframesSelector {
 }
 impl std::fmt::Debug for ScssKeyframesSelector {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssKeyframesSelector",
-            &DEPTH,
-            &[("selector", false), ("percent_token", true)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssKeyframesSelector> for SyntaxNode {
@@ -31519,15 +28921,7 @@ impl AstNode for ScssKeyframesVariableDeclaration {
 }
 impl std::fmt::Debug for ScssKeyframesVariableDeclaration {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssKeyframesVariableDeclaration",
-            &DEPTH,
-            &[("declaration", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssKeyframesVariableDeclaration> for SyntaxNode {
@@ -31563,15 +28957,7 @@ impl AstNode for ScssKeywordArgument {
 }
 impl std::fmt::Debug for ScssKeywordArgument {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssKeywordArgument",
-            &DEPTH,
-            &[("name", false), ("colon_token", false), ("value", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssKeywordArgument> for SyntaxNode {
@@ -31607,20 +28993,7 @@ impl AstNode for ScssLegacyIfFunction {
 }
 impl std::fmt::Debug for ScssLegacyIfFunction {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssLegacyIfFunction",
-            &DEPTH,
-            &[
-                ("if_token", false),
-                ("l_paren_token", false),
-                ("items", false),
-                ("r_paren_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssLegacyIfFunction> for SyntaxNode {
@@ -31656,15 +29029,7 @@ impl AstNode for ScssListExpression {
 }
 impl std::fmt::Debug for ScssListExpression {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssListExpression",
-            &DEPTH,
-            &[("elements", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssListExpression> for SyntaxNode {
@@ -31700,15 +29065,7 @@ impl AstNode for ScssListExpressionElement {
 }
 impl std::fmt::Debug for ScssListExpressionElement {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssListExpressionElement",
-            &DEPTH,
-            &[("value", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssListExpressionElement> for SyntaxNode {
@@ -31744,19 +29101,7 @@ impl AstNode for ScssMapExpression {
 }
 impl std::fmt::Debug for ScssMapExpression {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssMapExpression",
-            &DEPTH,
-            &[
-                ("l_paren_token", false),
-                ("pairs", false),
-                ("r_paren_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssMapExpression> for SyntaxNode {
@@ -31792,15 +29137,7 @@ impl AstNode for ScssMapExpressionPair {
 }
 impl std::fmt::Debug for ScssMapExpressionPair {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssMapExpressionPair",
-            &DEPTH,
-            &[("key", false), ("colon_token", false), ("value", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssMapExpressionPair> for SyntaxNode {
@@ -31836,15 +29173,7 @@ impl AstNode for ScssMediaQuery {
 }
 impl std::fmt::Debug for ScssMediaQuery {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssMediaQuery",
-            &DEPTH,
-            &[("head", false), ("tail", true)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssMediaQuery> for SyntaxNode {
@@ -31880,20 +29209,7 @@ impl AstNode for ScssMixinAtRule {
 }
 impl std::fmt::Debug for ScssMixinAtRule {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssMixinAtRule",
-            &DEPTH,
-            &[
-                ("mixin_token", false),
-                ("name", false),
-                ("parameters", true),
-                ("block", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssMixinAtRule> for SyntaxNode {
@@ -31929,20 +29245,7 @@ impl AstNode for ScssModuleConfiguration {
 }
 impl std::fmt::Debug for ScssModuleConfiguration {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssModuleConfiguration",
-            &DEPTH,
-            &[
-                ("name", false),
-                ("colon_token", false),
-                ("value", false),
-                ("modifier", true),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssModuleConfiguration> for SyntaxNode {
@@ -31978,19 +29281,7 @@ impl AstNode for ScssModuleConfigurationList {
 }
 impl std::fmt::Debug for ScssModuleConfigurationList {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssModuleConfigurationList",
-            &DEPTH,
-            &[
-                ("l_paren_token", false),
-                ("items", false),
-                ("r_paren_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssModuleConfigurationList> for SyntaxNode {
@@ -32026,15 +29317,7 @@ impl AstNode for ScssModuleMemberAccess {
 }
 impl std::fmt::Debug for ScssModuleMemberAccess {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssModuleMemberAccess",
-            &DEPTH,
-            &[("module", false), ("dot_token", false), ("member", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssModuleMemberAccess> for SyntaxNode {
@@ -32070,15 +29353,7 @@ impl AstNode for ScssNamespacedVariable {
 }
 impl std::fmt::Debug for ScssNamespacedVariable {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssNamespacedVariable",
-            &DEPTH,
-            &[("namespace", false), ("dot_token", false), ("name", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssNamespacedVariable> for SyntaxNode {
@@ -32114,20 +29389,7 @@ impl AstNode for ScssNestingDeclaration {
 }
 impl std::fmt::Debug for ScssNestingDeclaration {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssNestingDeclaration",
-            &DEPTH,
-            &[
-                ("name", false),
-                ("colon_token", false),
-                ("value", false),
-                ("block", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssNestingDeclaration> for SyntaxNode {
@@ -32163,19 +29425,7 @@ impl AstNode for ScssParameter {
 }
 impl std::fmt::Debug for ScssParameter {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssParameter",
-            &DEPTH,
-            &[
-                ("name", false),
-                ("default_value", true),
-                ("ellipsis_token", true),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssParameter> for SyntaxNode {
@@ -32211,15 +29461,7 @@ impl AstNode for ScssParameterDefaultValue {
 }
 impl std::fmt::Debug for ScssParameterDefaultValue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssParameterDefaultValue",
-            &DEPTH,
-            &[("colon_token", false), ("value", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssParameterDefaultValue> for SyntaxNode {
@@ -32255,19 +29497,7 @@ impl AstNode for ScssParameterList {
 }
 impl std::fmt::Debug for ScssParameterList {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssParameterList",
-            &DEPTH,
-            &[
-                ("l_paren_token", false),
-                ("items", false),
-                ("r_paren_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssParameterList> for SyntaxNode {
@@ -32303,15 +29533,7 @@ impl AstNode for ScssParentSelector {
 }
 impl std::fmt::Debug for ScssParentSelector {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssParentSelector",
-            &DEPTH,
-            &[("amp_token", false), ("suffix", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssParentSelector> for SyntaxNode {
@@ -32347,15 +29569,7 @@ impl AstNode for ScssParentSelectorSuffix {
 }
 impl std::fmt::Debug for ScssParentSelectorSuffix {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssParentSelectorSuffix",
-            &DEPTH,
-            &[("items", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssParentSelectorSuffix> for SyntaxNode {
@@ -32391,15 +29605,7 @@ impl AstNode for ScssParentSelectorSuffixHyphen {
 }
 impl std::fmt::Debug for ScssParentSelectorSuffixHyphen {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssParentSelectorSuffixHyphen",
-            &DEPTH,
-            &[("minus_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssParentSelectorSuffixHyphen> for SyntaxNode {
@@ -32435,15 +29641,7 @@ impl AstNode for ScssParentSelectorValue {
 }
 impl std::fmt::Debug for ScssParentSelectorValue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssParentSelectorValue",
-            &DEPTH,
-            &[("amp_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssParentSelectorValue> for SyntaxNode {
@@ -32479,19 +29677,7 @@ impl AstNode for ScssParenthesizedExpression {
 }
 impl std::fmt::Debug for ScssParenthesizedExpression {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssParenthesizedExpression",
-            &DEPTH,
-            &[
-                ("l_paren_token", false),
-                ("expression", false),
-                ("r_paren_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssParenthesizedExpression> for SyntaxNode {
@@ -32527,15 +29713,7 @@ impl AstNode for ScssPartialCombinatorSelector {
 }
 impl std::fmt::Debug for ScssPartialCombinatorSelector {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssPartialCombinatorSelector",
-            &DEPTH,
-            &[("left", true), ("combinator", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssPartialCombinatorSelector> for SyntaxNode {
@@ -32571,15 +29749,7 @@ impl AstNode for ScssPercentValue {
 }
 impl std::fmt::Debug for ScssPercentValue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssPercentValue",
-            &DEPTH,
-            &[("percent_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssPercentValue> for SyntaxNode {
@@ -32615,15 +29785,7 @@ impl AstNode for ScssPlaceholderSelector {
 }
 impl std::fmt::Debug for ScssPlaceholderSelector {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssPlaceholderSelector",
-            &DEPTH,
-            &[("percent_token", false), ("name", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssPlaceholderSelector> for SyntaxNode {
@@ -32659,20 +29821,7 @@ impl AstNode for ScssPlainImport {
 }
 impl std::fmt::Debug for ScssPlainImport {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssPlainImport",
-            &DEPTH,
-            &[
-                ("url", false),
-                ("layer", true),
-                ("supports", true),
-                ("media", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssPlainImport> for SyntaxNode {
@@ -32708,19 +29857,7 @@ impl AstNode for ScssReturnAtRule {
 }
 impl std::fmt::Debug for ScssReturnAtRule {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssReturnAtRule",
-            &DEPTH,
-            &[
-                ("return_token", false),
-                ("value", false),
-                ("semicolon_token", true),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssReturnAtRule> for SyntaxNode {
@@ -32756,15 +29893,7 @@ impl AstNode for ScssShowClause {
 }
 impl std::fmt::Debug for ScssShowClause {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssShowClause",
-            &DEPTH,
-            &[("show_token", false), ("members", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssShowClause> for SyntaxNode {
@@ -32800,15 +29929,7 @@ impl AstNode for ScssStringText {
 }
 impl std::fmt::Debug for ScssStringText {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssStringText",
-            &DEPTH,
-            &[("value_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssStringText> for SyntaxNode {
@@ -32844,20 +29965,7 @@ impl AstNode for ScssSupportsDeclaration {
 }
 impl std::fmt::Debug for ScssSupportsDeclaration {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssSupportsDeclaration",
-            &DEPTH,
-            &[
-                ("name", false),
-                ("colon_token", false),
-                ("value", false),
-                ("important", true),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssSupportsDeclaration> for SyntaxNode {
@@ -32893,19 +30001,7 @@ impl AstNode for ScssSupportsFeatureDeclaration {
 }
 impl std::fmt::Debug for ScssSupportsFeatureDeclaration {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssSupportsFeatureDeclaration",
-            &DEPTH,
-            &[
-                ("l_paren_token", false),
-                ("declaration", false),
-                ("r_paren_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssSupportsFeatureDeclaration> for SyntaxNode {
@@ -32941,15 +30037,7 @@ impl AstNode for ScssSupportsInterpolatedCondition {
 }
 impl std::fmt::Debug for ScssSupportsInterpolatedCondition {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssSupportsInterpolatedCondition",
-            &DEPTH,
-            &[("condition", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssSupportsInterpolatedCondition> for SyntaxNode {
@@ -32985,15 +30073,7 @@ impl AstNode for ScssUnaryExpression {
 }
 impl std::fmt::Debug for ScssUnaryExpression {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssUnaryExpression",
-            &DEPTH,
-            &[("operator", false), ("expression", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssUnaryExpression> for SyntaxNode {
@@ -33029,15 +30109,7 @@ impl AstNode for ScssUrlText {
 }
 impl std::fmt::Debug for ScssUrlText {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssUrlText",
-            &DEPTH,
-            &[("value_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssUrlText> for SyntaxNode {
@@ -33073,15 +30145,7 @@ impl AstNode for ScssUseAllNamespace {
 }
 impl std::fmt::Debug for ScssUseAllNamespace {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssUseAllNamespace",
-            &DEPTH,
-            &[("star_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssUseAllNamespace> for SyntaxNode {
@@ -33117,15 +30181,7 @@ impl AstNode for ScssUseAsClause {
 }
 impl std::fmt::Debug for ScssUseAsClause {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssUseAsClause",
-            &DEPTH,
-            &[("as_token", false), ("namespace", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssUseAsClause> for SyntaxNode {
@@ -33161,21 +30217,7 @@ impl AstNode for ScssUseAtRule {
 }
 impl std::fmt::Debug for ScssUseAtRule {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssUseAtRule",
-            &DEPTH,
-            &[
-                ("use_token", false),
-                ("url", false),
-                ("as_clause", true),
-                ("with_clause", true),
-                ("semicolon_token", true),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssUseAtRule> for SyntaxNode {
@@ -33211,15 +30253,7 @@ impl AstNode for ScssVariable {
 }
 impl std::fmt::Debug for ScssVariable {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssVariable",
-            &DEPTH,
-            &[("dollar_token", false), ("name", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssVariable> for SyntaxNode {
@@ -33255,21 +30289,7 @@ impl AstNode for ScssVariableDeclaration {
 }
 impl std::fmt::Debug for ScssVariableDeclaration {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssVariableDeclaration",
-            &DEPTH,
-            &[
-                ("name", false),
-                ("colon_token", false),
-                ("value", false),
-                ("modifiers", false),
-                ("semicolon_token", true),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssVariableDeclaration> for SyntaxNode {
@@ -33305,15 +30325,7 @@ impl AstNode for ScssVariableModifier {
 }
 impl std::fmt::Debug for ScssVariableModifier {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssVariableModifier",
-            &DEPTH,
-            &[("excl_token", false), ("value", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssVariableModifier> for SyntaxNode {
@@ -33349,19 +30361,7 @@ impl AstNode for ScssWarnAtRule {
 }
 impl std::fmt::Debug for ScssWarnAtRule {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssWarnAtRule",
-            &DEPTH,
-            &[
-                ("warn_token", false),
-                ("value", false),
-                ("semicolon_token", true),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssWarnAtRule> for SyntaxNode {
@@ -33397,19 +30397,7 @@ impl AstNode for ScssWhileAtRule {
 }
 impl std::fmt::Debug for ScssWhileAtRule {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssWhileAtRule",
-            &DEPTH,
-            &[
-                ("while_token", false),
-                ("condition", false),
-                ("block", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssWhileAtRule> for SyntaxNode {
@@ -33445,15 +30433,7 @@ impl AstNode for ScssWithClause {
 }
 impl std::fmt::Debug for ScssWithClause {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "ScssWithClause",
-            &DEPTH,
-            &[("with_token", false), ("configurations", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<ScssWithClause> for SyntaxNode {
@@ -33489,19 +30469,7 @@ impl AstNode for TwApplyAtRule {
 }
 impl std::fmt::Debug for TwApplyAtRule {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "TwApplyAtRule",
-            &DEPTH,
-            &[
-                ("apply_token", false),
-                ("classes", false),
-                ("semicolon_token", true),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<TwApplyAtRule> for SyntaxNode {
@@ -33537,19 +30505,7 @@ impl AstNode for TwConfigAtRule {
 }
 impl std::fmt::Debug for TwConfigAtRule {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "TwConfigAtRule",
-            &DEPTH,
-            &[
-                ("config_token", false),
-                ("path", false),
-                ("semicolon_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<TwConfigAtRule> for SyntaxNode {
@@ -33585,19 +30541,7 @@ impl AstNode for TwCustomVariantAtRule {
 }
 impl std::fmt::Debug for TwCustomVariantAtRule {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "TwCustomVariantAtRule",
-            &DEPTH,
-            &[
-                ("custom_variant_token", false),
-                ("name", false),
-                ("selector", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<TwCustomVariantAtRule> for SyntaxNode {
@@ -33633,20 +30577,7 @@ impl AstNode for TwCustomVariantShorthand {
 }
 impl std::fmt::Debug for TwCustomVariantShorthand {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "TwCustomVariantShorthand",
-            &DEPTH,
-            &[
-                ("l_paren_token", false),
-                ("selector", false),
-                ("r_paren_token", false),
-                ("semicolon_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<TwCustomVariantShorthand> for SyntaxNode {
@@ -33682,19 +30613,7 @@ impl AstNode for TwFunctionalUtilityName {
 }
 impl std::fmt::Debug for TwFunctionalUtilityName {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "TwFunctionalUtilityName",
-            &DEPTH,
-            &[
-                ("identifier", false),
-                ("minus_token", false),
-                ("star_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<TwFunctionalUtilityName> for SyntaxNode {
@@ -33730,20 +30649,7 @@ impl AstNode for TwPluginAtRule {
 }
 impl std::fmt::Debug for TwPluginAtRule {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "TwPluginAtRule",
-            &DEPTH,
-            &[
-                ("plugin_token", false),
-                ("name", false),
-                ("block", true),
-                ("semicolon_token", true),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<TwPluginAtRule> for SyntaxNode {
@@ -33779,19 +30685,7 @@ impl AstNode for TwReferenceAtRule {
 }
 impl std::fmt::Debug for TwReferenceAtRule {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "TwReferenceAtRule",
-            &DEPTH,
-            &[
-                ("reference_token", false),
-                ("path", false),
-                ("semicolon_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<TwReferenceAtRule> for SyntaxNode {
@@ -33827,15 +30721,7 @@ impl AstNode for TwSlotAtRule {
 }
 impl std::fmt::Debug for TwSlotAtRule {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "TwSlotAtRule",
-            &DEPTH,
-            &[("slot_token", false), ("semicolon_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<TwSlotAtRule> for SyntaxNode {
@@ -33871,20 +30757,7 @@ impl AstNode for TwSourceAtRule {
 }
 impl std::fmt::Debug for TwSourceAtRule {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "TwSourceAtRule",
-            &DEPTH,
-            &[
-                ("source_token", false),
-                ("not_token", true),
-                ("source", false),
-                ("semicolon_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<TwSourceAtRule> for SyntaxNode {
@@ -33920,20 +30793,7 @@ impl AstNode for TwSourceInline {
 }
 impl std::fmt::Debug for TwSourceInline {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "TwSourceInline",
-            &DEPTH,
-            &[
-                ("inline_token", false),
-                ("l_paren_token", false),
-                ("content", false),
-                ("r_paren_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<TwSourceInline> for SyntaxNode {
@@ -33969,15 +30829,7 @@ impl AstNode for TwThemeAtRule {
 }
 impl std::fmt::Debug for TwThemeAtRule {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "TwThemeAtRule",
-            &DEPTH,
-            &[("theme_token", false), ("options", false), ("block", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<TwThemeAtRule> for SyntaxNode {
@@ -34013,20 +30865,7 @@ impl AstNode for TwThemePrefixOption {
 }
 impl std::fmt::Debug for TwThemePrefixOption {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "TwThemePrefixOption",
-            &DEPTH,
-            &[
-                ("prefix_token", false),
-                ("l_paren_token", false),
-                ("name", false),
-                ("r_paren_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<TwThemePrefixOption> for SyntaxNode {
@@ -34062,15 +30901,7 @@ impl AstNode for TwUtilityAtRule {
 }
 impl std::fmt::Debug for TwUtilityAtRule {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "TwUtilityAtRule",
-            &DEPTH,
-            &[("utility_token", false), ("name", false), ("block", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<TwUtilityAtRule> for SyntaxNode {
@@ -34106,19 +30937,7 @@ impl AstNode for TwValueThemeReference {
 }
 impl std::fmt::Debug for TwValueThemeReference {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "TwValueThemeReference",
-            &DEPTH,
-            &[
-                ("reference", false),
-                ("minus_token", true),
-                ("star_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<TwValueThemeReference> for SyntaxNode {
@@ -34154,15 +30973,7 @@ impl AstNode for TwVariantAtRule {
 }
 impl std::fmt::Debug for TwVariantAtRule {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "TwVariantAtRule",
-            &DEPTH,
-            &[("variant_token", false), ("name", false), ("block", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<TwVariantAtRule> for SyntaxNode {
@@ -49761,9 +46572,7 @@ impl AstNode for CssBogus {
 }
 impl std::fmt::Debug for CssBogus {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("CssBogus")
-            .field("items", &DebugSyntaxElementChildren(self.items()))
-            .finish()
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssBogus> for SyntaxNode {
@@ -49817,9 +46626,7 @@ impl AstNode for CssBogusAtRule {
 }
 impl std::fmt::Debug for CssBogusAtRule {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("CssBogusAtRule")
-            .field("items", &DebugSyntaxElementChildren(self.items()))
-            .finish()
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssBogusAtRule> for SyntaxNode {
@@ -49873,9 +46680,7 @@ impl AstNode for CssBogusAttrName {
 }
 impl std::fmt::Debug for CssBogusAttrName {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("CssBogusAttrName")
-            .field("items", &DebugSyntaxElementChildren(self.items()))
-            .finish()
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssBogusAttrName> for SyntaxNode {
@@ -49929,9 +46734,7 @@ impl AstNode for CssBogusBlock {
 }
 impl std::fmt::Debug for CssBogusBlock {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("CssBogusBlock")
-            .field("items", &DebugSyntaxElementChildren(self.items()))
-            .finish()
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssBogusBlock> for SyntaxNode {
@@ -49985,9 +46788,7 @@ impl AstNode for CssBogusCustomIdentifier {
 }
 impl std::fmt::Debug for CssBogusCustomIdentifier {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("CssBogusCustomIdentifier")
-            .field("items", &DebugSyntaxElementChildren(self.items()))
-            .finish()
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssBogusCustomIdentifier> for SyntaxNode {
@@ -50041,9 +46842,7 @@ impl AstNode for CssBogusDeclaration {
 }
 impl std::fmt::Debug for CssBogusDeclaration {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("CssBogusDeclaration")
-            .field("items", &DebugSyntaxElementChildren(self.items()))
-            .finish()
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssBogusDeclaration> for SyntaxNode {
@@ -50097,9 +46896,7 @@ impl AstNode for CssBogusDocumentMatcher {
 }
 impl std::fmt::Debug for CssBogusDocumentMatcher {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("CssBogusDocumentMatcher")
-            .field("items", &DebugSyntaxElementChildren(self.items()))
-            .finish()
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssBogusDocumentMatcher> for SyntaxNode {
@@ -50153,9 +46950,7 @@ impl AstNode for CssBogusFontFamilyName {
 }
 impl std::fmt::Debug for CssBogusFontFamilyName {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("CssBogusFontFamilyName")
-            .field("items", &DebugSyntaxElementChildren(self.items()))
-            .finish()
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssBogusFontFamilyName> for SyntaxNode {
@@ -50209,9 +47004,7 @@ impl AstNode for CssBogusFontFeatureValuesItem {
 }
 impl std::fmt::Debug for CssBogusFontFeatureValuesItem {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("CssBogusFontFeatureValuesItem")
-            .field("items", &DebugSyntaxElementChildren(self.items()))
-            .finish()
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssBogusFontFeatureValuesItem> for SyntaxNode {
@@ -50265,9 +47058,7 @@ impl AstNode for CssBogusFunctionParameter {
 }
 impl std::fmt::Debug for CssBogusFunctionParameter {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("CssBogusFunctionParameter")
-            .field("items", &DebugSyntaxElementChildren(self.items()))
-            .finish()
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssBogusFunctionParameter> for SyntaxNode {
@@ -50321,9 +47112,7 @@ impl AstNode for CssBogusIfBranch {
 }
 impl std::fmt::Debug for CssBogusIfBranch {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("CssBogusIfBranch")
-            .field("items", &DebugSyntaxElementChildren(self.items()))
-            .finish()
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssBogusIfBranch> for SyntaxNode {
@@ -50377,9 +47166,7 @@ impl AstNode for CssBogusIfTest {
 }
 impl std::fmt::Debug for CssBogusIfTest {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("CssBogusIfTest")
-            .field("items", &DebugSyntaxElementChildren(self.items()))
-            .finish()
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssBogusIfTest> for SyntaxNode {
@@ -50433,9 +47220,7 @@ impl AstNode for CssBogusIfTestBooleanExpr {
 }
 impl std::fmt::Debug for CssBogusIfTestBooleanExpr {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("CssBogusIfTestBooleanExpr")
-            .field("items", &DebugSyntaxElementChildren(self.items()))
-            .finish()
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssBogusIfTestBooleanExpr> for SyntaxNode {
@@ -50489,9 +47274,7 @@ impl AstNode for CssBogusKeyframesItem {
 }
 impl std::fmt::Debug for CssBogusKeyframesItem {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("CssBogusKeyframesItem")
-            .field("items", &DebugSyntaxElementChildren(self.items()))
-            .finish()
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssBogusKeyframesItem> for SyntaxNode {
@@ -50545,9 +47328,7 @@ impl AstNode for CssBogusKeyframesName {
 }
 impl std::fmt::Debug for CssBogusKeyframesName {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("CssBogusKeyframesName")
-            .field("items", &DebugSyntaxElementChildren(self.items()))
-            .finish()
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssBogusKeyframesName> for SyntaxNode {
@@ -50601,9 +47382,7 @@ impl AstNode for CssBogusLayer {
 }
 impl std::fmt::Debug for CssBogusLayer {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("CssBogusLayer")
-            .field("items", &DebugSyntaxElementChildren(self.items()))
-            .finish()
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssBogusLayer> for SyntaxNode {
@@ -50657,9 +47436,7 @@ impl AstNode for CssBogusMediaQuery {
 }
 impl std::fmt::Debug for CssBogusMediaQuery {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("CssBogusMediaQuery")
-            .field("items", &DebugSyntaxElementChildren(self.items()))
-            .finish()
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssBogusMediaQuery> for SyntaxNode {
@@ -50713,9 +47490,7 @@ impl AstNode for CssBogusPageSelectorPseudo {
 }
 impl std::fmt::Debug for CssBogusPageSelectorPseudo {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("CssBogusPageSelectorPseudo")
-            .field("items", &DebugSyntaxElementChildren(self.items()))
-            .finish()
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssBogusPageSelectorPseudo> for SyntaxNode {
@@ -50769,9 +47544,7 @@ impl AstNode for CssBogusParameter {
 }
 impl std::fmt::Debug for CssBogusParameter {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("CssBogusParameter")
-            .field("items", &DebugSyntaxElementChildren(self.items()))
-            .finish()
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssBogusParameter> for SyntaxNode {
@@ -50825,9 +47598,7 @@ impl AstNode for CssBogusProperty {
 }
 impl std::fmt::Debug for CssBogusProperty {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("CssBogusProperty")
-            .field("items", &DebugSyntaxElementChildren(self.items()))
-            .finish()
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssBogusProperty> for SyntaxNode {
@@ -50881,9 +47652,7 @@ impl AstNode for CssBogusPropertyValue {
 }
 impl std::fmt::Debug for CssBogusPropertyValue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("CssBogusPropertyValue")
-            .field("items", &DebugSyntaxElementChildren(self.items()))
-            .finish()
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssBogusPropertyValue> for SyntaxNode {
@@ -50937,9 +47706,7 @@ impl AstNode for CssBogusPseudoClass {
 }
 impl std::fmt::Debug for CssBogusPseudoClass {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("CssBogusPseudoClass")
-            .field("items", &DebugSyntaxElementChildren(self.items()))
-            .finish()
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssBogusPseudoClass> for SyntaxNode {
@@ -50993,9 +47760,7 @@ impl AstNode for CssBogusPseudoElement {
 }
 impl std::fmt::Debug for CssBogusPseudoElement {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("CssBogusPseudoElement")
-            .field("items", &DebugSyntaxElementChildren(self.items()))
-            .finish()
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssBogusPseudoElement> for SyntaxNode {
@@ -51049,9 +47814,7 @@ impl AstNode for CssBogusRule {
 }
 impl std::fmt::Debug for CssBogusRule {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("CssBogusRule")
-            .field("items", &DebugSyntaxElementChildren(self.items()))
-            .finish()
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssBogusRule> for SyntaxNode {
@@ -51105,9 +47868,7 @@ impl AstNode for CssBogusScopeRange {
 }
 impl std::fmt::Debug for CssBogusScopeRange {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("CssBogusScopeRange")
-            .field("items", &DebugSyntaxElementChildren(self.items()))
-            .finish()
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssBogusScopeRange> for SyntaxNode {
@@ -51161,9 +47922,7 @@ impl AstNode for CssBogusSelector {
 }
 impl std::fmt::Debug for CssBogusSelector {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("CssBogusSelector")
-            .field("items", &DebugSyntaxElementChildren(self.items()))
-            .finish()
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssBogusSelector> for SyntaxNode {
@@ -51217,9 +47976,7 @@ impl AstNode for CssBogusSubSelector {
 }
 impl std::fmt::Debug for CssBogusSubSelector {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("CssBogusSubSelector")
-            .field("items", &DebugSyntaxElementChildren(self.items()))
-            .finish()
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssBogusSubSelector> for SyntaxNode {
@@ -51273,9 +48030,7 @@ impl AstNode for CssBogusSupportsCondition {
 }
 impl std::fmt::Debug for CssBogusSupportsCondition {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("CssBogusSupportsCondition")
-            .field("items", &DebugSyntaxElementChildren(self.items()))
-            .finish()
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssBogusSupportsCondition> for SyntaxNode {
@@ -51329,9 +48084,7 @@ impl AstNode for CssBogusSyntax {
 }
 impl std::fmt::Debug for CssBogusSyntax {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("CssBogusSyntax")
-            .field("items", &DebugSyntaxElementChildren(self.items()))
-            .finish()
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssBogusSyntax> for SyntaxNode {
@@ -51385,9 +48138,7 @@ impl AstNode for CssBogusSyntaxSingleComponent {
 }
 impl std::fmt::Debug for CssBogusSyntaxSingleComponent {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("CssBogusSyntaxSingleComponent")
-            .field("items", &DebugSyntaxElementChildren(self.items()))
-            .finish()
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssBogusSyntaxSingleComponent> for SyntaxNode {
@@ -51441,9 +48192,7 @@ impl AstNode for CssBogusUnicodeRangeValue {
 }
 impl std::fmt::Debug for CssBogusUnicodeRangeValue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("CssBogusUnicodeRangeValue")
-            .field("items", &DebugSyntaxElementChildren(self.items()))
-            .finish()
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssBogusUnicodeRangeValue> for SyntaxNode {
@@ -51497,9 +48246,7 @@ impl AstNode for CssBogusUrlModifier {
 }
 impl std::fmt::Debug for CssBogusUrlModifier {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("CssBogusUrlModifier")
-            .field("items", &DebugSyntaxElementChildren(self.items()))
-            .finish()
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssBogusUrlModifier> for SyntaxNode {
@@ -51553,9 +48300,7 @@ impl AstNode for CssUnknownAtRuleComponentList {
 }
 impl std::fmt::Debug for CssUnknownAtRuleComponentList {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("CssUnknownAtRuleComponentList")
-            .field("items", &DebugSyntaxElementChildren(self.items()))
-            .finish()
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssUnknownAtRuleComponentList> for SyntaxNode {
@@ -51609,9 +48354,7 @@ impl AstNode for CssValueAtRuleGenericValue {
 }
 impl std::fmt::Debug for CssValueAtRuleGenericValue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("CssValueAtRuleGenericValue")
-            .field("items", &DebugSyntaxElementChildren(self.items()))
-            .finish()
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssValueAtRuleGenericValue> for SyntaxNode {
@@ -51689,8 +48432,7 @@ impl AstSeparatedList for CssAttrNameList {
 }
 impl Debug for CssAttrNameList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("CssAttrNameList ")?;
-        f.debug_list().entries(self.elements()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for CssAttrNameList {
@@ -51771,8 +48513,7 @@ impl AstNodeList for CssBracketedValueList {
 }
 impl Debug for CssBracketedValueList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("CssBracketedValueList ")?;
-        f.debug_list().entries(self.iter()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for &CssBracketedValueList {
@@ -51853,8 +48594,7 @@ impl AstNodeList for CssComponentValueList {
 }
 impl Debug for CssComponentValueList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("CssComponentValueList ")?;
-        f.debug_list().entries(self.iter()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for &CssComponentValueList {
@@ -51935,8 +48675,7 @@ impl AstNodeList for CssComposesClassList {
 }
 impl Debug for CssComposesClassList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("CssComposesClassList ")?;
-        f.debug_list().entries(self.iter()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for &CssComposesClassList {
@@ -52017,8 +48756,7 @@ impl AstSeparatedList for CssComposesPropertyValueList {
 }
 impl Debug for CssComposesPropertyValueList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("CssComposesPropertyValueList ")?;
-        f.debug_list().entries(self.elements()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for CssComposesPropertyValueList {
@@ -52099,8 +48837,7 @@ impl AstSeparatedList for CssCompoundSelectorList {
 }
 impl Debug for CssCompoundSelectorList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("CssCompoundSelectorList ")?;
-        f.debug_list().entries(self.elements()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for CssCompoundSelectorList {
@@ -52182,8 +48919,7 @@ impl AstSeparatedList for CssCustomIdentifierCommaSeparatedList {
 }
 impl Debug for CssCustomIdentifierCommaSeparatedList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("CssCustomIdentifierCommaSeparatedList ")?;
-        f.debug_list().entries(self.elements()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for CssCustomIdentifierCommaSeparatedList {
@@ -52265,8 +49001,7 @@ impl AstNodeList for CssCustomIdentifierSpaceSeparatedList {
 }
 impl Debug for CssCustomIdentifierSpaceSeparatedList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("CssCustomIdentifierSpaceSeparatedList ")?;
-        f.debug_list().entries(self.iter()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for &CssCustomIdentifierSpaceSeparatedList {
@@ -52347,8 +49082,7 @@ impl AstNodeList for CssCustomPropertyComponentList {
 }
 impl Debug for CssCustomPropertyComponentList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("CssCustomPropertyComponentList ")?;
-        f.debug_list().entries(self.iter()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for &CssCustomPropertyComponentList {
@@ -52429,8 +49163,7 @@ impl AstNodeList for CssDeclarationList {
 }
 impl Debug for CssDeclarationList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("CssDeclarationList ")?;
-        f.debug_list().entries(self.iter()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for &CssDeclarationList {
@@ -52511,8 +49244,7 @@ impl AstNodeList for CssDeclarationOrAtRuleList {
 }
 impl Debug for CssDeclarationOrAtRuleList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("CssDeclarationOrAtRuleList ")?;
-        f.debug_list().entries(self.iter()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for &CssDeclarationOrAtRuleList {
@@ -52593,8 +49325,7 @@ impl AstNodeList for CssDeclarationOrRuleList {
 }
 impl Debug for CssDeclarationOrRuleList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("CssDeclarationOrRuleList ")?;
-        f.debug_list().entries(self.iter()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for &CssDeclarationOrRuleList {
@@ -52675,8 +49406,7 @@ impl AstSeparatedList for CssDocumentMatcherList {
 }
 impl Debug for CssDocumentMatcherList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("CssDocumentMatcherList ")?;
-        f.debug_list().entries(self.elements()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for CssDocumentMatcherList {
@@ -52757,8 +49487,7 @@ impl AstSeparatedList for CssFontFamilyNameList {
 }
 impl Debug for CssFontFamilyNameList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("CssFontFamilyNameList ")?;
-        f.debug_list().entries(self.elements()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for CssFontFamilyNameList {
@@ -52839,8 +49568,7 @@ impl AstNodeList for CssFontFeatureValuesItemList {
 }
 impl Debug for CssFontFeatureValuesItemList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("CssFontFeatureValuesItemList ")?;
-        f.debug_list().entries(self.iter()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for &CssFontFeatureValuesItemList {
@@ -52921,8 +49649,7 @@ impl AstSeparatedList for CssFunctionParameterList {
 }
 impl Debug for CssFunctionParameterList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("CssFunctionParameterList ")?;
-        f.debug_list().entries(self.elements()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for CssFunctionParameterList {
@@ -53003,8 +49730,7 @@ impl AstNodeList for CssGenericComponentValueList {
 }
 impl Debug for CssGenericComponentValueList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("CssGenericComponentValueList ")?;
-        f.debug_list().entries(self.iter()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for &CssGenericComponentValueList {
@@ -53085,8 +49811,7 @@ impl AstSeparatedList for CssIfBranchList {
 }
 impl Debug for CssIfBranchList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("CssIfBranchList ")?;
-        f.debug_list().entries(self.elements()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for CssIfBranchList {
@@ -53167,8 +49892,7 @@ impl AstNodeList for CssKeyframesItemList {
 }
 impl Debug for CssKeyframesItemList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("CssKeyframesItemList ")?;
-        f.debug_list().entries(self.iter()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for &CssKeyframesItemList {
@@ -53249,8 +49973,7 @@ impl AstSeparatedList for CssKeyframesSelectorList {
 }
 impl Debug for CssKeyframesSelectorList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("CssKeyframesSelectorList ")?;
-        f.debug_list().entries(self.elements()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for CssKeyframesSelectorList {
@@ -53331,8 +50054,7 @@ impl AstSeparatedList for CssLayerNameList {
 }
 impl Debug for CssLayerNameList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("CssLayerNameList ")?;
-        f.debug_list().entries(self.elements()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for CssLayerNameList {
@@ -53413,8 +50135,7 @@ impl AstSeparatedList for CssLayerReferenceList {
 }
 impl Debug for CssLayerReferenceList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("CssLayerReferenceList ")?;
-        f.debug_list().entries(self.elements()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for CssLayerReferenceList {
@@ -53495,8 +50216,7 @@ impl AstSeparatedList for CssMediaQueryList {
 }
 impl Debug for CssMediaQueryList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("CssMediaQueryList ")?;
-        f.debug_list().entries(self.elements()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for CssMediaQueryList {
@@ -53577,8 +50297,7 @@ impl AstNodeList for CssNestedSelectorList {
 }
 impl Debug for CssNestedSelectorList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("CssNestedSelectorList ")?;
-        f.debug_list().entries(self.iter()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for &CssNestedSelectorList {
@@ -53659,8 +50378,7 @@ impl AstNodeList for CssPageAtRuleItemList {
 }
 impl Debug for CssPageAtRuleItemList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("CssPageAtRuleItemList ")?;
-        f.debug_list().entries(self.iter()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for &CssPageAtRuleItemList {
@@ -53741,8 +50459,7 @@ impl AstSeparatedList for CssPageSelectorList {
 }
 impl Debug for CssPageSelectorList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("CssPageSelectorList ")?;
-        f.debug_list().entries(self.elements()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for CssPageSelectorList {
@@ -53823,8 +50540,7 @@ impl AstNodeList for CssPageSelectorPseudoList {
 }
 impl Debug for CssPageSelectorPseudoList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("CssPageSelectorPseudoList ")?;
-        f.debug_list().entries(self.iter()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for &CssPageSelectorPseudoList {
@@ -53905,8 +50621,7 @@ impl AstSeparatedList for CssParameterList {
 }
 impl Debug for CssParameterList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("CssParameterList ")?;
-        f.debug_list().entries(self.elements()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for CssParameterList {
@@ -53988,8 +50703,7 @@ impl AstNodeList for CssPseudoElementFunctionParameterList {
 }
 impl Debug for CssPseudoElementFunctionParameterList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("CssPseudoElementFunctionParameterList ")?;
-        f.debug_list().entries(self.iter()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for &CssPseudoElementFunctionParameterList {
@@ -54070,8 +50784,7 @@ impl AstSeparatedList for CssPseudoValueList {
 }
 impl Debug for CssPseudoValueList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("CssPseudoValueList ")?;
-        f.debug_list().entries(self.elements()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for CssPseudoValueList {
@@ -54152,8 +50865,7 @@ impl AstSeparatedList for CssRelativeSelectorList {
 }
 impl Debug for CssRelativeSelectorList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("CssRelativeSelectorList ")?;
-        f.debug_list().entries(self.elements()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for CssRelativeSelectorList {
@@ -54234,8 +50946,7 @@ impl AstNodeList for CssRootItemList {
 }
 impl Debug for CssRootItemList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("CssRootItemList ")?;
-        f.debug_list().entries(self.iter()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for &CssRootItemList {
@@ -54316,8 +51027,7 @@ impl AstNodeList for CssRuleList {
 }
 impl Debug for CssRuleList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("CssRuleList ")?;
-        f.debug_list().entries(self.iter()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for &CssRuleList {
@@ -54398,8 +51108,7 @@ impl AstSeparatedList for CssSelectorList {
 }
 impl Debug for CssSelectorList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("CssSelectorList ")?;
-        f.debug_list().entries(self.elements()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for CssSelectorList {
@@ -54480,8 +51189,7 @@ impl AstNodeList for CssSubSelectorList {
 }
 impl Debug for CssSubSelectorList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("CssSubSelectorList ")?;
-        f.debug_list().entries(self.iter()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for &CssSubSelectorList {
@@ -54562,8 +51270,7 @@ impl AstSeparatedList for CssSyntaxComponentList {
 }
 impl Debug for CssSyntaxComponentList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("CssSyntaxComponentList ")?;
-        f.debug_list().entries(self.elements()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for CssSyntaxComponentList {
@@ -54644,8 +51351,7 @@ impl AstNodeList for CssUrlModifierList {
 }
 impl Debug for CssUrlModifierList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("CssUrlModifierList ")?;
-        f.debug_list().entries(self.iter()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for &CssUrlModifierList {
@@ -54727,8 +51433,7 @@ impl AstSeparatedList for CssValueAtRuleImportSpecifierList {
 }
 impl Debug for CssValueAtRuleImportSpecifierList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("CssValueAtRuleImportSpecifierList ")?;
-        f.debug_list().entries(self.elements()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for CssValueAtRuleImportSpecifierList {
@@ -54809,8 +51514,7 @@ impl AstSeparatedList for CssValueAtRulePropertyList {
 }
 impl Debug for CssValueAtRulePropertyList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("CssValueAtRulePropertyList ")?;
-        f.debug_list().entries(self.elements()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for CssValueAtRulePropertyList {
@@ -54891,8 +51595,7 @@ impl AstSeparatedList for ScssEachBindingList {
 }
 impl Debug for ScssEachBindingList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("ScssEachBindingList ")?;
-        f.debug_list().entries(self.elements()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for ScssEachBindingList {
@@ -54973,8 +51676,7 @@ impl AstSeparatedList for ScssEachValueList {
 }
 impl Debug for ScssEachValueList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("ScssEachValueList ")?;
-        f.debug_list().entries(self.elements()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for ScssEachValueList {
@@ -55055,8 +51757,7 @@ impl AstNodeList for ScssExpressionItemList {
 }
 impl Debug for ScssExpressionItemList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("ScssExpressionItemList ")?;
-        f.debug_list().entries(self.iter()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for &ScssExpressionItemList {
@@ -55137,8 +51838,7 @@ impl AstSeparatedList for ScssImportItemList {
 }
 impl Debug for ScssImportItemList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("ScssImportItemList ")?;
-        f.debug_list().entries(self.elements()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for ScssImportItemList {
@@ -55219,8 +51919,7 @@ impl AstNodeList for ScssInterpolatedIdentifierPartList {
 }
 impl Debug for ScssInterpolatedIdentifierPartList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("ScssInterpolatedIdentifierPartList ")?;
-        f.debug_list().entries(self.iter()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for &ScssInterpolatedIdentifierPartList {
@@ -55301,8 +52000,7 @@ impl AstNodeList for ScssInterpolatedNthValuePartList {
 }
 impl Debug for ScssInterpolatedNthValuePartList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("ScssInterpolatedNthValuePartList ")?;
-        f.debug_list().entries(self.iter()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for &ScssInterpolatedNthValuePartList {
@@ -55383,8 +52081,7 @@ impl AstNodeList for ScssInterpolatedStringPartList {
 }
 impl Debug for ScssInterpolatedStringPartList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("ScssInterpolatedStringPartList ")?;
-        f.debug_list().entries(self.iter()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for &ScssInterpolatedStringPartList {
@@ -55465,8 +52162,7 @@ impl AstNodeList for ScssInterpolatedUrlValuePartList {
 }
 impl Debug for ScssInterpolatedUrlValuePartList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("ScssInterpolatedUrlValuePartList ")?;
-        f.debug_list().entries(self.iter()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for &ScssInterpolatedUrlValuePartList {
@@ -55547,8 +52243,7 @@ impl AstNodeList for ScssInterpolatedValuePartList {
 }
 impl Debug for ScssInterpolatedValuePartList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("ScssInterpolatedValuePartList ")?;
-        f.debug_list().entries(self.iter()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for &ScssInterpolatedValuePartList {
@@ -55629,8 +52324,7 @@ impl AstSeparatedList for ScssListExpressionElementList {
 }
 impl Debug for ScssListExpressionElementList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("ScssListExpressionElementList ")?;
-        f.debug_list().entries(self.elements()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for ScssListExpressionElementList {
@@ -55711,8 +52405,7 @@ impl AstSeparatedList for ScssMapExpressionPairList {
 }
 impl Debug for ScssMapExpressionPairList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("ScssMapExpressionPairList ")?;
-        f.debug_list().entries(self.elements()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for ScssMapExpressionPairList {
@@ -55793,8 +52486,7 @@ impl AstSeparatedList for ScssModuleConfigurationItemList {
 }
 impl Debug for ScssModuleConfigurationItemList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("ScssModuleConfigurationItemList ")?;
-        f.debug_list().entries(self.elements()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for ScssModuleConfigurationItemList {
@@ -55875,8 +52567,7 @@ impl AstSeparatedList for ScssModuleMemberList {
 }
 impl Debug for ScssModuleMemberList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("ScssModuleMemberList ")?;
-        f.debug_list().entries(self.elements()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for ScssModuleMemberList {
@@ -55957,8 +52648,7 @@ impl AstSeparatedList for ScssParameterItemList {
 }
 impl Debug for ScssParameterItemList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("ScssParameterItemList ")?;
-        f.debug_list().entries(self.elements()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for ScssParameterItemList {
@@ -56039,8 +52729,7 @@ impl AstNodeList for ScssParentSelectorSuffixPartList {
 }
 impl Debug for ScssParentSelectorSuffixPartList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("ScssParentSelectorSuffixPartList ")?;
-        f.debug_list().entries(self.iter()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for &ScssParentSelectorSuffixPartList {
@@ -56121,8 +52810,7 @@ impl AstNodeList for ScssVariableModifierList {
 }
 impl Debug for ScssVariableModifierList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("ScssVariableModifierList ")?;
-        f.debug_list().entries(self.iter()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for &ScssVariableModifierList {
@@ -56203,8 +52891,7 @@ impl AstNodeList for TwApplyClassList {
 }
 impl Debug for TwApplyClassList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("TwApplyClassList ")?;
-        f.debug_list().entries(self.iter()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for &TwApplyClassList {
@@ -56285,8 +52972,7 @@ impl AstNodeList for TwThemeOptionList {
 }
 impl Debug for TwThemeOptionList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("TwThemeOptionList ")?;
-        f.debug_list().entries(self.iter()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for &TwThemeOptionList {
@@ -56321,7 +53007,866 @@ impl Debug for DebugSyntaxElement {
         }
     }
 }
-#[doc = r" Prints `node` the way the AST node of its kind does."]
+#[doc = r" Describes how the nodes of this language are printed."]
+struct DebugShapes;
+impl support::DebugNodeShapes for DebugShapes {
+    type Language = Language;
+    const SHAPES: &'static str = concat!(
+        "nCssAtRule,at_token,rule\n",
+        "nCssAtRuleDeclarator,at_token,declarator\n",
+        "nCssAttrFallbackValue,comma_token,value\n",
+        "nCssAttrFunction,name_token,l_paren_token,attr_name,?attr_type,?fallback_value,r_paren_token\n",
+        "nCssAttributeMatcher,operator,value,?modifier\n",
+        "nCssAttributeMatcherValue,name\n",
+        "nCssAttributeModifier,value\n",
+        "nCssAttributeName,?namespace,name\n",
+        "nCssAttributeSelector,l_brack_token,name,?matcher,r_brack_token\n",
+        "nCssBinaryExpression,left,operator,right\n",
+        "nCssBooleanMediaQuery,boolean\n",
+        "nCssBracketedValue,l_brack_token,items,r_brack_token\n",
+        "nCssCharsetAtRule,charset_token,encoding,semicolon_token\n",
+        "nCssClassSelector,dot_token,name\n",
+        "nCssColor,hash_token,value_token\n",
+        "nCssColorProfileAtRule,declarator,block\n",
+        "nCssColorProfileAtRuleDeclarator,color_profile_token,name\n",
+        "nCssCommaSeparatedValue,l_curly_token,items,r_curly_token\n",
+        "nCssComplexSelector,left,combinator,right\n",
+        "nCssComposesImportSpecifier,from_token,source\n",
+        "nCssComposesProperty,name,colon_token,values\n",
+        "nCssComposesPropertyValue,classes,?specifier\n",
+        "nCssCompoundSelector,nesting_selectors,?simple_selector,sub_selectors\n",
+        "nCssContainerAndQuery,left,and_token,right\n",
+        "nCssContainerAtRule,declarator,block\n",
+        "nCssContainerAtRuleDeclarator,container_token,?name,query\n",
+        "nCssContainerNotQuery,not_token,query\n",
+        "nCssContainerOrQuery,left,or_token,right\n",
+        "nCssContainerQueryInParens,l_paren_token,query,r_paren_token\n",
+        "nCssContainerScrollStateAndQuery,left,and_token,right\n",
+        "nCssContainerScrollStateInParens,l_paren_token,query,r_paren_token\n",
+        "nCssContainerScrollStateNotQuery,not_token,query\n",
+        "nCssContainerScrollStateOrQuery,left,or_token,right\n",
+        "nCssContainerScrollStateQueryInParens,name,l_paren_token,query,r_paren_token\n",
+        "nCssContainerSizeFeatureInParens,l_paren_token,feature,r_paren_token\n",
+        "nCssContainerStyleAndQuery,left,and_token,right\n",
+        "nCssContainerStyleInParens,l_paren_token,query,r_paren_token\n",
+        "nCssContainerStyleNotQuery,not_token,query\n",
+        "nCssContainerStyleOrQuery,left,or_token,right\n",
+        "nCssContainerStyleQueryInParens,style_token,l_paren_token,query,r_paren_token\n",
+        "nCssCounterStyleAtRule,declarator,block\n",
+        "nCssCounterStyleAtRuleDeclarator,counter_style_token,name\n",
+        "nCssCustomIdentifier,value_token\n",
+        "nCssCustomMediaAtRule,declarator,semicolon_token\n",
+        "nCssCustomMediaAtRuleDeclarator,custom_media_token,name,queries\n",
+        "nCssCustomPropertyBracedBlock,l_curly_token,components,r_curly_token\n",
+        "nCssCustomPropertyBracketedBlock,l_brack_token,components,r_brack_token\n",
+        "nCssCustomPropertyDelimiter,value\n",
+        "nCssCustomPropertyFunction,name,l_paren_token,components,r_paren_token\n",
+        "nCssCustomPropertyParenthesizedBlock,l_paren_token,components,r_paren_token\n",
+        "nCssCustomPropertyValue,components\n",
+        "nCssDashedIdentifier,value_token\n",
+        "nCssDeclaration,property,?important\n",
+        "nCssDeclarationBlock,l_curly_token,declarations,r_curly_token\n",
+        "nCssDeclarationImportant,excl_token,important_token\n",
+        "nCssDeclarationOrAtRuleBlock,l_curly_token,items,r_curly_token\n",
+        "nCssDeclarationOrRuleBlock,l_curly_token,items,r_curly_token\n",
+        "nCssDeclarationSnippetRoot,declarations,eof_token\n",
+        "nCssDeclarationWithSemicolon,declaration,?semicolon_token\n",
+        "nCssDocumentAtRule,document_token,matchers,block\n",
+        "nCssDocumentCustomMatcher,name,l_paren_token,?value,r_paren_token\n",
+        "nCssElseKeyword,else_token\n",
+        "nCssEmptyDeclaration,semicolon_token\n",
+        "nCssFontFaceAtRule,declarator,block\n",
+        "nCssFontFaceAtRuleDeclarator,font_face_token\n",
+        "nCssFontFamilyName,names\n",
+        "nCssFontFeatureValuesAtRule,font_feature_values_token,names,block\n",
+        "nCssFontFeatureValuesBlock,l_curly_token,items,r_curly_token\n",
+        "nCssFontFeatureValuesItem,at_token,name,block\n",
+        "nCssFontPaletteValuesAtRule,declarator,block\n",
+        "nCssFontPaletteValuesAtRuleDeclarator,font_palette_values_token,name\n",
+        "nCssFunction,name,l_paren_token,items,r_paren_token\n",
+        "nCssFunctionAtRule,declarator,block\n",
+        "nCssFunctionAtRuleDeclarator,function_token,name,l_paren_token,parameters,r_paren_token,?returns\n",
+        "nCssFunctionParameter,name,?ty,?default_value\n",
+        "nCssFunctionParameterDefaultValue,colon_token,value\n",
+        "nCssGenericDelimiter,value\n",
+        "nCssGenericProperty,name,colon_token,value\n",
+        "nCssIdSelector,hash_token,name\n",
+        "nCssIdentifier,value_token\n",
+        "nCssIfBranch,condition,colon_token,value\n",
+        "nCssIfFunction,if_token,l_paren_token,css_if_branch_list,r_paren_token\n",
+        "nCssIfMediaTest,media_token,l_paren_token,test,r_paren_token\n",
+        "nCssIfSassTest,sass_token,l_paren_token,test,r_paren_token\n",
+        "nCssIfStyleTest,style_token,l_paren_token,test,r_paren_token\n",
+        "nCssIfSupportsIdentifierTest,ident,colon_token,value\n",
+        "nCssIfSupportsTest,supports_token,l_paren_token,test,r_paren_token\n",
+        "nCssIfTestBooleanAndExpr,left,and_token,right\n",
+        "nCssIfTestBooleanExprInParens,l_paren_token,expression,r_paren_token\n",
+        "nCssIfTestBooleanNotExpr,not_token,expression\n",
+        "nCssIfTestBooleanOrExpr,left,or_token,right\n",
+        "nCssImportAnonymousLayer,layer_token\n",
+        "nCssImportAtRule,import_token,url,?layer,?supports,media,semicolon_token\n",
+        "nCssImportNamedLayer,layer_token,l_paren_token,name,r_paren_token\n",
+        "nCssImportSupports,supports_token,l_paren_token,condition,r_paren_token\n",
+        "nCssKeyframesAtRule,keyframes_token,name,block\n",
+        "nCssKeyframesBlock,l_curly_token,items,r_curly_token\n",
+        "nCssKeyframesIdentSelector,selector\n",
+        "nCssKeyframesItem,selectors,block\n",
+        "nCssKeyframesPercentageSelector,selector\n",
+        "nCssKeyframesRangeSelector,name,percentage\n",
+        "nCssKeyframesScopeFunction,scope,l_paren_token,name,r_paren_token\n",
+        "nCssKeyframesScopePrefix,scope,name\n",
+        "nCssKeyframesScopedName,colon_token,scope\n",
+        "nCssLayerAtRule,layer_token,layer\n",
+        "nCssLayerDeclaration,references,block\n",
+        "nCssLayerReference,references,semicolon_token\n",
+        "nCssLegacyFilterValue,components\n",
+        "nCssListOfComponentValuesExpression,css_component_value_list\n",
+        "nCssMarginAtRule,at_token,name,block\n",
+        "nCssMediaAndCondition,left,and_token,right\n",
+        "nCssMediaAndTypeQuery,left,and_token,right\n",
+        "nCssMediaAtRule,declarator,block\n",
+        "nCssMediaAtRuleDeclarator,media_token,queries\n",
+        "nCssMediaConditionInParens,l_paren_token,condition,r_paren_token\n",
+        "nCssMediaConditionQuery,condition\n",
+        "nCssMediaFeatureInParens,l_paren_token,feature,r_paren_token\n",
+        "nCssMediaNotCondition,not_token,condition\n",
+        "nCssMediaOrCondition,left,or_token,right\n",
+        "nCssMediaType,value\n",
+        "nCssMediaTypeQuery,?modifier,ty\n",
+        "nCssMetavariable,value_token\n",
+        "nCssNamedNamespacePrefix,name\n",
+        "nCssNamespace,?prefix,bitwise_or_token\n",
+        "nCssNamespaceAtRule,namespace_token,?prefix,url,semicolon_token\n",
+        "nCssNestedQualifiedRule,prelude,block\n",
+        "nCssNestedSelector,amp_token\n",
+        "nCssNthOffset,sign,value\n",
+        "nCssNumber,value_token\n",
+        "nCssNumberDeclarator,number_token\n",
+        "nCssPageAtRule,page_token,selectors,block\n",
+        "nCssPageAtRuleBlock,l_curly_token,items,r_curly_token\n",
+        "nCssPageSelector,?ty,pseudos\n",
+        "nCssPageSelectorPseudo,colon_token,selector\n",
+        "nCssParenthesizedExpression,l_paren_token,?expression,r_paren_token\n",
+        "nCssPercentage,value_token,percent_token\n",
+        "nCssPositionTryAtRule,declarator,block\n",
+        "nCssPositionTryAtRuleDeclarator,position_try_token,name\n",
+        "nCssPropertyAtRule,declarator,block\n",
+        "nCssPropertyAtRuleDeclarator,property_token,name\n",
+        "nCssPseudoClassFunctionCompoundSelector,name,l_paren_token,selector,r_paren_token\n",
+        "nCssPseudoClassFunctionCompoundSelectorList,name,l_paren_token,compound_selectors,r_paren_token\n",
+        "nCssPseudoClassFunctionCustomIdentifier,name,l_paren_token,ident,r_paren_token\n",
+        "nCssPseudoClassFunctionCustomIdentifierList,name,l_paren_token,items,r_paren_token\n",
+        "nCssPseudoClassFunctionIdentifier,name,l_paren_token,ident,r_paren_token\n",
+        "nCssPseudoClassFunctionNth,name,l_paren_token,selector,r_paren_token\n",
+        "nCssPseudoClassFunctionRelativeSelectorList,name,l_paren_token,relative_selectors,r_paren_token\n",
+        "nCssPseudoClassFunctionSelector,name,l_paren_token,selector,r_paren_token\n",
+        "nCssPseudoClassFunctionSelectorList,name,l_paren_token,selectors,r_paren_token\n",
+        "nCssPseudoClassFunctionValueList,name,l_paren_token,values,r_paren_token\n",
+        "nCssPseudoClassIdentifier,name\n",
+        "nCssPseudoClassNth,?sign,?value,symbol_token,?offset\n",
+        "nCssPseudoClassNthIdentifier,value\n",
+        "nCssPseudoClassNthNumber,?sign,value\n",
+        "nCssPseudoClassNthSelector,nth,?of_selector\n",
+        "nCssPseudoClassOfNthSelector,of_token,selectors\n",
+        "nCssPseudoClassSelector,colon_token,class\n",
+        "nCssPseudoElementFunction,name,l_paren_token,items,r_paren_token\n",
+        "nCssPseudoElementFunctionCustomIdentifier,name,l_paren_token,ident,r_paren_token\n",
+        "nCssPseudoElementFunctionSelector,name,l_paren_token,selector,r_paren_token\n",
+        "nCssPseudoElementIdentifier,name\n",
+        "nCssPseudoElementSelector,double_colon_token,element\n",
+        "nCssQualifiedRule,prelude,block\n",
+        "nCssQueryFeatureBoolean,name\n",
+        "nCssQueryFeaturePlain,name,colon_token,value\n",
+        "nCssQueryFeatureRange,left,comparison,right\n",
+        "nCssQueryFeatureRangeComparison,operator\n",
+        "nCssQueryFeatureRangeInterval,left,left_comparison,name,right_comparison,right\n",
+        "nCssQueryFeatureReverseRange,left,comparison,right\n",
+        "nCssRatio,numerator,slash_token,denominator\n",
+        "nCssRawStringDeclarator,raw_string_token\n",
+        "nCssRegularAttrUnit,unit_token\n",
+        "nCssRegularDimension,value_token,unit_token\n",
+        "nCssRegularSyntaxTypeName,name_token\n",
+        "nCssRelativeSelector,?combinator,selector\n",
+        "nCssReturnsStatement,returns_token,ty\n",
+        "nCssRoot,?bom_token,items,eof_token\n",
+        "nCssRuleBlock,l_curly_token,rules,r_curly_token\n",
+        "nCssScopeAtRule,declarator,block\n",
+        "nCssScopeAtRuleDeclarator,scope_token,?range\n",
+        "nCssScopeEdge,l_paren_token,selectors,r_paren_token\n",
+        "nCssScopeRangeEnd,to_token,end\n",
+        "nCssScopeRangeInterval,start,to_token,end\n",
+        "nCssScopeRangeStart,start\n",
+        "nCssSnippetRoot,items,eof_token\n",
+        "nCssStartingStyleAtRule,declarator,block\n",
+        "nCssStartingStyleAtRuleDeclarator,starting_style_token\n",
+        "nCssString,value_token\n",
+        "nCssSupportsAndCondition,left,and_token,right\n",
+        "nCssSupportsAtRule,declarator,block\n",
+        "nCssSupportsAtRuleDeclarator,supports_token,condition\n",
+        "nCssSupportsConditionInParens,l_paren_token,condition,r_paren_token\n",
+        "nCssSupportsFeatureDeclaration,l_paren_token,declaration,r_paren_token\n",
+        "nCssSupportsFeatureSelector,selector_token,l_paren_token,selector,r_paren_token\n",
+        "nCssSupportsNotCondition,not_token,query\n",
+        "nCssSupportsOrCondition,left,or_token,right\n",
+        "nCssSyntaxComponent,component,?multiplier\n",
+        "nCssSyntaxComponentWithoutMultiplier,l_angle_token,type_name_token,r_angle_token\n",
+        "nCssSyntaxMultiplier,multiplier\n",
+        "nCssSyntaxType,l_angle_token,type_name,r_angle_token\n",
+        "nCssTypeFunction,name_token,l_paren_token,ty,r_paren_token\n",
+        "nCssTypeSelector,?namespace,ident\n",
+        "nCssUnaryExpression,operator,expression\n",
+        "nCssUnicodeCodepoint,value_token\n",
+        "nCssUnicodeRange,prefix_token,value\n",
+        "nCssUnicodeRangeInterval,start,minus_token,end\n",
+        "nCssUnicodeRangeWildcard,value_token\n",
+        "nCssUniversalNamespacePrefix,star_token\n",
+        "nCssUniversalSelector,?namespace,star_token\n",
+        "nCssUniversalSyntax,star_token\n",
+        "nCssUnknownAttrUnit,unit_token\n",
+        "nCssUnknownBlockAtRule,name,components,block\n",
+        "nCssUnknownDimension,value_token,unit_token\n",
+        "nCssUnknownSyntaxTypeName,name_token\n",
+        "nCssUnknownValueAtRule,name,components,?semicolon_token\n",
+        "nCssUrlFunction,name,l_paren_token,?value,modifiers,r_paren_token\n",
+        "nCssUrlValueRaw,value_token\n",
+        "nCssValueAtRule,value_token,clause,semicolon_token\n",
+        "nCssValueAtRuleDeclarationClause,properties\n",
+        "nCssValueAtRuleGenericProperty,name,colon_token,value\n",
+        "nCssValueAtRuleImportClause,specifiers,from_token,source\n",
+        "nCssValueAtRuleImportSpecifier,name\n",
+        "nCssValueAtRuleNamedImportSpecifier,name,as_token,local_name\n",
+        "nCssViewTransitionAtRule,declarator,block\n",
+        "nCssViewTransitionAtRuleDeclarator,view_transition_token\n",
+        "nScssArbitraryArgument,value,dotdotdot_token\n",
+        "nScssAtRootAtRule,at_root_token,?query,?selector,block\n",
+        "nScssAtRootQuery,l_paren_token,query,r_paren_token\n",
+        "nScssAtRootQueryClause,modifier,colon_token,rules\n",
+        "nScssAtRootSelector,selector\n",
+        "nScssBinaryExpression,left,operator,right\n",
+        "nScssContainerInterpolatedQuery,query\n",
+        "nScssContentAtRule,content_token,?arguments,?semicolon_token\n",
+        "nScssDebugAtRule,debug_token,value,?semicolon_token\n",
+        "nScssEachAtRule,each_token,header,block\n",
+        "nScssEachHeader,bindings,in_token,values\n",
+        "nScssElseClause,at_token,else_token,body\n",
+        "nScssErrorAtRule,error_token,value,?semicolon_token\n",
+        "nScssExpression,items\n",
+        "nScssExtendAtRule,extend_token,css_selector_list,?optional_modifier,?semicolon_token\n",
+        "nScssExtendOptionalModifier,excl_token,optional_token\n",
+        "nScssForAtRule,for_token,variable,from_token,lower_bound,operator,upper_bound,block\n",
+        "nScssForwardAsClause,as_token,prefix,star_token\n",
+        "nScssForwardAtRule,forward_token,url,?as_clause,?visibility_clause,?with_clause,?semicolon_token\n",
+        "nScssFunctionAtRule,function_token,name,?parameters,block\n",
+        "nScssHashValue,hash_token,value_token\n",
+        "nScssHideClause,hide_token,members\n",
+        "nScssIfAtRule,if_token,condition,block,?else_clause\n",
+        "nScssImportAtRule,import_token,imports,?semicolon_token\n",
+        "nScssIncludeArgumentList,l_paren_token,items,r_paren_token\n",
+        "nScssIncludeAtRule,include_token,name,?arguments,?using_clause,?block,?semicolon_token\n",
+        "nScssIncludeUsingClause,using_token,parameters\n",
+        "nScssInterpolatedDashedIdentifier,items\n",
+        "nScssInterpolatedIdentifier,items\n",
+        "nScssInterpolatedIdentifierHyphen,minus_token\n",
+        "nScssInterpolatedNthValue,items\n",
+        "nScssInterpolatedPseudoClassFunction,name,l_paren_token,?arguments,r_paren_token\n",
+        "nScssInterpolatedPseudoClassNthArguments,selector\n",
+        "nScssInterpolatedPseudoClassRelativeSelectorArguments,selectors\n",
+        "nScssInterpolatedPseudoClassSelectorArguments,selectors\n",
+        "nScssInterpolatedPseudoClassValueArguments,values\n",
+        "nScssInterpolatedPseudoElementFunction,name,l_paren_token,?arguments,r_paren_token\n",
+        "nScssInterpolatedPseudoElementSelectorArguments,selectors\n",
+        "nScssInterpolatedPseudoElementValueArguments,values\n",
+        "nScssInterpolatedString,opening_quote_token,parts,closing_quote_token\n",
+        "nScssInterpolatedSubSelector,name\n",
+        "nScssInterpolatedUrlValue,parts\n",
+        "nScssInterpolatedValue,items\n",
+        "nScssInterpolation,hash_token,l_curly_token,value,r_curly_token\n",
+        "nScssKeyframesName,name\n",
+        "nScssKeyframesSelector,selector,?percent_token\n",
+        "nScssKeyframesVariableDeclaration,declaration\n",
+        "nScssKeywordArgument,name,colon_token,value\n",
+        "nScssLegacyIfFunction,if_token,l_paren_token,items,r_paren_token\n",
+        "nScssListExpression,elements\n",
+        "nScssListExpressionElement,value\n",
+        "nScssMapExpression,l_paren_token,pairs,r_paren_token\n",
+        "nScssMapExpressionPair,key,colon_token,value\n",
+        "nScssMediaQuery,head,?tail\n",
+        "nScssMixinAtRule,mixin_token,name,?parameters,block\n",
+        "nScssModuleConfiguration,name,colon_token,value,?modifier\n",
+        "nScssModuleConfigurationList,l_paren_token,items,r_paren_token\n",
+        "nScssModuleMemberAccess,module,dot_token,member\n",
+        "nScssNamespacedVariable,namespace,dot_token,name\n",
+        "nScssNestingDeclaration,name,colon_token,value,block\n",
+        "nScssParameter,name,?default_value,?ellipsis_token\n",
+        "nScssParameterDefaultValue,colon_token,value\n",
+        "nScssParameterList,l_paren_token,items,r_paren_token\n",
+        "nScssParentSelector,amp_token,suffix\n",
+        "nScssParentSelectorSuffix,items\n",
+        "nScssParentSelectorSuffixHyphen,minus_token\n",
+        "nScssParentSelectorValue,amp_token\n",
+        "nScssParenthesizedExpression,l_paren_token,expression,r_paren_token\n",
+        "nScssPartialCombinatorSelector,?left,combinator\n",
+        "nScssPercentValue,percent_token\n",
+        "nScssPlaceholderSelector,percent_token,name\n",
+        "nScssPlainImport,url,?layer,?supports,media\n",
+        "nScssReturnAtRule,return_token,value,?semicolon_token\n",
+        "nScssShowClause,show_token,members\n",
+        "nScssStringText,value_token\n",
+        "nScssSupportsDeclaration,name,colon_token,value,?important\n",
+        "nScssSupportsFeatureDeclaration,l_paren_token,declaration,r_paren_token\n",
+        "nScssSupportsInterpolatedCondition,condition\n",
+        "nScssUnaryExpression,operator,expression\n",
+        "nScssUrlText,value_token\n",
+        "nScssUseAllNamespace,star_token\n",
+        "nScssUseAsClause,as_token,namespace\n",
+        "nScssUseAtRule,use_token,url,?as_clause,?with_clause,?semicolon_token\n",
+        "nScssVariable,dollar_token,name\n",
+        "nScssVariableDeclaration,name,colon_token,value,modifiers,?semicolon_token\n",
+        "nScssVariableModifier,excl_token,value\n",
+        "nScssWarnAtRule,warn_token,value,?semicolon_token\n",
+        "nScssWhileAtRule,while_token,condition,block\n",
+        "nScssWithClause,with_token,configurations\n",
+        "nTwApplyAtRule,apply_token,classes,?semicolon_token\n",
+        "nTwConfigAtRule,config_token,path,semicolon_token\n",
+        "nTwCustomVariantAtRule,custom_variant_token,name,selector\n",
+        "nTwCustomVariantShorthand,l_paren_token,selector,r_paren_token,semicolon_token\n",
+        "nTwFunctionalUtilityName,identifier,minus_token,star_token\n",
+        "nTwPluginAtRule,plugin_token,name,?block,?semicolon_token\n",
+        "nTwReferenceAtRule,reference_token,path,semicolon_token\n",
+        "nTwSlotAtRule,slot_token,semicolon_token\n",
+        "nTwSourceAtRule,source_token,?not_token,source,semicolon_token\n",
+        "nTwSourceInline,inline_token,l_paren_token,content,r_paren_token\n",
+        "nTwThemeAtRule,theme_token,options,block\n",
+        "nTwThemePrefixOption,prefix_token,l_paren_token,name,r_paren_token\n",
+        "nTwUtilityAtRule,utility_token,name,block\n",
+        "nTwValueThemeReference,reference,?minus_token,star_token\n",
+        "nTwVariantAtRule,variant_token,name,block\n",
+        "bCssBogus\n",
+        "bCssBogusAtRule\n",
+        "bCssBogusAttrName\n",
+        "bCssBogusBlock\n",
+        "bCssBogusCustomIdentifier\n",
+        "bCssBogusDeclaration\n",
+        "bCssBogusDocumentMatcher\n",
+        "bCssBogusFontFamilyName\n",
+        "bCssBogusFontFeatureValuesItem\n",
+        "bCssBogusFunctionParameter\n",
+        "bCssBogusIfBranch\n",
+        "bCssBogusIfTest\n",
+        "bCssBogusIfTestBooleanExpr\n",
+        "bCssBogusKeyframesItem\n",
+        "bCssBogusKeyframesName\n",
+        "bCssBogusLayer\n",
+        "bCssBogusMediaQuery\n",
+        "bCssBogusPageSelectorPseudo\n",
+        "bCssBogusParameter\n",
+        "bCssBogusProperty\n",
+        "bCssBogusPropertyValue\n",
+        "bCssBogusPseudoClass\n",
+        "bCssBogusPseudoElement\n",
+        "bCssBogusRule\n",
+        "bCssBogusScopeRange\n",
+        "bCssBogusSelector\n",
+        "bCssBogusSubSelector\n",
+        "bCssBogusSupportsCondition\n",
+        "bCssBogusSyntax\n",
+        "bCssBogusSyntaxSingleComponent\n",
+        "bCssBogusUnicodeRangeValue\n",
+        "bCssBogusUrlModifier\n",
+        "bCssUnknownAtRuleComponentList\n",
+        "bCssValueAtRuleGenericValue\n",
+        "sCssAttrNameList\n",
+        "lCssBracketedValueList\n",
+        "lCssComponentValueList\n",
+        "lCssComposesClassList\n",
+        "sCssComposesPropertyValueList\n",
+        "sCssCompoundSelectorList\n",
+        "sCssCustomIdentifierCommaSeparatedList\n",
+        "lCssCustomIdentifierSpaceSeparatedList\n",
+        "lCssCustomPropertyComponentList\n",
+        "lCssDeclarationList\n",
+        "lCssDeclarationOrAtRuleList\n",
+        "lCssDeclarationOrRuleList\n",
+        "sCssDocumentMatcherList\n",
+        "sCssFontFamilyNameList\n",
+        "lCssFontFeatureValuesItemList\n",
+        "sCssFunctionParameterList\n",
+        "lCssGenericComponentValueList\n",
+        "sCssIfBranchList\n",
+        "lCssKeyframesItemList\n",
+        "sCssKeyframesSelectorList\n",
+        "sCssLayerNameList\n",
+        "sCssLayerReferenceList\n",
+        "sCssMediaQueryList\n",
+        "lCssNestedSelectorList\n",
+        "lCssPageAtRuleItemList\n",
+        "sCssPageSelectorList\n",
+        "lCssPageSelectorPseudoList\n",
+        "sCssParameterList\n",
+        "lCssPseudoElementFunctionParameterList\n",
+        "sCssPseudoValueList\n",
+        "sCssRelativeSelectorList\n",
+        "lCssRootItemList\n",
+        "lCssRuleList\n",
+        "sCssSelectorList\n",
+        "lCssSubSelectorList\n",
+        "sCssSyntaxComponentList\n",
+        "lCssUrlModifierList\n",
+        "sCssValueAtRuleImportSpecifierList\n",
+        "sCssValueAtRulePropertyList\n",
+        "sScssEachBindingList\n",
+        "sScssEachValueList\n",
+        "lScssExpressionItemList\n",
+        "sScssImportItemList\n",
+        "lScssInterpolatedIdentifierPartList\n",
+        "lScssInterpolatedNthValuePartList\n",
+        "lScssInterpolatedStringPartList\n",
+        "lScssInterpolatedUrlValuePartList\n",
+        "lScssInterpolatedValuePartList\n",
+        "sScssListExpressionElementList\n",
+        "sScssMapExpressionPairList\n",
+        "sScssModuleConfigurationItemList\n",
+        "sScssModuleMemberList\n",
+        "sScssParameterItemList\n",
+        "lScssParentSelectorSuffixPartList\n",
+        "lScssVariableModifierList\n",
+        "lTwApplyClassList\n",
+        "lTwThemeOptionList\n"
+    );
+    fn shape_offset(kind: SyntaxKind) -> u32 {
+        match kind {
+            CSS_AT_RULE => 0u32,
+            CSS_AT_RULE_DECLARATOR => 25u32,
+            CSS_ATTR_FALLBACK_VALUE => 66u32,
+            CSS_ATTR_FUNCTION => 106u32,
+            CSS_ATTRIBUTE_MATCHER => 199u32,
+            CSS_ATTRIBUTE_MATCHER_VALUE => 245u32,
+            CSS_ATTRIBUTE_MODIFIER => 276u32,
+            CSS_ATTRIBUTE_NAME => 304u32,
+            CSS_ATTRIBUTE_SELECTOR => 338u32,
+            CSS_BINARY_EXPRESSION => 402u32,
+            CSS_BOOLEAN_MEDIA_QUERY => 443u32,
+            CSS_BRACKETED_VALUE => 473u32,
+            CSS_CHARSET_AT_RULE => 526u32,
+            CSS_CLASS_SELECTOR => 583u32,
+            CSS_COLOR => 616u32,
+            CSS_COLOR_PROFILE_AT_RULE => 649u32,
+            CSS_COLOR_PROFILE_AT_RULE_DECLARATOR => 689u32,
+            CSS_COMMA_SEPARATED_VALUE => 747u32,
+            CSS_COMPLEX_SELECTOR => 805u32,
+            CSS_COMPOSES_IMPORT_SPECIFIER => 847u32,
+            CSS_COMPOSES_PROPERTY => 893u32,
+            CSS_COMPOSES_PROPERTY_VALUE => 938u32,
+            CSS_COMPOUND_SELECTOR => 983u32,
+            CSS_CONTAINER_AND_QUERY => 1053u32,
+            CSS_CONTAINER_AT_RULE => 1096u32,
+            CSS_CONTAINER_AT_RULE_DECLARATOR => 1133u32,
+            CSS_CONTAINER_NOT_QUERY => 1191u32,
+            CSS_CONTAINER_OR_QUERY => 1229u32,
+            CSS_CONTAINER_QUERY_IN_PARENS => 1270u32,
+            CSS_CONTAINER_SCROLL_STATE_AND_QUERY => 1331u32,
+            CSS_CONTAINER_SCROLL_STATE_IN_PARENS => 1385u32,
+            CSS_CONTAINER_SCROLL_STATE_NOT_QUERY => 1452u32,
+            CSS_CONTAINER_SCROLL_STATE_OR_QUERY => 1501u32,
+            CSS_CONTAINER_SCROLL_STATE_QUERY_IN_PARENS => 1553u32,
+            CSS_CONTAINER_SIZE_FEATURE_IN_PARENS => 1630u32,
+            CSS_CONTAINER_STYLE_AND_QUERY => 1699u32,
+            CSS_CONTAINER_STYLE_IN_PARENS => 1747u32,
+            CSS_CONTAINER_STYLE_NOT_QUERY => 1808u32,
+            CSS_CONTAINER_STYLE_OR_QUERY => 1851u32,
+            CSS_CONTAINER_STYLE_QUERY_IN_PARENS => 1897u32,
+            CSS_COUNTER_STYLE_AT_RULE => 1975u32,
+            CSS_COUNTER_STYLE_AT_RULE_DECLARATOR => 2015u32,
+            CSS_CUSTOM_IDENTIFIER => 2073u32,
+            CSS_CUSTOM_MEDIA_AT_RULE => 2106u32,
+            CSS_CUSTOM_MEDIA_AT_RULE_DECLARATOR => 2155u32,
+            CSS_CUSTOM_PROPERTY_BRACED_BLOCK => 2219u32,
+            CSS_CUSTOM_PROPERTY_BRACKETED_BLOCK => 2288u32,
+            CSS_CUSTOM_PROPERTY_DELIMITER => 2360u32,
+            CSS_CUSTOM_PROPERTY_FUNCTION => 2394u32,
+            CSS_CUSTOM_PROPERTY_PARENTHESIZED_BLOCK => 2465u32,
+            CSS_CUSTOM_PROPERTY_VALUE => 2541u32,
+            CSS_DASHED_IDENTIFIER => 2576u32,
+            CSS_DECLARATION => 2609u32,
+            CSS_DECLARATION_BLOCK => 2645u32,
+            CSS_DECLARATION_IMPORTANT => 2707u32,
+            CSS_DECLARATION_OR_AT_RULE_BLOCK => 2759u32,
+            CSS_DECLARATION_OR_RULE_BLOCK => 2822u32,
+            CSS_DECLARATION_SNIPPET_ROOT => 2883u32,
+            CSS_DECLARATION_WITH_SEMICOLON => 2933u32,
+            CSS_DOCUMENT_AT_RULE => 2991u32,
+            CSS_DOCUMENT_CUSTOM_MATCHER => 3040u32,
+            CSS_ELSE_KEYWORD => 3106u32,
+            CSS_EMPTY_DECLARATION => 3133u32,
+            CSS_FONT_FACE_AT_RULE => 3170u32,
+            CSS_FONT_FACE_AT_RULE_DECLARATOR => 3206u32,
+            CSS_FONT_FAMILY_NAME => 3251u32,
+            CSS_FONT_FEATURE_VALUES_AT_RULE => 3276u32,
+            CSS_FONT_FEATURE_VALUES_BLOCK => 3342u32,
+            CSS_FONT_FEATURE_VALUES_ITEM => 3403u32,
+            CSS_FONT_PALETTE_VALUES_AT_RULE => 3449u32,
+            CSS_FONT_PALETTE_VALUES_AT_RULE_DECLARATOR => 3494u32,
+            CSS_FUNCTION => 3563u32,
+            CSS_FUNCTION_AT_RULE => 3615u32,
+            CSS_FUNCTION_AT_RULE_DECLARATOR => 3651u32,
+            CSS_FUNCTION_PARAMETER => 3748u32,
+            CSS_FUNCTION_PARAMETER_DEFAULT_VALUE => 3794u32,
+            CSS_GENERIC_DELIMITER => 3846u32,
+            CSS_GENERIC_PROPERTY => 3873u32,
+            CSS_ID_SELECTOR => 3916u32,
+            CSS_IDENTIFIER => 3947u32,
+            CSS_IF_BRANCH => 3974u32,
+            CSS_IF_FUNCTION => 4015u32,
+            CSS_IF_MEDIA_TEST => 4086u32,
+            CSS_IF_SASS_TEST => 4147u32,
+            CSS_IF_STYLE_TEST => 4206u32,
+            CSS_IF_SUPPORTS_IDENTIFIER_TEST => 4267u32,
+            CSS_IF_SUPPORTS_TEST => 4320u32,
+            CSS_IF_TEST_BOOLEAN_AND_EXPR => 4387u32,
+            CSS_IF_TEST_BOOLEAN_EXPR_IN_PARENS => 4433u32,
+            CSS_IF_TEST_BOOLEAN_NOT_EXPR => 4502u32,
+            CSS_IF_TEST_BOOLEAN_OR_EXPR => 4548u32,
+            CSS_IMPORT_ANONYMOUS_LAYER => 4592u32,
+            CSS_IMPORT_AT_RULE => 4629u32,
+            CSS_IMPORT_NAMED_LAYER => 4702u32,
+            CSS_IMPORT_SUPPORTS => 4768u32,
+            CSS_KEYFRAMES_AT_RULE => 4840u32,
+            CSS_KEYFRAMES_BLOCK => 4887u32,
+            CSS_KEYFRAMES_IDENT_SELECTOR => 4940u32,
+            CSS_KEYFRAMES_ITEM => 4976u32,
+            CSS_KEYFRAMES_PERCENTAGE_SELECTOR => 5010u32,
+            CSS_KEYFRAMES_RANGE_SELECTOR => 5051u32,
+            CSS_KEYFRAMES_SCOPE_FUNCTION => 5094u32,
+            CSS_KEYFRAMES_SCOPE_PREFIX => 5160u32,
+            CSS_KEYFRAMES_SCOPED_NAME => 5196u32,
+            CSS_LAYER_AT_RULE => 5238u32,
+            CSS_LAYER_DECLARATION => 5272u32,
+            CSS_LAYER_REFERENCE => 5310u32,
+            CSS_LEGACY_FILTER_VALUE => 5356u32,
+            CSS_LIST_OF_COMPONENT_VALUES_EXPRESSION => 5389u32,
+            CSS_MARGIN_AT_RULE => 5450u32,
+            CSS_MEDIA_AND_CONDITION => 5487u32,
+            CSS_MEDIA_AND_TYPE_QUERY => 5530u32,
+            CSS_MEDIA_AT_RULE => 5573u32,
+            CSS_MEDIA_AT_RULE_DECLARATOR => 5606u32,
+            CSS_MEDIA_CONDITION_IN_PARENS => 5652u32,
+            CSS_MEDIA_CONDITION_QUERY => 5717u32,
+            CSS_MEDIA_FEATURE_IN_PARENS => 5751u32,
+            CSS_MEDIA_NOT_CONDITION => 5812u32,
+            CSS_MEDIA_OR_CONDITION => 5854u32,
+            CSS_MEDIA_TYPE => 5895u32,
+            CSS_MEDIA_TYPE_QUERY => 5915u32,
+            CSS_METAVARIABLE => 5947u32,
+            CSS_NAMED_NAMESPACE_PREFIX => 5976u32,
+            CSS_NAMESPACE => 6006u32,
+            CSS_NAMESPACE_AT_RULE => 6045u32,
+            CSS_NESTED_QUALIFIED_RULE => 6109u32,
+            CSS_NESTED_SELECTOR => 6147u32,
+            CSS_NTH_OFFSET => 6176u32,
+            CSS_NUMBER => 6201u32,
+            CSS_NUMBER_DECLARATOR => 6224u32,
+            CSS_PAGE_AT_RULE => 6258u32,
+            CSS_PAGE_AT_RULE_BLOCK => 6300u32,
+            CSS_PAGE_SELECTOR => 6354u32,
+            CSS_PAGE_SELECTOR_PSEUDO => 6383u32,
+            CSS_PARENTHESIZED_EXPRESSION => 6427u32,
+            CSS_PERCENTAGE => 6495u32,
+            CSS_POSITION_TRY_AT_RULE => 6536u32,
+            CSS_POSITION_TRY_AT_RULE_DECLARATOR => 6575u32,
+            CSS_PROPERTY_AT_RULE => 6631u32,
+            CSS_PROPERTY_AT_RULE_DECLARATOR => 6667u32,
+            CSS_PSEUDO_CLASS_FUNCTION_COMPOUND_SELECTOR => 6716u32,
+            CSS_PSEUDO_CLASS_FUNCTION_COMPOUND_SELECTOR_LIST => 6798u32,
+            CSS_PSEUDO_CLASS_FUNCTION_CUSTOM_IDENTIFIER => 6894u32,
+            CSS_PSEUDO_CLASS_FUNCTION_CUSTOM_IDENTIFIER_LIST => 6973u32,
+            CSS_PSEUDO_CLASS_FUNCTION_IDENTIFIER => 7056u32,
+            CSS_PSEUDO_CLASS_FUNCTION_NTH => 7129u32,
+            CSS_PSEUDO_CLASS_FUNCTION_RELATIVE_SELECTOR_LIST => 7198u32,
+            CSS_PSEUDO_CLASS_FUNCTION_SELECTOR => 7294u32,
+            CSS_PSEUDO_CLASS_FUNCTION_SELECTOR_LIST => 7368u32,
+            CSS_PSEUDO_CLASS_FUNCTION_VALUE_LIST => 7447u32,
+            CSS_PSEUDO_CLASS_IDENTIFIER => 7520u32,
+            CSS_PSEUDO_CLASS_NTH => 7551u32,
+            CSS_PSEUDO_CLASS_NTH_IDENTIFIER => 7604u32,
+            CSS_PSEUDO_CLASS_NTH_NUMBER => 7639u32,
+            CSS_PSEUDO_CLASS_NTH_SELECTOR => 7676u32,
+            CSS_PSEUDO_CLASS_OF_NTH_SELECTOR => 7720u32,
+            CSS_PSEUDO_CLASS_SELECTOR => 7768u32,
+            CSS_PSEUDO_ELEMENT_FUNCTION => 7810u32,
+            CSS_PSEUDO_ELEMENT_FUNCTION_CUSTOM_IDENTIFIER => 7875u32,
+            CSS_PSEUDO_ELEMENT_FUNCTION_SELECTOR => 7956u32,
+            CSS_PSEUDO_ELEMENT_IDENTIFIER => 8032u32,
+            CSS_PSEUDO_ELEMENT_SELECTOR => 8065u32,
+            CSS_QUALIFIED_RULE => 8118u32,
+            CSS_QUERY_FEATURE_BOOLEAN => 8150u32,
+            CSS_QUERY_FEATURE_PLAIN => 8179u32,
+            CSS_QUERY_FEATURE_RANGE => 8224u32,
+            CSS_QUERY_FEATURE_RANGE_COMPARISON => 8268u32,
+            CSS_QUERY_FEATURE_RANGE_INTERVAL => 8309u32,
+            CSS_QUERY_FEATURE_REVERSE_RANGE => 8388u32,
+            CSS_RATIO => 8439u32,
+            CSS_RAW_STRING_DECLARATOR => 8483u32,
+            CSS_REGULAR_ATTR_UNIT => 8524u32,
+            CSS_REGULAR_DIMENSION => 8555u32,
+            CSS_REGULAR_SYNTAX_TYPE_NAME => 8599u32,
+            CSS_RELATIVE_SELECTOR => 8636u32,
+            CSS_RETURNS_STATEMENT => 8678u32,
+            CSS_ROOT => 8716u32,
+            CSS_RULE_BLOCK => 8752u32,
+            CSS_SCOPE_AT_RULE => 8800u32,
+            CSS_SCOPE_AT_RULE_DECLARATOR => 8833u32,
+            CSS_SCOPE_EDGE => 8878u32,
+            CSS_SCOPE_RANGE_END => 8930u32,
+            CSS_SCOPE_RANGE_INTERVAL => 8961u32,
+            CSS_SCOPE_RANGE_START => 9003u32,
+            CSS_SNIPPET_ROOT => 9029u32,
+            CSS_STARTING_STYLE_AT_RULE => 9061u32,
+            CSS_STARTING_STYLE_AT_RULE_DECLARATOR => 9102u32,
+            CSS_STRING => 9157u32,
+            CSS_SUPPORTS_AND_CONDITION => 9180u32,
+            CSS_SUPPORTS_AT_RULE => 9226u32,
+            CSS_SUPPORTS_AT_RULE_DECLARATOR => 9262u32,
+            CSS_SUPPORTS_CONDITION_IN_PARENS => 9316u32,
+            CSS_SUPPORTS_FEATURE_DECLARATION => 9384u32,
+            CSS_SUPPORTS_FEATURE_SELECTOR => 9455u32,
+            CSS_SUPPORTS_NOT_CONDITION => 9535u32,
+            CSS_SUPPORTS_OR_CONDITION => 9576u32,
+            CSS_SYNTAX_COMPONENT => 9620u32,
+            CSS_SYNTAX_COMPONENT_WITHOUT_MULTIPLIER => 9662u32,
+            CSS_SYNTAX_MULTIPLIER => 9743u32,
+            CSS_SYNTAX_TYPE => 9775u32,
+            CSS_TYPE_FUNCTION => 9828u32,
+            CSS_TYPE_SELECTOR => 9887u32,
+            CSS_UNARY_EXPRESSION => 9921u32,
+            CSS_UNICODE_CODEPOINT => 9961u32,
+            CSS_UNICODE_RANGE => 9994u32,
+            CSS_UNICODE_RANGE_INTERVAL => 10030u32,
+            CSS_UNICODE_RANGE_WILDCARD => 10077u32,
+            CSS_UNIVERSAL_NAMESPACE_PREFIX => 10114u32,
+            CSS_UNIVERSAL_SELECTOR => 10154u32,
+            CSS_UNIVERSAL_SYNTAX => 10198u32,
+            CSS_UNKNOWN_ATTR_UNIT => 10229u32,
+            CSS_UNKNOWN_BLOCK_AT_RULE => 10260u32,
+            CSS_UNKNOWN_DIMENSION => 10305u32,
+            CSS_UNKNOWN_SYNTAX_TYPE_NAME => 10349u32,
+            CSS_UNKNOWN_VALUE_AT_RULE => 10386u32,
+            CSS_URL_FUNCTION => 10442u32,
+            CSS_URL_VALUE_RAW => 10508u32,
+            CSS_VALUE_AT_RULE => 10536u32,
+            CSS_VALUE_AT_RULE_DECLARATION_CLAUSE => 10587u32,
+            CSS_VALUE_AT_RULE_GENERIC_PROPERTY => 10631u32,
+            CSS_VALUE_AT_RULE_IMPORT_CLAUSE => 10685u32,
+            CSS_VALUE_AT_RULE_IMPORT_SPECIFIER => 10742u32,
+            CSS_VALUE_AT_RULE_NAMED_IMPORT_SPECIFIER => 10778u32,
+            CSS_VIEW_TRANSITION_AT_RULE => 10839u32,
+            CSS_VIEW_TRANSITION_AT_RULE_DECLARATOR => 10881u32,
+            SCSS_ARBITRARY_ARGUMENT => 10938u32,
+            SCSS_AT_ROOT_AT_RULE => 10983u32,
+            SCSS_AT_ROOT_QUERY => 11038u32,
+            SCSS_AT_ROOT_QUERY_CLAUSE => 11089u32,
+            SCSS_AT_ROOT_SELECTOR => 11139u32,
+            SCSS_BINARY_EXPRESSION => 11168u32,
+            SCSS_CONTAINER_INTERPOLATED_QUERY => 11210u32,
+            SCSS_CONTENT_AT_RULE => 11248u32,
+            SCSS_DEBUG_AT_RULE => 11309u32,
+            SCSS_EACH_AT_RULE => 11361u32,
+            SCSS_EACH_HEADER => 11401u32,
+            SCSS_ELSE_CLAUSE => 11442u32,
+            SCSS_ERROR_AT_RULE => 11483u32,
+            SCSS_EXPRESSION => 11535u32,
+            SCSS_EXTEND_AT_RULE => 11557u32,
+            SCSS_EXTEND_OPTIONAL_MODIFIER => 11642u32,
+            SCSS_FOR_AT_RULE => 11696u32,
+            SCSS_FORWARD_AS_CLAUSE => 11780u32,
+            SCSS_FORWARD_AT_RULE => 11828u32,
+            SCSS_FUNCTION_AT_RULE => 11925u32,
+            SCSS_HASH_VALUE => 11983u32,
+            SCSS_HIDE_CLAUSE => 12021u32,
+            SCSS_IF_AT_RULE => 12056u32,
+            SCSS_IMPORT_AT_RULE => 12108u32,
+            SCSS_INCLUDE_ARGUMENT_LIST => 12164u32,
+            SCSS_INCLUDE_AT_RULE => 12223u32,
+            SCSS_INCLUDE_USING_CLAUSE => 12310u32,
+            SCSS_INTERPOLATED_DASHED_IDENTIFIER => 12357u32,
+            SCSS_INTERPOLATED_IDENTIFIER => 12397u32,
+            SCSS_INTERPOLATED_IDENTIFIER_HYPHEN => 12431u32,
+            SCSS_INTERPOLATED_NTH_VALUE => 12477u32,
+            SCSS_INTERPOLATED_PSEUDO_CLASS_FUNCTION => 12509u32,
+            SCSS_INTERPOLATED_PSEUDO_CLASS_NTH_ARGUMENTS => 12590u32,
+            SCSS_INTERPOLATED_PSEUDO_CLASS_RELATIVE_SELECTOR_ARGUMENTS => 12640u32,
+            SCSS_INTERPOLATED_PSEUDO_CLASS_SELECTOR_ARGUMENTS => 12704u32,
+            SCSS_INTERPOLATED_PSEUDO_CLASS_VALUE_ARGUMENTS => 12760u32,
+            SCSS_INTERPOLATED_PSEUDO_ELEMENT_FUNCTION => 12810u32,
+            SCSS_INTERPOLATED_PSEUDO_ELEMENT_SELECTOR_ARGUMENTS => 12893u32,
+            SCSS_INTERPOLATED_PSEUDO_ELEMENT_VALUE_ARGUMENTS => 12951u32,
+            SCSS_INTERPOLATED_STRING => 13003u32,
+            SCSS_INTERPOLATED_SUB_SELECTOR => 13073u32,
+            SCSS_INTERPOLATED_URL_VALUE => 13107u32,
+            SCSS_INTERPOLATED_VALUE => 13139u32,
+            SCSS_INTERPOLATION => 13168u32,
+            SCSS_KEYFRAMES_NAME => 13232u32,
+            SCSS_KEYFRAMES_SELECTOR => 13256u32,
+            SCSS_KEYFRAMES_VARIABLE_DECLARATION => 13303u32,
+            SCSS_KEYWORD_ARGUMENT => 13349u32,
+            SCSS_LEGACY_IF_FUNCTION => 13393u32,
+            SCSS_LIST_EXPRESSION => 13458u32,
+            SCSS_LIST_EXPRESSION_ELEMENT => 13487u32,
+            SCSS_MAP_EXPRESSION => 13520u32,
+            SCSS_MAP_EXPRESSION_PAIR => 13573u32,
+            SCSS_MEDIA_QUERY => 13618u32,
+            SCSS_MIXIN_AT_RULE => 13645u32,
+            SCSS_MODULE_CONFIGURATION => 13697u32,
+            SCSS_MODULE_CONFIGURATION_LIST => 13755u32,
+            SCSS_MODULE_MEMBER_ACCESS => 13818u32,
+            SCSS_NAMESPACED_VARIABLE => 13866u32,
+            SCSS_NESTING_DECLARATION => 13915u32,
+            SCSS_PARAMETER => 13968u32,
+            SCSS_PARAMETER_DEFAULT_VALUE => 14019u32,
+            SCSS_PARAMETER_LIST => 14064u32,
+            SCSS_PARENT_SELECTOR => 14117u32,
+            SCSS_PARENT_SELECTOR_SUFFIX => 14154u32,
+            SCSS_PARENT_SELECTOR_SUFFIX_HYPHEN => 14186u32,
+            SCSS_PARENT_SELECTOR_VALUE => 14230u32,
+            SCSS_PARENTHESIZED_EXPRESSION => 14265u32,
+            SCSS_PARTIAL_COMBINATOR_SELECTOR => 14333u32,
+            SCSS_PERCENT_VALUE => 14381u32,
+            SCSS_PLACEHOLDER_SELECTOR => 14413u32,
+            SCSS_PLAIN_IMPORT => 14457u32,
+            SCSS_RETURN_AT_RULE => 14501u32,
+            SCSS_SHOW_CLAUSE => 14555u32,
+            SCSS_STRING_TEXT => 14590u32,
+            SCSS_SUPPORTS_DECLARATION => 14618u32,
+            SCSS_SUPPORTS_FEATURE_DECLARATION => 14677u32,
+            SCSS_SUPPORTS_INTERPOLATED_CONDITION => 14749u32,
+            SCSS_UNARY_EXPRESSION => 14794u32,
+            SCSS_URL_TEXT => 14835u32,
+            SCSS_USE_ALL_NAMESPACE => 14860u32,
+            SCSS_USE_AS_CLAUSE => 14892u32,
+            SCSS_USE_AT_RULE => 14928u32,
+            SCSS_VARIABLE => 14998u32,
+            SCSS_VARIABLE_DECLARATION => 15030u32,
+            SCSS_VARIABLE_MODIFIER => 15105u32,
+            SCSS_WARN_AT_RULE => 15144u32,
+            SCSS_WHILE_AT_RULE => 15194u32,
+            SCSS_WITH_CLAUSE => 15239u32,
+            TW_APPLY_AT_RULE => 15281u32,
+            TW_CONFIG_AT_RULE => 15333u32,
+            TW_CUSTOM_VARIANT_AT_RULE => 15383u32,
+            TW_CUSTOM_VARIANT_SHORTHAND => 15441u32,
+            TW_FUNCTIONAL_UTILITY_NAME => 15520u32,
+            TW_PLUGIN_AT_RULE => 15579u32,
+            TW_REFERENCE_AT_RULE => 15637u32,
+            TW_SLOT_AT_RULE => 15693u32,
+            TW_SOURCE_AT_RULE => 15734u32,
+            TW_SOURCE_INLINE => 15797u32,
+            TW_THEME_AT_RULE => 15862u32,
+            TW_THEME_PREFIX_OPTION => 15903u32,
+            TW_UTILITY_AT_RULE => 15970u32,
+            TW_VALUE_THEME_REFERENCE => 16012u32,
+            TW_VARIANT_AT_RULE => 16069u32,
+            CSS_BOGUS => 16111u32,
+            CSS_BOGUS_AT_RULE => 16121u32,
+            CSS_BOGUS_ATTR_NAME => 16137u32,
+            CSS_BOGUS_BLOCK => 16155u32,
+            CSS_BOGUS_CUSTOM_IDENTIFIER => 16170u32,
+            CSS_BOGUS_DECLARATION => 16196u32,
+            CSS_BOGUS_DOCUMENT_MATCHER => 16217u32,
+            CSS_BOGUS_FONT_FAMILY_NAME => 16242u32,
+            CSS_BOGUS_FONT_FEATURE_VALUES_ITEM => 16266u32,
+            CSS_BOGUS_FUNCTION_PARAMETER => 16297u32,
+            CSS_BOGUS_IF_BRANCH => 16324u32,
+            CSS_BOGUS_IF_TEST => 16342u32,
+            CSS_BOGUS_IF_TEST_BOOLEAN_EXPR => 16358u32,
+            CSS_BOGUS_KEYFRAMES_ITEM => 16385u32,
+            CSS_BOGUS_KEYFRAMES_NAME => 16408u32,
+            CSS_BOGUS_LAYER => 16431u32,
+            CSS_BOGUS_MEDIA_QUERY => 16446u32,
+            CSS_BOGUS_PAGE_SELECTOR_PSEUDO => 16466u32,
+            CSS_BOGUS_PARAMETER => 16494u32,
+            CSS_BOGUS_PROPERTY => 16513u32,
+            CSS_BOGUS_PROPERTY_VALUE => 16531u32,
+            CSS_BOGUS_PSEUDO_CLASS => 16554u32,
+            CSS_BOGUS_PSEUDO_ELEMENT => 16575u32,
+            CSS_BOGUS_RULE => 16598u32,
+            CSS_BOGUS_SCOPE_RANGE => 16612u32,
+            CSS_BOGUS_SELECTOR => 16632u32,
+            CSS_BOGUS_SUB_SELECTOR => 16650u32,
+            CSS_BOGUS_SUPPORTS_CONDITION => 16671u32,
+            CSS_BOGUS_SYNTAX => 16698u32,
+            CSS_BOGUS_SYNTAX_SINGLE_COMPONENT => 16714u32,
+            CSS_BOGUS_UNICODE_RANGE_VALUE => 16745u32,
+            CSS_BOGUS_URL_MODIFIER => 16772u32,
+            CSS_UNKNOWN_AT_RULE_COMPONENT_LIST => 16793u32,
+            CSS_VALUE_AT_RULE_GENERIC_VALUE => 16824u32,
+            CSS_ATTR_NAME_LIST => 16852u32,
+            CSS_BRACKETED_VALUE_LIST => 16869u32,
+            CSS_COMPONENT_VALUE_LIST => 16892u32,
+            CSS_COMPOSES_CLASS_LIST => 16915u32,
+            CSS_COMPOSES_PROPERTY_VALUE_LIST => 16937u32,
+            CSS_COMPOUND_SELECTOR_LIST => 16967u32,
+            CSS_CUSTOM_IDENTIFIER_COMMA_SEPARATED_LIST => 16992u32,
+            CSS_CUSTOM_IDENTIFIER_SPACE_SEPARATED_LIST => 17031u32,
+            CSS_CUSTOM_PROPERTY_COMPONENT_LIST => 17070u32,
+            CSS_DECLARATION_LIST => 17102u32,
+            CSS_DECLARATION_OR_AT_RULE_LIST => 17122u32,
+            CSS_DECLARATION_OR_RULE_LIST => 17150u32,
+            CSS_DOCUMENT_MATCHER_LIST => 17176u32,
+            CSS_FONT_FAMILY_NAME_LIST => 17200u32,
+            CSS_FONT_FEATURE_VALUES_ITEM_LIST => 17223u32,
+            CSS_FUNCTION_PARAMETER_LIST => 17253u32,
+            CSS_GENERIC_COMPONENT_VALUE_LIST => 17279u32,
+            CSS_IF_BRANCH_LIST => 17309u32,
+            CSS_KEYFRAMES_ITEM_LIST => 17326u32,
+            CSS_KEYFRAMES_SELECTOR_LIST => 17348u32,
+            CSS_LAYER_NAME_LIST => 17374u32,
+            CSS_LAYER_REFERENCE_LIST => 17392u32,
+            CSS_MEDIA_QUERY_LIST => 17415u32,
+            CSS_NESTED_SELECTOR_LIST => 17434u32,
+            CSS_PAGE_AT_RULE_ITEM_LIST => 17457u32,
+            CSS_PAGE_SELECTOR_LIST => 17480u32,
+            CSS_PAGE_SELECTOR_PSEUDO_LIST => 17501u32,
+            CSS_PARAMETER_LIST => 17528u32,
+            CSS_PSEUDO_ELEMENT_FUNCTION_PARAMETER_LIST => 17546u32,
+            CSS_PSEUDO_VALUE_LIST => 17585u32,
+            CSS_RELATIVE_SELECTOR_LIST => 17605u32,
+            CSS_ROOT_ITEM_LIST => 17630u32,
+            CSS_RULE_LIST => 17647u32,
+            CSS_SELECTOR_LIST => 17660u32,
+            CSS_SUB_SELECTOR_LIST => 17677u32,
+            CSS_SYNTAX_COMPONENT_LIST => 17697u32,
+            CSS_URL_MODIFIER_LIST => 17721u32,
+            CSS_VALUE_AT_RULE_IMPORT_SPECIFIER_LIST => 17741u32,
+            CSS_VALUE_AT_RULE_PROPERTY_LIST => 17776u32,
+            SCSS_EACH_BINDING_LIST => 17804u32,
+            SCSS_EACH_VALUE_LIST => 17825u32,
+            SCSS_EXPRESSION_ITEM_LIST => 17844u32,
+            SCSS_IMPORT_ITEM_LIST => 17868u32,
+            SCSS_INTERPOLATED_IDENTIFIER_PART_LIST => 17888u32,
+            SCSS_INTERPOLATED_NTH_VALUE_PART_LIST => 17924u32,
+            SCSS_INTERPOLATED_STRING_PART_LIST => 17958u32,
+            SCSS_INTERPOLATED_URL_VALUE_PART_LIST => 17990u32,
+            SCSS_INTERPOLATED_VALUE_PART_LIST => 18024u32,
+            SCSS_LIST_EXPRESSION_ELEMENT_LIST => 18055u32,
+            SCSS_MAP_EXPRESSION_PAIR_LIST => 18086u32,
+            SCSS_MODULE_CONFIGURATION_ITEM_LIST => 18113u32,
+            SCSS_MODULE_MEMBER_LIST => 18146u32,
+            SCSS_PARAMETER_ITEM_LIST => 18168u32,
+            SCSS_PARENT_SELECTOR_SUFFIX_PART_LIST => 18191u32,
+            SCSS_VARIABLE_MODIFIER_LIST => 18225u32,
+            TW_APPLY_CLASS_LIST => 18251u32,
+            TW_THEME_OPTION_LIST => 18269u32,
+            _ => u32::MAX,
+        }
+    }
+    fn with_depth<R>(raw_kind: usize, f: impl FnOnce(&std::cell::Cell<u8>) -> R) -> R {
+        thread_local! { static DEPTHS : [std :: cell :: Cell < u8 > ; SyntaxKind :: __LAST as usize] = const { [const { std :: cell :: Cell :: new (0) } ; SyntaxKind :: __LAST as usize] } ; }
+        DEPTHS.with(|depths| f(&depths[raw_kind]))
+    }
+    fn debug_unshaped(_: &SyntaxNode, _: &mut Formatter<'_>) -> std::fmt::Result {
+        unreachable!("every kind of node has a shape")
+    }
+}
+#[doc = r" Prints `node` the way the AST node of its kind is printed."]
 fn debug_syntax_node(node: &SyntaxNode, f: &mut Formatter<'_>) -> std::fmt::Result {
-    map_syntax_node ! (node . clone () , node => std :: fmt :: Debug :: fmt (& node , f))
+    support::debug_any_node::<DebugShapes>(node, f)
 }

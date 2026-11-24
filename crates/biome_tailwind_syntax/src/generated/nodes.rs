@@ -8,7 +8,6 @@ use crate::{
     TailwindSyntaxKind::{self as SyntaxKind, *},
     TailwindSyntaxList as SyntaxList, TailwindSyntaxNode as SyntaxNode,
     TailwindSyntaxToken as SyntaxToken,
-    macros::map_syntax_node,
 };
 use biome_rowan::{
     AstNode, AstNodeList, AstNodeListIterator, AstNodeSlotMap, AstSeparatedList,
@@ -1871,15 +1870,7 @@ impl AstNode for CssBinaryExpression {
 }
 impl std::fmt::Debug for CssBinaryExpression {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssBinaryExpression",
-            &DEPTH,
-            &[("left", false), ("operator", false), ("right", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssBinaryExpression> for SyntaxNode {
@@ -1915,15 +1906,7 @@ impl AstNode for CssColor {
 }
 impl std::fmt::Debug for CssColor {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssColor",
-            &DEPTH,
-            &[("value_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssColor> for SyntaxNode {
@@ -1959,15 +1942,7 @@ impl AstNode for CssDashedIdentifier {
 }
 impl std::fmt::Debug for CssDashedIdentifier {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssDashedIdentifier",
-            &DEPTH,
-            &[("ident_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssDashedIdentifier> for SyntaxNode {
@@ -2003,20 +1978,7 @@ impl AstNode for CssFunction {
 }
 impl std::fmt::Debug for CssFunction {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssFunction",
-            &DEPTH,
-            &[
-                ("name", false),
-                ("l_paren_token", false),
-                ("parameters", false),
-                ("r_paren_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssFunction> for SyntaxNode {
@@ -2052,15 +2014,7 @@ impl AstNode for CssGenericDelimiter {
 }
 impl std::fmt::Debug for CssGenericDelimiter {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssGenericDelimiter",
-            &DEPTH,
-            &[("value", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssGenericDelimiter> for SyntaxNode {
@@ -2096,15 +2050,7 @@ impl AstNode for CssIdentifier {
 }
 impl std::fmt::Debug for CssIdentifier {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssIdentifier",
-            &DEPTH,
-            &[("ident_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssIdentifier> for SyntaxNode {
@@ -2141,15 +2087,7 @@ impl AstNode for CssListOfComponentValuesExpression {
 }
 impl std::fmt::Debug for CssListOfComponentValuesExpression {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssListOfComponentValuesExpression",
-            &DEPTH,
-            &[("css_component_value_list", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssListOfComponentValuesExpression> for SyntaxNode {
@@ -2185,15 +2123,7 @@ impl AstNode for CssNumber {
 }
 impl std::fmt::Debug for CssNumber {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssNumber",
-            &DEPTH,
-            &[("value_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssNumber> for SyntaxNode {
@@ -2229,19 +2159,7 @@ impl AstNode for CssParenthesizedExpression {
 }
 impl std::fmt::Debug for CssParenthesizedExpression {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssParenthesizedExpression",
-            &DEPTH,
-            &[
-                ("l_paren_token", false),
-                ("expression", true),
-                ("r_paren_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssParenthesizedExpression> for SyntaxNode {
@@ -2277,15 +2195,7 @@ impl AstNode for CssPercentage {
 }
 impl std::fmt::Debug for CssPercentage {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssPercentage",
-            &DEPTH,
-            &[("value_token", false), ("remainder_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssPercentage> for SyntaxNode {
@@ -2321,15 +2231,7 @@ impl AstNode for CssRatio {
 }
 impl std::fmt::Debug for CssRatio {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssRatio",
-            &DEPTH,
-            &[("left", false), ("slash_token", false), ("right", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssRatio> for SyntaxNode {
@@ -2365,15 +2267,7 @@ impl AstNode for CssRegularDimension {
 }
 impl std::fmt::Debug for CssRegularDimension {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssRegularDimension",
-            &DEPTH,
-            &[("value_token", false), ("unit_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssRegularDimension> for SyntaxNode {
@@ -2409,15 +2303,7 @@ impl AstNode for CssString {
 }
 impl std::fmt::Debug for CssString {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssString",
-            &DEPTH,
-            &[("value_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssString> for SyntaxNode {
@@ -2453,15 +2339,7 @@ impl AstNode for CssUnaryExpression {
 }
 impl std::fmt::Debug for CssUnaryExpression {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssUnaryExpression",
-            &DEPTH,
-            &[("operator", false), ("argument", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssUnaryExpression> for SyntaxNode {
@@ -2497,15 +2375,7 @@ impl AstNode for CssUnknownDimension {
 }
 impl std::fmt::Debug for CssUnknownDimension {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssUnknownDimension",
-            &DEPTH,
-            &[("value_token", false), ("unit_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssUnknownDimension> for SyntaxNode {
@@ -2541,20 +2411,7 @@ impl AstNode for CssUrlFunction {
 }
 impl std::fmt::Debug for CssUrlFunction {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssUrlFunction",
-            &DEPTH,
-            &[
-                ("url_token", false),
-                ("l_paren_token", false),
-                ("value", true),
-                ("r_paren_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssUrlFunction> for SyntaxNode {
@@ -2590,15 +2447,7 @@ impl AstNode for CssUrlValueRaw {
 }
 impl std::fmt::Debug for CssUrlValueRaw {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "CssUrlValueRaw",
-            &DEPTH,
-            &[("value_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssUrlValueRaw> for SyntaxNode {
@@ -2634,22 +2483,7 @@ impl AstNode for TwArbitraryCandidate {
 }
 impl std::fmt::Debug for TwArbitraryCandidate {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "TwArbitraryCandidate",
-            &DEPTH,
-            &[
-                ("l_brack_token", false),
-                ("property_token", false),
-                ("colon_token", false),
-                ("value", false),
-                ("r_brack_token", false),
-                ("modifier", true),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<TwArbitraryCandidate> for SyntaxNode {
@@ -2685,19 +2519,7 @@ impl AstNode for TwArbitraryValue {
 }
 impl std::fmt::Debug for TwArbitraryValue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "TwArbitraryValue",
-            &DEPTH,
-            &[
-                ("l_brack_token", false),
-                ("value", false),
-                ("r_brack_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<TwArbitraryValue> for SyntaxNode {
@@ -2733,19 +2555,7 @@ impl AstNode for TwArbitraryVariant {
 }
 impl std::fmt::Debug for TwArbitraryVariant {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "TwArbitraryVariant",
-            &DEPTH,
-            &[
-                ("l_brack_token", false),
-                ("selector_token", false),
-                ("r_brack_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<TwArbitraryVariant> for SyntaxNode {
@@ -2781,19 +2591,7 @@ impl AstNode for TwArbitraryVariantSegment {
 }
 impl std::fmt::Debug for TwArbitraryVariantSegment {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "TwArbitraryVariantSegment",
-            &DEPTH,
-            &[
-                ("l_brack_token", false),
-                ("value_token", false),
-                ("r_brack_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<TwArbitraryVariantSegment> for SyntaxNode {
@@ -2829,20 +2627,7 @@ impl AstNode for TwCssVariableValue {
 }
 impl std::fmt::Debug for TwCssVariableValue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "TwCssVariableValue",
-            &DEPTH,
-            &[
-                ("l_paren_token", false),
-                ("type_hint", true),
-                ("value", false),
-                ("r_paren_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<TwCssVariableValue> for SyntaxNode {
@@ -2878,19 +2663,7 @@ impl AstNode for TwCssVariableVariantSegment {
 }
 impl std::fmt::Debug for TwCssVariableVariantSegment {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "TwCssVariableVariantSegment",
-            &DEPTH,
-            &[
-                ("l_paren_token", false),
-                ("value", false),
-                ("r_paren_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<TwCssVariableVariantSegment> for SyntaxNode {
@@ -2926,21 +2699,7 @@ impl AstNode for TwFullCandidate {
 }
 impl std::fmt::Debug for TwFullCandidate {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "TwFullCandidate",
-            &DEPTH,
-            &[
-                ("variants", false),
-                ("legacy_important_token", true),
-                ("negative_token", true),
-                ("candidate", false),
-                ("excl_token", true),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<TwFullCandidate> for SyntaxNode {
@@ -2976,20 +2735,7 @@ impl AstNode for TwFunctionalCandidate {
 }
 impl std::fmt::Debug for TwFunctionalCandidate {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "TwFunctionalCandidate",
-            &DEPTH,
-            &[
-                ("base_token", false),
-                ("minus_token", false),
-                ("value", false),
-                ("modifier", true),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<TwFunctionalCandidate> for SyntaxNode {
@@ -3025,15 +2771,7 @@ impl AstNode for TwModifier {
 }
 impl std::fmt::Debug for TwModifier {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "TwModifier",
-            &DEPTH,
-            &[("slash_token", false), ("value", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<TwModifier> for SyntaxNode {
@@ -3069,15 +2807,7 @@ impl AstNode for TwNamedValue {
 }
 impl std::fmt::Debug for TwNamedValue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "TwNamedValue",
-            &DEPTH,
-            &[("value_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<TwNamedValue> for SyntaxNode {
@@ -3113,15 +2843,7 @@ impl AstNode for TwNamedVariantSegment {
 }
 impl std::fmt::Debug for TwNamedVariantSegment {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "TwNamedVariantSegment",
-            &DEPTH,
-            &[("value_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<TwNamedVariantSegment> for SyntaxNode {
@@ -3157,15 +2879,7 @@ impl AstNode for TwNumberValue {
 }
 impl std::fmt::Debug for TwNumberValue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "TwNumberValue",
-            &DEPTH,
-            &[("value_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<TwNumberValue> for SyntaxNode {
@@ -3201,15 +2915,7 @@ impl AstNode for TwPercentageValue {
 }
 impl std::fmt::Debug for TwPercentageValue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "TwPercentageValue",
-            &DEPTH,
-            &[("value_token", false), ("remainder_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<TwPercentageValue> for SyntaxNode {
@@ -3245,20 +2951,7 @@ impl AstNode for TwRoot {
 }
 impl std::fmt::Debug for TwRoot {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "TwRoot",
-            &DEPTH,
-            &[
-                ("bom_token", true),
-                ("leading_whitespace_token", true),
-                ("candidates", false),
-                ("eof_token", false),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<TwRoot> for SyntaxNode {
@@ -3294,15 +2987,7 @@ impl AstNode for TwStaticCandidate {
 }
 impl std::fmt::Debug for TwStaticCandidate {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "TwStaticCandidate",
-            &DEPTH,
-            &[("base_token", false), ("modifier", true)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<TwStaticCandidate> for SyntaxNode {
@@ -3338,15 +3023,7 @@ impl AstNode for TwTypeHint {
 }
 impl std::fmt::Debug for TwTypeHint {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "TwTypeHint",
-            &DEPTH,
-            &[("name_token", false), ("colon_token", false)],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<TwTypeHint> for SyntaxNode {
@@ -3382,19 +3059,7 @@ impl AstNode for TwVariantExpression {
 }
 impl std::fmt::Debug for TwVariantExpression {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        thread_local! { static DEPTH : std :: cell :: Cell < u8 > = const { std :: cell :: Cell :: new (0) } };
-        support::debug_node(
-            &self.syntax,
-            f,
-            "TwVariantExpression",
-            &DEPTH,
-            &[
-                ("segments", false),
-                ("glued_value", true),
-                ("modifier", true),
-            ],
-            debug_syntax_node,
-        )
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<TwVariantExpression> for SyntaxNode {
@@ -4669,9 +4334,7 @@ impl AstNode for CssBogusPropertyValue {
 }
 impl std::fmt::Debug for CssBogusPropertyValue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("CssBogusPropertyValue")
-            .field("items", &DebugSyntaxElementChildren(self.items()))
-            .finish()
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<CssBogusPropertyValue> for SyntaxNode {
@@ -4725,9 +4388,7 @@ impl AstNode for TwBogus {
 }
 impl std::fmt::Debug for TwBogus {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("TwBogus")
-            .field("items", &DebugSyntaxElementChildren(self.items()))
-            .finish()
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<TwBogus> for SyntaxNode {
@@ -4781,9 +4442,7 @@ impl AstNode for TwBogusCandidate {
 }
 impl std::fmt::Debug for TwBogusCandidate {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("TwBogusCandidate")
-            .field("items", &DebugSyntaxElementChildren(self.items()))
-            .finish()
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<TwBogusCandidate> for SyntaxNode {
@@ -4837,9 +4496,7 @@ impl AstNode for TwBogusModifier {
 }
 impl std::fmt::Debug for TwBogusModifier {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("TwBogusModifier")
-            .field("items", &DebugSyntaxElementChildren(self.items()))
-            .finish()
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<TwBogusModifier> for SyntaxNode {
@@ -4893,9 +4550,7 @@ impl AstNode for TwBogusValue {
 }
 impl std::fmt::Debug for TwBogusValue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("TwBogusValue")
-            .field("items", &DebugSyntaxElementChildren(self.items()))
-            .finish()
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<TwBogusValue> for SyntaxNode {
@@ -4949,9 +4604,7 @@ impl AstNode for TwBogusVariant {
 }
 impl std::fmt::Debug for TwBogusVariant {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("TwBogusVariant")
-            .field("items", &DebugSyntaxElementChildren(self.items()))
-            .finish()
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<TwBogusVariant> for SyntaxNode {
@@ -5005,9 +4658,7 @@ impl AstNode for TwBogusVariantSegment {
 }
 impl std::fmt::Debug for TwBogusVariantSegment {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("TwBogusVariantSegment")
-            .field("items", &DebugSyntaxElementChildren(self.items()))
-            .finish()
+        debug_syntax_node(&self.syntax, f)
     }
 }
 impl From<TwBogusVariantSegment> for SyntaxNode {
@@ -5085,8 +4736,7 @@ impl AstNodeList for CssComponentValueList {
 }
 impl Debug for CssComponentValueList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("CssComponentValueList ")?;
-        f.debug_list().entries(self.iter()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for &CssComponentValueList {
@@ -5167,8 +4817,7 @@ impl AstNodeList for CssGenericComponentValueList {
 }
 impl Debug for CssGenericComponentValueList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("CssGenericComponentValueList ")?;
-        f.debug_list().entries(self.iter()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for &CssGenericComponentValueList {
@@ -5249,8 +4898,7 @@ impl AstSeparatedList for CssParameterList {
 }
 impl Debug for CssParameterList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("CssParameterList ")?;
-        f.debug_list().entries(self.elements()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for CssParameterList {
@@ -5331,8 +4979,7 @@ impl AstSeparatedList for TwCandidateList {
 }
 impl Debug for TwCandidateList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("TwCandidateList ")?;
-        f.debug_list().entries(self.elements()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for TwCandidateList {
@@ -5413,8 +5060,7 @@ impl AstSeparatedList for TwVariantList {
 }
 impl Debug for TwVariantList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("TwVariantList ")?;
-        f.debug_list().entries(self.elements()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for TwVariantList {
@@ -5495,8 +5141,7 @@ impl AstSeparatedList for TwVariantSegmentList {
 }
 impl Debug for TwVariantSegmentList {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("TwVariantSegmentList ")?;
-        f.debug_list().entries(self.elements()).finish()
+        debug_syntax_node(self.syntax_list.node(), f)
     }
 }
 impl IntoIterator for TwVariantSegmentList {
@@ -5531,7 +5176,120 @@ impl Debug for DebugSyntaxElement {
         }
     }
 }
-#[doc = r" Prints `node` the way the AST node of its kind does."]
+#[doc = r" Describes how the nodes of this language are printed."]
+struct DebugShapes;
+impl support::DebugNodeShapes for DebugShapes {
+    type Language = Language;
+    const SHAPES: &'static str = concat!(
+        "nCssBinaryExpression,left,operator,right\n",
+        "nCssColor,value_token\n",
+        "nCssDashedIdentifier,ident_token\n",
+        "nCssFunction,name,l_paren_token,parameters,r_paren_token\n",
+        "nCssGenericDelimiter,value\n",
+        "nCssIdentifier,ident_token\n",
+        "nCssListOfComponentValuesExpression,css_component_value_list\n",
+        "nCssNumber,value_token\n",
+        "nCssParenthesizedExpression,l_paren_token,?expression,r_paren_token\n",
+        "nCssPercentage,value_token,remainder_token\n",
+        "nCssRatio,left,slash_token,right\n",
+        "nCssRegularDimension,value_token,unit_token\n",
+        "nCssString,value_token\n",
+        "nCssUnaryExpression,operator,argument\n",
+        "nCssUnknownDimension,value_token,unit_token\n",
+        "nCssUrlFunction,url_token,l_paren_token,?value,r_paren_token\n",
+        "nCssUrlValueRaw,value_token\n",
+        "nTwArbitraryCandidate,l_brack_token,property_token,colon_token,value,r_brack_token,?modifier\n",
+        "nTwArbitraryValue,l_brack_token,value,r_brack_token\n",
+        "nTwArbitraryVariant,l_brack_token,selector_token,r_brack_token\n",
+        "nTwArbitraryVariantSegment,l_brack_token,value_token,r_brack_token\n",
+        "nTwCssVariableValue,l_paren_token,?type_hint,value,r_paren_token\n",
+        "nTwCssVariableVariantSegment,l_paren_token,value,r_paren_token\n",
+        "nTwFullCandidate,variants,?legacy_important_token,?negative_token,candidate,?excl_token\n",
+        "nTwFunctionalCandidate,base_token,minus_token,value,?modifier\n",
+        "nTwModifier,slash_token,value\n",
+        "nTwNamedValue,value_token\n",
+        "nTwNamedVariantSegment,value_token\n",
+        "nTwNumberValue,value_token\n",
+        "nTwPercentageValue,value_token,remainder_token\n",
+        "nTwRoot,?bom_token,?leading_whitespace_token,candidates,eof_token\n",
+        "nTwStaticCandidate,base_token,?modifier\n",
+        "nTwTypeHint,name_token,colon_token\n",
+        "nTwVariantExpression,segments,?glued_value,?modifier\n",
+        "bCssBogusPropertyValue\n",
+        "bTwBogus\n",
+        "bTwBogusCandidate\n",
+        "bTwBogusModifier\n",
+        "bTwBogusValue\n",
+        "bTwBogusVariant\n",
+        "bTwBogusVariantSegment\n",
+        "lCssComponentValueList\n",
+        "lCssGenericComponentValueList\n",
+        "sCssParameterList\n",
+        "sTwCandidateList\n",
+        "sTwVariantList\n",
+        "sTwVariantSegmentList\n"
+    );
+    fn shape_offset(kind: SyntaxKind) -> u32 {
+        match kind {
+            CSS_BINARY_EXPRESSION => 0u32,
+            CSS_COLOR => 41u32,
+            CSS_DASHED_IDENTIFIER => 63u32,
+            CSS_FUNCTION => 96u32,
+            CSS_GENERIC_DELIMITER => 153u32,
+            CSS_IDENTIFIER => 180u32,
+            CSS_LIST_OF_COMPONENT_VALUES_EXPRESSION => 207u32,
+            CSS_NUMBER => 268u32,
+            CSS_PARENTHESIZED_EXPRESSION => 291u32,
+            CSS_PERCENTAGE => 359u32,
+            CSS_RATIO => 402u32,
+            CSS_REGULAR_DIMENSION => 435u32,
+            CSS_STRING => 479u32,
+            CSS_UNARY_EXPRESSION => 502u32,
+            CSS_UNKNOWN_DIMENSION => 540u32,
+            CSS_URL_FUNCTION => 584u32,
+            CSS_URL_VALUE_RAW => 645u32,
+            TW_ARBITRARY_CANDIDATE => 673u32,
+            TW_ARBITRARY_VALUE => 766u32,
+            TW_ARBITRARY_VARIANT => 818u32,
+            TW_ARBITRARY_VARIANT_SEGMENT => 881u32,
+            TW_CSS_VARIABLE_VALUE => 948u32,
+            TW_CSS_VARIABLE_VARIANT_SEGMENT => 1013u32,
+            TW_FULL_CANDIDATE => 1076u32,
+            TW_FUNCTIONAL_CANDIDATE => 1164u32,
+            TW_MODIFIER => 1226u32,
+            TW_NAMED_VALUE => 1256u32,
+            TW_NAMED_VARIANT_SEGMENT => 1282u32,
+            TW_NUMBER_VALUE => 1317u32,
+            TW_PERCENTAGE_VALUE => 1344u32,
+            TW_ROOT => 1391u32,
+            TW_STATIC_CANDIDATE => 1457u32,
+            TW_TYPE_HINT => 1497u32,
+            TW_VARIANT_EXPRESSION => 1532u32,
+            CSS_BOGUS_PROPERTY_VALUE => 1585u32,
+            TW_BOGUS => 1608u32,
+            TW_BOGUS_CANDIDATE => 1617u32,
+            TW_BOGUS_MODIFIER => 1635u32,
+            TW_BOGUS_VALUE => 1652u32,
+            TW_BOGUS_VARIANT => 1666u32,
+            TW_BOGUS_VARIANT_SEGMENT => 1682u32,
+            CSS_COMPONENT_VALUE_LIST => 1705u32,
+            CSS_GENERIC_COMPONENT_VALUE_LIST => 1728u32,
+            CSS_PARAMETER_LIST => 1758u32,
+            TW_CANDIDATE_LIST => 1776u32,
+            TW_VARIANT_LIST => 1793u32,
+            TW_VARIANT_SEGMENT_LIST => 1808u32,
+            _ => u32::MAX,
+        }
+    }
+    fn with_depth<R>(raw_kind: usize, f: impl FnOnce(&std::cell::Cell<u8>) -> R) -> R {
+        thread_local! { static DEPTHS : [std :: cell :: Cell < u8 > ; SyntaxKind :: __LAST as usize] = const { [const { std :: cell :: Cell :: new (0) } ; SyntaxKind :: __LAST as usize] } ; }
+        DEPTHS.with(|depths| f(&depths[raw_kind]))
+    }
+    fn debug_unshaped(_: &SyntaxNode, _: &mut Formatter<'_>) -> std::fmt::Result {
+        unreachable!("every kind of node has a shape")
+    }
+}
+#[doc = r" Prints `node` the way the AST node of its kind is printed."]
 fn debug_syntax_node(node: &SyntaxNode, f: &mut Formatter<'_>) -> std::fmt::Result {
-    map_syntax_node ! (node . clone () , node => std :: fmt :: Debug :: fmt (& node , f))
+    support::debug_any_node::<DebugShapes>(node, f)
 }
