@@ -299,6 +299,10 @@ where
         services.insert_service(project_layout);
     }
 
+    // Erase the type of the inspection function, so the analyzer is compiled
+    // once per language instead of once per caller.
+    let mut inspect_matcher = inspect_matcher;
+    let inspect_matcher: &mut dyn FnMut(&MatchQueryParams<HtmlLanguage>) = &mut inspect_matcher;
     let mut analyzer = biome_analyze::Analyzer::new(
         METADATA.deref(),
         biome_analyze::InspectMatcher::new(registry, inspect_matcher),
