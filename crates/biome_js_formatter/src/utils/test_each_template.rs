@@ -1,7 +1,8 @@
 use crate::js::auxiliary::template_element::TemplateElementOptions;
 use crate::js::lists::template_element_list::TemplateElementIndention;
 use crate::prelude::*;
-use biome_formatter::printer::Printer;
+use biome_formatter::Source;
+use biome_formatter::rowan::RowanSource;
 use biome_formatter::{
     CstFormatContext, FormatOptions, RemoveSoftLinesBuffer, VecBuffer, format_args, write,
 };
@@ -256,7 +257,7 @@ impl EachTemplateTable {
 
                     let range = element.range();
                     let print_options = f.options().as_print_options();
-                    let printed = Printer::new(print_options).print(&root)?;
+                    let printed = RowanSource::print_document(print_options, &root, 0)?;
                     let text = printed.into_code();
 
                     let column = EachTemplateColumn::new(text, range, will_break);
