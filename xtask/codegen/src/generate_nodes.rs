@@ -251,7 +251,29 @@ pub fn generate_nodes(ast: &AstSrc, language_kind: LanguageKind) -> Result<Strin
                 Default::default()
             };
 
-            let debug_fmt_impl = if fields.len() > 0 {
+            // Fields in slot order, with whether a missing child is optional.
+            let debug_fields = node.fields.iter().map(|field| {
+                let name = match field {
+                    Field::Token {
+                        name,
+                        kind: TokenKind::Many(_),
+                        ..
+                    } => name.clone(),
+                    _ => field.method_name(language_kind).to_string(),
+                };
+                let is_list = match field {
+                    Field::Node { ty, .. } => ast.is_list(ty),
+                    _ => false,
+                };
+                let is_optional = !is_list && field.is_optional();
+                quote! { (#name, #is_optional) }
+            });
+
+            let debug_fmt_impl = if fields.len() == 0 {
+                quote! {
+                    f.debug_struct(#string_name).finish()
+                }
+            } else if needs_dynamic_slots {
                 quote! {
                     thread_local! { static DEPTH: std::cell::Cell<u8> = const { std::cell::Cell::new(0) } };
                     let current_depth = DEPTH.get();
@@ -268,7 +290,15 @@ pub fn generate_nodes(ast: &AstSrc, language_kind: LanguageKind) -> Result<Strin
                 }
             } else {
                 quote! {
-                    f.debug_struct(#string_name).finish()
+                    thread_local! { static DEPTH: std::cell::Cell<u8> = const { std::cell::Cell::new(0) } };
+                    support::debug_node(
+                        &self.syntax,
+                        f,
+                        #string_name,
+                        &DEPTH,
+                        &[#(#debug_fields),*],
+                        debug_syntax_node,
+                    )
                 }
             };
 
@@ -615,9 +645,7 @@ pub fn generate_nodes(ast: &AstSrc, language_kind: LanguageKind) -> Result<Strin
 
                     impl std::fmt::Debug for #name {
                         fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                            match self {
-                                #(Self::#all_variant_names(it) => std::fmt::Debug::fmt(it, f),)*
-                            }
+                            debug_syntax_node(self.syntax(), f)
                         }
                     }
 
@@ -974,12 +1002,15 @@ pub fn generate_nodes(ast: &AstSrc, language_kind: LanguageKind) -> Result<Strin
         impl Debug for DebugSyntaxElement {
             fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
                 match &self.0 {
-                    SyntaxElement::Node(node) => {
-                        map_syntax_node!(node.clone(), node => std::fmt::Debug::fmt(&node, f))
-                    }
+                    SyntaxElement::Node(node) => debug_syntax_node(node, f),
                     SyntaxElement::Token(token) => Debug::fmt(token, f),
                 }
             }
+        }
+
+        /// Prints `node` the way the AST node of its kind does.
+        fn debug_syntax_node(node: &SyntaxNode, f: &mut Formatter<'_>) -> std::fmt::Result {
+            map_syntax_node!(node.clone(), node => std::fmt::Debug::fmt(&node, f))
         }
 
     };

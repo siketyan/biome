@@ -1095,6 +1095,65 @@ pub mod support {
         token(parent, slot_index).ok_or(SyntaxError::MissingRequiredChild)
     }
 
+    /// Prints `node` as a struct named `name` whose fields are the children in
+    /// its slots: `fields` gives the name of the child in each slot, and whether
+    /// it's optional.
+    ///
+    /// A child node is printed with `debug_child`, a token with its own [Debug]
+    /// implementation, and a missing child as `missing (required)` or
+    /// `missing (optional)`.
+    ///
+    /// `depth` counts the nodes named `name` that are being printed on the
+    /// current thread. The children are omitted from 16 of them on.
+    pub fn debug_node<L: Language>(
+        node: &SyntaxNode<L>,
+        f: &mut Formatter<'_>,
+        name: &'static str,
+        depth: &'static std::thread::LocalKey<std::cell::Cell<u8>>,
+        fields: &[(&'static str, bool)],
+        debug_child: fn(&SyntaxNode<L>, &mut Formatter<'_>) -> std::fmt::Result,
+    ) -> std::fmt::Result {
+        let current_depth = depth.get();
+        let result = if current_depth < 16 {
+            depth.set(current_depth + 1);
+            let mut debug = f.debug_struct(name);
+            for (slot_index, (field_name, is_optional)) in fields.iter().enumerate() {
+                debug.field(
+                    field_name,
+                    &DebugSlot {
+                        slot: node.slot(slot_index),
+                        is_optional: *is_optional,
+                        debug_child,
+                    },
+                );
+            }
+            debug.finish()
+        } else {
+            f.debug_struct(name).finish()
+        };
+        depth.set(current_depth);
+        result
+    }
+
+    struct DebugSlot<L: Language> {
+        slot: Option<SyntaxSlot<L>>,
+        is_optional: bool,
+        debug_child: fn(&SyntaxNode<L>, &mut Formatter<'_>) -> std::fmt::Result,
+    }
+
+    impl<L: Language> Debug for DebugSlot<L> {
+        fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+            match &self.slot {
+                Some(SyntaxSlot::Node(node)) => (self.debug_child)(node, f),
+                Some(SyntaxSlot::Token(token)) => Debug::fmt(token, f),
+                Some(SyntaxSlot::Empty { .. }) | None if self.is_optional => {
+                    f.write_str("missing (optional)")
+                }
+                Some(SyntaxSlot::Empty { .. }) | None => f.write_str("missing (required)"),
+            }
+        }
+    }
+
     /// New-type wrapper to flatten the debug output of syntax result fields when printing [AstNode]s.
     /// Omits the [Ok] if the node is present and prints `missing (required)` if the child is missing
     pub struct DebugSyntaxResult<N>(pub SyntaxResult<N>);
