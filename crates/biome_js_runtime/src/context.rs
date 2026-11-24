@@ -86,8 +86,17 @@ impl JsExecContext {
     }
 
     pub fn import_module(&mut self, path: impl AsRef<Utf8Path>) -> JsResult<Module> {
+        self.import_module_at(path.as_ref())
+    }
+
+    /// Imports the module at `path`.
+    ///
+    /// It isn't generic and it's never inlined, so the JavaScript parser of
+    /// the engine is compiled in this crate instead of in every crate that
+    /// imports a module.
+    #[inline(never)]
+    fn import_module_at(&mut self, path: &Utf8Path) -> JsResult<Module> {
         let ctx = &mut self.ctx;
-        let path = path.as_ref();
         let source = read_module_source(&self.fs, path)?;
         let source = Source::from_bytes(source.as_bytes()).with_path(path.as_std_path());
         let module = Module::parse(source, None, ctx)?;
