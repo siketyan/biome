@@ -1519,7 +1519,7 @@ pub trait Rule: RuleMeta + Sized {
     /// override this if generating a diagnostic for this rule requires heavy
     /// processing and the range could be determined through a faster path
     fn text_range(ctx: &RuleContext<Self>, state: &Self::State) -> Option<TextRange> {
-        rule_diagnostic(ctx, state).and_then(|diag| diag.span())
+        diagnostic_span(rule_diagnostic(ctx, state))
     }
 
     /// Allows the rule to suppress a set of syntax nodes to prevent them from
@@ -1626,6 +1626,15 @@ pub trait Rule: RuleMeta + Sized {
         None
     }
 }
+/// Returns the range of `diagnostic`.
+///
+/// It's never inlined, so the code that drops the diagnostic isn't repeated
+/// in every rule that only needs the range.
+#[inline(never)]
+pub(crate) fn diagnostic_span(diagnostic: Option<RuleDiagnostic>) -> Option<TextRange> {
+    diagnostic.and_then(|diagnostic| diagnostic.span())
+}
+
 /// Returns the diagnostic of the rule `R` for `state`.
 ///
 /// It's never inlined, so the callers that need the diagnostic or only its
