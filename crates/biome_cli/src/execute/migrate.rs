@@ -8,7 +8,6 @@ use biome_configuration::Configuration;
 use biome_console::fmt::{Display, Formatter};
 use biome_console::{Console, ConsoleExt, markup};
 use biome_deserialize::Merge;
-use biome_deserialize::json::deserialize_from_json_ast;
 use biome_diagnostics::{
     Category, Diagnostic, LogCategory, PrintDiagnostic, Severity, Visit, category,
 };
@@ -224,8 +223,7 @@ fn migrate_file(payload: MigrateFile) -> Result<MigrationFileResult, CliDiagnost
                 path: prettier_path,
                 data: prettier_config,
             } = prettier::read_config_file(fs, console)?;
-            let biome_config =
-                deserialize_from_json_ast::<Configuration>(&parsed.tree(), "").into_deserialized();
+            let biome_config = Configuration::from_json_ast(&parsed.tree(), "").into_deserialized();
             let Some(mut biome_config) = biome_config else {
                 return Ok(MigrationFileResult::HasErrors);
             };
@@ -303,8 +301,7 @@ fn migrate_file(payload: MigrateFile) -> Result<MigrationFileResult, CliDiagnost
                 path: eslint_path,
                 data: eslint_config,
             } = eslint::read_eslint_config(fs, console)?;
-            let biome_config =
-                deserialize_from_json_ast::<Configuration>(&parsed.tree(), "").into_deserialized();
+            let biome_config = Configuration::from_json_ast(&parsed.tree(), "").into_deserialized();
             let Some(mut biome_config) = biome_config else {
                 return Ok(MigrationFileResult::HasErrors);
             };
@@ -388,8 +385,7 @@ fn migrate_file(payload: MigrateFile) -> Result<MigrationFileResult, CliDiagnost
                 path: stylelint_path,
                 data: stylelint_config,
             } = stylelint::read_stylelint_config(fs, console)?;
-            let biome_config =
-                deserialize_from_json_ast::<Configuration>(&parsed.tree(), "").into_deserialized();
+            let biome_config = Configuration::from_json_ast(&parsed.tree(), "").into_deserialized();
             let Some(mut biome_config) = biome_config else {
                 return Ok(MigrationFileResult::HasErrors);
             };

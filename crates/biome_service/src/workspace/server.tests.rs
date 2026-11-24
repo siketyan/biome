@@ -1655,7 +1655,7 @@ fn assert_settings_query_routes(db_state: fn(Arc<dyn FsWithResolverProxy>) -> Db
         .unwrap();
     assert!(diagnostics.diagnostics.is_empty());
 
-    let inline_configuration = biome_deserialize::json::deserialize_from_json_str::<Configuration>(
+    let inline_configuration = Configuration::from_json_str(
         r#"{
                 "javascript": { "formatter": { "quoteStyle": "single" } },
                 "overrides": [{
@@ -1798,7 +1798,7 @@ fn settings_query_preserves_sequential_analyzer_rule_options() {
     let fs = MemoryFileSystem::default();
     fs.insert(Utf8PathBuf::from(PATH), SOURCE.as_bytes());
     let (workspace, project_key) = setup_workspace_and_open_project(fs, "/project");
-    let configuration = biome_deserialize::json::deserialize_from_json_str::<Configuration>(
+    let configuration = Configuration::from_json_str(
         r#"{
             "linter": {
                 "rules": {
@@ -1870,9 +1870,8 @@ fn settings_query_uses_inline_analyzer_override_indices() {
     let fs = MemoryFileSystem::default();
     fs.insert(Utf8PathBuf::from(PATH), SOURCE.as_bytes());
     let (workspace, project_key) = setup_workspace_and_open_project(fs, "/project");
-    let project_configuration =
-        biome_deserialize::json::deserialize_from_json_str::<Configuration>(
-            r#"{
+    let project_configuration = Configuration::from_json_str(
+        r#"{
                 "linter": {
                     "enabled": true,
                     "rules": {
@@ -1887,11 +1886,11 @@ fn settings_query_uses_inline_analyzer_override_indices() {
                     }
                 }]
             }"#,
-            biome_json_parser::JsonParserOptions::default(),
-            "",
-        )
-        .into_deserialized()
-        .unwrap();
+        biome_json_parser::JsonParserOptions::default(),
+        "",
+    )
+    .into_deserialized()
+    .unwrap();
     workspace
         .update_settings(UpdateSettingsParams {
             project_key,
@@ -1913,7 +1912,7 @@ fn settings_query_uses_inline_analyzer_override_indices() {
         })
         .unwrap();
 
-    let inline_configuration = biome_deserialize::json::deserialize_from_json_str::<Configuration>(
+    let inline_configuration = Configuration::from_json_str(
         r#"{
                 "overrides": [{
                     "includes": ["**/src/*.js"],

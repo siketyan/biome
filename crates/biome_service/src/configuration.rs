@@ -20,7 +20,6 @@ use biome_console::markup;
 use biome_css_analyze::METADATA as css_lint_metadata;
 #[cfg(feature = "lang_css")]
 use biome_css_syntax::CssLanguage;
-use biome_deserialize::json::deserialize_from_json_str;
 use biome_diagnostics::{Advices, Diagnostic, DiagnosticExt, Error, LogCategory, Severity, Visit};
 use biome_fs::ManifestName;
 use biome_fs::{AutoSearchResult, ConfigName, FileSystem, OpenOptions, normalize_path};
@@ -353,8 +352,7 @@ pub fn read_config(
                 .with_allow_trailing_commas(),
         };
 
-        let deserialized_content =
-            deserialize_from_json_str::<Configuration>(content, parser_options, "");
+        let deserialized_content = Configuration::from_json_str(content, parser_options, "");
         let is_found = deserialized_content
             .deserialized
             .as_ref()
@@ -422,7 +420,7 @@ fn load_user_config(
                 .with_allow_trailing_commas(),
             _ => return Err(BiomeDiagnostic::invalid_configuration_file(config_file_path).into()),
         };
-        let deserialized = deserialize_from_json_str::<Configuration>(&content, parser_options, "");
+        let deserialized = Configuration::from_json_str(&content, parser_options, "");
         let loaded_location = working_directory.map_or(LoadedLocation::InProject, |wd| {
             if config_file_path.starts_with(wd) {
                 LoadedLocation::InProject
@@ -456,7 +454,7 @@ fn load_user_config(
         };
 
         let content = fs.read_file_from_path(result.file_path.as_path())?;
-        let deserialized = deserialize_from_json_str::<Configuration>(&content, parser_options, "");
+        let deserialized = Configuration::from_json_str(&content, parser_options, "");
         if deserialized
             .deserialized
             .as_ref()
@@ -1250,7 +1248,7 @@ impl<'a> ConfigurationExtendsLoader<'a> {
         resolved: ResolvedExtendedConfiguration,
     ) -> Result<LoadedExtendedConfiguration, WorkspaceError> {
         let source = self.read_configuration_source(&resolved.file_path)?;
-        let deserialized = deserialize_from_json_str::<Configuration>(
+        let deserialized = Configuration::from_json_str(
             source.as_str(),
             match resolved.file_path.extension() {
                 Some("json") => JsonParserOptions::default(),

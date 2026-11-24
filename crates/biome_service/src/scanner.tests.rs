@@ -547,7 +547,7 @@ fn scanner_ignored_files_are_not_loaded() {
 
     let (workspace, project_key) = setup_workspace_and_open_project(fs, fixtures_path.as_str());
 
-    let configuration = deserialize_from_json_str::<Configuration>(
+    let configuration = Configuration::from_json_str(
         configuration.as_str(),
         JsonParserOptions::default().with_allow_comments(),
         "",
@@ -601,7 +601,7 @@ fn scanner_required_files_are_only_ignored_in_ignored_directories() {
 
     let (workspace, project_key) = setup_workspace_and_open_project(fs, fixtures_path.as_str());
 
-    let configuration = deserialize_from_json_str::<Configuration>(
+    let configuration = Configuration::from_json_str(
         configuration.as_str(),
         JsonParserOptions::default().with_allow_comments(),
         "",

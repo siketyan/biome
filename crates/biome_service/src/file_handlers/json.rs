@@ -698,7 +698,7 @@ pub(super) fn lint_with_inspector(
     // if we're parsing the `biome.json` file, we deserialize it, so we can emit diagnostics for
     // malformed configuration
     if ConfigName::is_manifest_file(params.path.as_path()) {
-        let deserialized = deserialize_from_json_ast::<Configuration>(&root, "");
+        let deserialized = Configuration::from_json_ast(&root, "");
         diagnostics.extend(
             deserialized
                 .into_diagnostics()

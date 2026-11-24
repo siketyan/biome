@@ -1484,7 +1484,7 @@ mod tests {
         }
 
         fn deserialize_biome_config(input: &str) -> biome_config::Configuration {
-            let (config, diagnostics) = deserialize_from_json_str::<biome_config::Configuration>(
+            let (config, diagnostics) = biome_config::Configuration::from_json_str(
                 input,
                 JsonParserOptions::default()
                     .with_allow_comments()

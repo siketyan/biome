@@ -63,8 +63,7 @@ use biome_configuration::{BiomeDiagnostic, Configuration, ConfigurationPathHint}
 #[cfg(all(feature = "module_graph", feature = "lang_css"))]
 use biome_css_syntax::AnyCssRoot;
 use biome_db::Source;
-use biome_deserialize::json::deserialize_from_json_str;
-use biome_deserialize::{Deserialized, Merge};
+use biome_deserialize::Merge;
 use biome_diagnostics::print_diagnostic_to_string;
 use biome_diagnostics::{
     Diagnostic, DiagnosticExt, Error, Severity, serde::Diagnostic as SerdeDiagnostic,
@@ -941,8 +940,7 @@ impl WorkspaceServerWithDb<'_> {
             let file_source = JsonFileSource::try_from_extension(extension)
                 .map_err(|err| BiomeDiagnostic::invalid_configuration(err.to_string()))?;
             let parser_options = JsonParserOptions::from(&file_source);
-            let deserialized: Deserialized<Configuration> =
-                deserialize_from_json_str(&content, parser_options, "config");
+            let deserialized = Configuration::from_json_str(&content, parser_options, "config");
             if let Some(error) = deserialized
                 .diagnostics()
                 .iter()
