@@ -198,8 +198,11 @@ fn sort_variable_list(
         .map(VariableTrivia::new)
         .collect::<Option<Vec<_>>>()?;
 
-    let mut order: Vec<usize> = (0..variables.len()).collect();
-    order.sort_by(|&a, &b| compare_names(variables[a].name.clone(), variables[b].name.clone()));
+    let names: Vec<_> = variables
+        .iter()
+        .map(|variable| variable.name.clone())
+        .collect();
+    let order = crate::utils::sorted_name_order(&names);
 
     let mut nodes = Vec::with_capacity(variables.len());
     for (position, &index) in order.iter().enumerate() {

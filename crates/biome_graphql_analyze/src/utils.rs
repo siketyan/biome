@@ -57,6 +57,17 @@ fn compare_names(a: Option<TokenText>, b: Option<TokenText>) -> Ordering {
     }
 }
 
+/// Returns the indexes of `names` in the order of their names, as compared by
+/// [`compare_names`]. Equal names keep their relative order.
+///
+/// It doesn't depend on the type of the sorted items, so the lists share a
+/// single copy of the sorting code.
+pub(crate) fn sorted_name_order(names: &[Option<TokenText>]) -> Vec<usize> {
+    let mut order: Vec<usize> = (0..names.len()).collect();
+    order.sort_by(|&a, &b| compare_names(names[a].clone(), names[b].clone()));
+    order
+}
+
 /// Returns whether `list` is already in the order that [`sort_list`] produces.
 pub(crate) fn is_list_sorted<L>(list: &L, name: impl Fn(&L::Node) -> Option<TokenText>) -> bool
 where
@@ -179,8 +190,8 @@ where
         })
         .collect::<Option<Vec<_>>>()?;
 
-    let mut order: Vec<usize> = (0..items.len()).collect();
-    order.sort_by(|&a, &b| compare_names(items[a].name.clone(), items[b].name.clone()));
+    let names: Vec<_> = items.iter().map(|item| item.name.clone()).collect();
+    let order = sorted_name_order(&names);
 
     let mut nodes = Vec::with_capacity(items.len());
     for (position, &index) in order.iter().enumerate() {

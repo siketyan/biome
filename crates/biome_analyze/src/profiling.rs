@@ -447,6 +447,17 @@ pub fn reset() {
     }
 }
 
+/// Sorts `values` in descending order and returns the smallest of the first
+/// `count` values, or [None] if there are fewer than `count` values or
+/// `count` is zero.
+fn cutoff<T: Ord + Copy>(values: &mut [T], count: usize) -> Option<T> {
+    if count == 0 || values.is_empty() {
+        return None;
+    }
+    values.sort_by(|a, b| b.cmp(a));
+    values.get(count - 1).copied()
+}
+
 /// Utility for formatting a summary of rule profiles for display purposes.
 pub struct DisplayProfiles(pub Vec<RuleProfile>, pub Option<usize>);
 
@@ -487,40 +498,15 @@ impl biome_console::fmt::Display for DisplayProfiles {
         let mut counts: Vec<_> = displayed.iter().map(|p| p.count).collect();
 
         // Compute cutoffs (smallest value among the top 10% when sorted descending)
-        let totals_cutoff = if warn_count == 0 || totals.is_empty() {
-            None
-        } else {
-            totals.sort_by(|a, b| b.cmp(a));
-            totals.get(warn_count - 1).copied()
-        };
+        let totals_cutoff = cutoff(&mut totals, warn_count);
 
-        let avgs_cutoff = if warn_count == 0 || avgs.is_empty() {
-            None
-        } else {
-            avgs.sort_by(|a, b| b.cmp(a));
-            avgs.get(warn_count - 1).copied()
-        };
+        let avgs_cutoff = cutoff(&mut avgs, warn_count);
 
-        let mins_cutoff = if warn_count == 0 || mins.is_empty() {
-            None
-        } else {
-            mins.sort_by(|a, b| b.cmp(a));
-            mins.get(warn_count - 1).copied()
-        };
+        let mins_cutoff = cutoff(&mut mins, warn_count);
 
-        let maxs_cutoff = if warn_count == 0 || maxs.is_empty() {
-            None
-        } else {
-            maxs.sort_by(|a, b| b.cmp(a));
-            maxs.get(warn_count - 1).copied()
-        };
+        let maxs_cutoff = cutoff(&mut maxs, warn_count);
 
-        let counts_cutoff = if warn_count == 0 || counts.is_empty() {
-            None
-        } else {
-            counts.sort_by(|a, b| b.cmp(a));
-            counts.get(warn_count - 1).copied()
-        };
+        let counts_cutoff = cutoff(&mut counts, warn_count);
 
         for p in profiles.into_iter().take(limit) {
             let total = FmtDuration(p.total);

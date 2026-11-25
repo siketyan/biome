@@ -63,6 +63,15 @@ pub fn sort_object_by_comparator<F>(
 where
     F: Fn(&str, &str) -> Ordering,
 {
+    sort_object_by_dyn_comparator(object, &comparator)
+}
+
+/// Implements [sort_object_by_comparator]. The comparator is a trait object,
+/// so the sorting code is compiled once instead of once per comparator.
+fn sort_object_by_dyn_comparator(
+    object: &JsonObjectValue,
+    comparator: &dyn Fn(&str, &str) -> Ordering,
+) -> Option<JsonObjectValue> {
     let members = object.json_member_list();
     let original: Vec<JsonMember> = members.iter().filter_map(|m| m.ok()).collect();
 
