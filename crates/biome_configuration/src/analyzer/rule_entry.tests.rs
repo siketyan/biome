@@ -493,3 +493,18 @@ fn a_group_is_read_behind_a_severity_or_group() {
     assert_eq!(diagnostics.len(), 0);
     assert_eq!(read, Some(SeverityOrGroup::Group(group)));
 }
+
+#[test]
+fn an_untyped_slot_reaches_the_rule_of_its_slot() {
+    let mut group = Group::default();
+    group
+        .untyped_rule_mut(ORDERED.untyped())
+        .set_level(RulePlainConfiguration::Warn);
+
+    assert_eq!(
+        group.rule(ORDERED).map(RuleEntry::level),
+        Some(RulePlainConfiguration::Warn)
+    );
+    assert!(group.rule(NO_FIX).is_none());
+    assert!(group.rule(WITH_FIX).is_none());
+}

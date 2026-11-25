@@ -7,6 +7,7 @@ use super::{
 use biome_analyze::{RuleSource, UNSUPPORTED_RULES, UnsupportedRuleReason};
 use biome_configuration::analyzer::SeverityOrGroup;
 use biome_configuration::analyzer::presets::PresetConfig;
+use biome_configuration::analyzer::rule_entry::UntypedRuleSlot;
 use biome_configuration::{self as biome_config};
 use biome_console::markup;
 use biome_deserialize::Merge;
@@ -373,6 +374,94 @@ pub(crate) enum RuleMigrationResult {
     Nursery,
     /// An unsupported rule
     Unsupported,
+}
+
+/// A rule of any lint group.
+#[derive(Clone, Copy)]
+pub(crate) enum AnyRuleSlot {
+    A11y(UntypedRuleSlot<biome_config::analyzer::A11yTable>),
+    Complexity(UntypedRuleSlot<biome_config::analyzer::ComplexityTable>),
+    Correctness(UntypedRuleSlot<biome_config::analyzer::CorrectnessTable>),
+    Nursery(UntypedRuleSlot<biome_config::analyzer::NurseryTable>),
+    Performance(UntypedRuleSlot<biome_config::analyzer::PerformanceTable>),
+    Security(UntypedRuleSlot<biome_config::analyzer::SecurityTable>),
+    Style(UntypedRuleSlot<biome_config::analyzer::StyleTable>),
+    Suspicious(UntypedRuleSlot<biome_config::analyzer::SuspiciousTable>),
+}
+
+impl AnyRuleSlot {
+    /// Returns the configuration of the rule in `rules`, configuring its
+    /// group and the rule itself when they're unset.
+    fn rule_mut(self, rules: &mut biome_config::Rules) -> &mut biome_config::analyzer::RuleEntry {
+        macro_rules! rule_mut {
+            ($group:ident, $slot:ident) => {
+                rules
+                    .$group
+                    .get_or_insert_with(Default::default)
+                    .unwrap_group_as_mut()
+                    .untyped_rule_mut($slot)
+            };
+        }
+        match self {
+            Self::A11y(slot) => rule_mut!(a11y, slot),
+            Self::Complexity(slot) => rule_mut!(complexity, slot),
+            Self::Correctness(slot) => rule_mut!(correctness, slot),
+            Self::Nursery(slot) => rule_mut!(nursery, slot),
+            Self::Performance(slot) => rule_mut!(performance, slot),
+            Self::Security(slot) => rule_mut!(security, slot),
+            Self::Style(slot) => rule_mut!(style, slot),
+            Self::Suspicious(slot) => rule_mut!(suspicious, slot),
+        }
+    }
+}
+
+/// A Biome rule that an ESLint rule is migrated to.
+#[derive(Clone, Copy)]
+pub(crate) struct MappedRule {
+    pub(crate) slot: AnyRuleSlot,
+    /// Whether the Biome rule is only inspired by the ESLint rule. Such a
+    /// rule is migrated only with `--include-inspired`.
+    pub(crate) is_inspired: bool,
+}
+
+/// Enables the Biome rules that the ESLint rule `eslint_name` maps to, with
+/// at least the severity of the ESLint rule.
+///
+/// Returns whether a rule was migrated. The inspired rules and the nursery
+/// rules that are left out are recorded in `results`.
+pub(crate) fn migrate_mapped_rules(
+    rules: &mut biome_config::Rules,
+    eslint_name: &str,
+    rule_severity: eslint_eslint::Severity,
+    options: &MigrationOptions,
+    results: &mut MigrationResults,
+    mapped_rules: &[MappedRule],
+) -> bool {
+    let mut migrated = false;
+    for mapped_rule in mapped_rules {
+        let mut blocked = false;
+        if mapped_rule.is_inspired && !options.include_inspired {
+            results.add(eslint_name, RuleMigrationResult::Inspired);
+            blocked = true;
+        }
+        if matches!(mapped_rule.slot, AnyRuleSlot::Nursery(_)) && !options.include_nursery {
+            // An ESLint rule that maps to a single Biome rule is reported
+            // once, as inspired, when both reasons apply.
+            if !(blocked && mapped_rules.len() == 1) {
+                results.add(eslint_name, RuleMigrationResult::Nursery);
+            }
+            blocked = true;
+        }
+        if !blocked {
+            let rule = mapped_rule.slot.rule_mut(rules);
+            rule.set_level(rule.level().max(rule_severity.into()));
+            migrated = true;
+        }
+    }
+    if migrated {
+        results.add(eslint_name, RuleMigrationResult::Migrated);
+    }
+    migrated
 }
 
 #[derive(Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]
@@ -2040,5 +2129,117 @@ mod tests {
             unsupported_rule_reason(&EslintRuleName::from_str("eol-last")),
             UnsupportedRuleReason::FormatterCovers
         );
+    }
+
+    fn mapped(slot: AnyRuleSlot, is_inspired: bool) -> MappedRule {
+        MappedRule { slot, is_inspired }
+    }
+
+    fn debugger_slot() -> AnyRuleSlot {
+        AnyRuleSlot::Suspicious(biome_config::analyzer::Suspicious::NO_DEBUGGER.untyped())
+    }
+
+    fn nursery_slot() -> AnyRuleSlot {
+        AnyRuleSlot::Nursery(biome_config::analyzer::Nursery::USE_CONSISTENT_BLOCK_LANG.untyped())
+    }
+
+    #[test]
+    fn mapped_rule_gets_at_least_the_severity_of_the_eslint_rule() {
+        let mut rules = biome_config::Rules::default();
+        let mut results = MigrationResults::default();
+        let options = MigrationOptions::default();
+
+        for severity in [Severity::Error, Severity::Warn] {
+            assert!(migrate_mapped_rules(
+                &mut rules,
+                "no-debugger",
+                severity,
+                &options,
+                &mut results,
+                &[mapped(debugger_slot(), false)],
+            ));
+        }
+
+        let group = rules.suspicious.as_mut().unwrap().unwrap_group_as_mut();
+        assert_eq!(
+            group
+                .rule(biome_config::analyzer::Suspicious::NO_DEBUGGER)
+                .map(|rule| rule.level()),
+            Some(biome_config::RulePlainConfiguration::Error)
+        );
+        assert!(
+            results
+                .migrated
+                .contains(&EslintRuleName::from_str("no-debugger"))
+        );
+    }
+
+    #[test]
+    fn single_mapped_rule_that_is_left_out_is_reported_once() {
+        let mut rules = biome_config::Rules::default();
+        let mut results = MigrationResults::default();
+        let name = EslintRuleName::from_str("plugin/rule");
+
+        assert!(!migrate_mapped_rules(
+            &mut rules,
+            "plugin/rule",
+            Severity::Error,
+            &MigrationOptions::default(),
+            &mut results,
+            &[mapped(nursery_slot(), true)],
+        ));
+
+        assert!(rules.nursery.is_none());
+        assert!(results.inspired.contains(&name));
+        assert!(!results.nursery.contains(&name));
+        assert!(!results.migrated.contains(&name));
+
+        let mut results = MigrationResults::default();
+        assert!(!migrate_mapped_rules(
+            &mut rules,
+            "plugin/rule",
+            Severity::Error,
+            &MigrationOptions::default(),
+            &mut results,
+            &[mapped(nursery_slot(), false)],
+        ));
+        assert!(results.nursery.contains(&name));
+        assert!(results.inspired.is_empty());
+    }
+
+    #[test]
+    fn several_mapped_rules_are_migrated_when_one_of_them_is() {
+        let mut rules = biome_config::Rules::default();
+        let mut results = MigrationResults::default();
+        let name = EslintRuleName::from_str("plugin/rule");
+        let mapped_rules = [mapped(nursery_slot(), true), mapped(debugger_slot(), false)];
+
+        assert!(migrate_mapped_rules(
+            &mut rules,
+            "plugin/rule",
+            Severity::Warn,
+            &MigrationOptions::default(),
+            &mut results,
+            &mapped_rules,
+        ));
+
+        assert!(rules.nursery.is_none());
+        assert!(rules.suspicious.is_some());
+        assert!(results.inspired.contains(&name));
+        assert!(results.nursery.contains(&name));
+        assert!(results.migrated.contains(&name));
+
+        let mut rules = biome_config::Rules::default();
+        let mut results = MigrationResults::default();
+        assert!(!migrate_mapped_rules(
+            &mut rules,
+            "plugin/rule",
+            Severity::Warn,
+            &MigrationOptions::default(),
+            &mut results,
+            &[mapped(nursery_slot(), true), mapped(nursery_slot(), false)],
+        ));
+        assert!(rules.nursery.is_none());
+        assert!(results.migrated.is_empty());
     }
 }

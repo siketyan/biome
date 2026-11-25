@@ -477,6 +477,39 @@ impl<G, O, const HAS_FIX: bool> Clone for RuleSlot<G, O, HAS_FIX> {
 
 impl<G, O, const HAS_FIX: bool> Copy for RuleSlot<G, O, HAS_FIX> {}
 
+impl<G, O, const HAS_FIX: bool> RuleSlot<G, O, HAS_FIX> {
+    /// Returns the same slot without the type of the options of the rule and
+    /// without whether it has a fix.
+    ///
+    /// Slots of this type can be stored together, in a table of rules for
+    /// example.
+    pub const fn untyped(self) -> UntypedRuleSlot<G> {
+        UntypedRuleSlot {
+            index: self.index,
+            group: PhantomData,
+        }
+    }
+}
+
+/// Identifies a rule of the group described by `G`, without the type of its
+/// options.
+///
+/// It's only obtained from a [RuleSlot] with [RuleSlot::untyped], so it
+/// always names a rule of the group. It gives access to the level of the
+/// rule, but not to its options.
+pub struct UntypedRuleSlot<G> {
+    index: usize,
+    group: PhantomData<fn() -> G>,
+}
+
+impl<G> Clone for UntypedRuleSlot<G> {
+    fn clone(&self) -> Self {
+        *self
+    }
+}
+
+impl<G> Copy for UntypedRuleSlot<G> {}
+
 impl<G> RuleGroupConfig<G> {
     /// Returns the configuration of a rule, if it's configured.
     pub fn rule<O, const HAS_FIX: bool>(
@@ -492,6 +525,12 @@ impl<G> RuleGroupConfig<G> {
         &mut self,
         slot: RuleSlot<G, O, HAS_FIX>,
     ) -> &mut RuleEntry {
+        self.untyped_rule_mut(slot.untyped())
+    }
+
+    /// Returns the configuration of a rule, configuring the rule with its
+    /// default configuration when it's unset.
+    pub fn untyped_rule_mut(&mut self, slot: UntypedRuleSlot<G>) -> &mut RuleEntry {
         self.slot_at(slot.index)
             .get_or_insert_with(RuleEntry::default)
     }

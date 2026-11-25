@@ -10,7 +10,8 @@ use std::collections::BTreeMap;
 use xtask_codegen::update;
 use xtask_glue::*;
 
-fn generate_multi_mapping(eslint_name: Box<str>, mapped_rules: Vec<RuleMapping>) -> TokenStream {
+/// Generates the match arm that maps `eslint_name` to its Biome rules.
+fn generate_mapping(eslint_name: Box<str>, mapped_rules: Vec<RuleMapping>) -> TokenStream {
     let rules = mapped_rules.iter().map(
         |RuleMapping {
              source_kind,
@@ -19,116 +20,20 @@ fn generate_multi_mapping(eslint_name: Box<str>, mapped_rules: Vec<RuleMapping>)
          }| {
             let rule_slot = format_ident!("{}", Case::Constant.convert(rule_name));
             let group_type = format_ident!("{}", Case::Pascal.convert(group_name));
-            let group_ident = format_ident!("{group_name}");
-            let blocked_set = if source_kind.is_inspired() || *group_name == "nursery" {
-                quote! {
-                    let mut blocked = false;
-                }
-            } else {
-                quote! {}
-            };
-            let check_inspired = if source_kind.is_inspired() {
-                quote! {
-                    if !options.include_inspired {
-                        results.add(eslint_name, eslint_to_biome::RuleMigrationResult::Inspired);
-                        blocked = true;
-                    }
-                }
-            } else {
-                quote! {}
-            };
-            let check_nursery = if *group_name == "nursery" {
-                quote! {
-                    if !options.include_nursery {
-                        results.add(eslint_name, eslint_to_biome::RuleMigrationResult::Nursery);
-                        blocked = true;
-                    }
-                }
-            } else {
-                quote! {}
-            };
-            let migrate = if source_kind.is_inspired() || *group_name == "nursery" {
-                quote! {
-                    if !blocked {
-                        let group = rules.#group_ident.get_or_insert_with(Default::default);
-                        let rule = group.unwrap_group_as_mut().rule_mut(biome_configuration::analyzer::#group_type::#rule_slot);
-                        rule.set_level(rule.level().max(rule_severity.into()));
-                        migrated = true;
-                    }
-                }
-            } else {
-                quote! {
-                    let group = rules.#group_ident.get_or_insert_with(Default::default);
-                    let rule = group.unwrap_group_as_mut().rule_mut(biome_configuration::analyzer::#group_type::#rule_slot);
-                    rule.set_level(rule.level().max(rule_severity.into()));
-                    migrated = true;
-                }
-            };
-
+            let is_inspired = source_kind.is_inspired();
             quote! {
-                {
-                    #blocked_set
-                    #check_inspired
-                    #check_nursery
-                    #migrate
+                eslint_to_biome::MappedRule {
+                    slot: eslint_to_biome::AnyRuleSlot::#group_type(
+                        biome_configuration::analyzer::#group_type::#rule_slot.untyped(),
+                    ),
+                    is_inspired: #is_inspired,
                 }
             }
         },
     );
 
     quote! {
-        #eslint_name => {
-            let mut migrated = false;
-            #( #rules )*
-            if !migrated {
-                return false;
-            }
-        }
-    }
-}
-
-fn generate_single_mapping(eslint_name: Box<str>, mapped_rules: Vec<RuleMapping>) -> TokenStream {
-    let Some(RuleMapping {
-        source_kind,
-        rule_name,
-        group_name,
-    }) = mapped_rules.first()
-    else {
-        return quote! {};
-    };
-
-    let rule_slot = format_ident!("{}", Case::Constant.convert(rule_name));
-    let group_type = format_ident!("{}", Case::Pascal.convert(group_name));
-    let group_ident = format_ident!("{group_name}");
-    let check_inspired = if source_kind.is_inspired() {
-        quote! {
-            if !options.include_inspired {
-                results.add(eslint_name, eslint_to_biome::RuleMigrationResult::Inspired);
-                return false;
-            }
-        }
-    } else {
-        quote! {}
-    };
-    let check_nursery = if *group_name == "nursery" {
-        quote! {
-            if !options.include_nursery {
-                results.add(eslint_name, eslint_to_biome::RuleMigrationResult::Nursery);
-                return false;
-            }
-        }
-    } else {
-        quote! {}
-    };
-
-    quote! {
-        #eslint_name => {
-            #check_inspired
-            #check_nursery
-            let group = rules.#group_ident.get_or_insert_with(Default::default);
-            let rule = group.unwrap_group_as_mut().rule_mut(biome_configuration::analyzer::#group_type::#rule_slot);
-            rule.set_level(rule.level().max(rule_severity.into()));
-        }
+        #eslint_name => const { &[ #( #rules ),* ] },
     }
 }
 
@@ -145,11 +50,7 @@ pub(crate) fn generate_migrate_eslint(mode: Mode) -> Result<()> {
             continue;
         }
 
-        lines.push(if mapped_rules.len() > 1 {
-            generate_multi_mapping(eslint_name, mapped_rules)
-        } else {
-            generate_single_mapping(eslint_name, mapped_rules)
-        });
+        lines.push(generate_mapping(eslint_name, mapped_rules));
     }
     let tokens = xtask_glue::reformat(quote! {
         use super::{eslint_eslint, eslint_to_biome};
@@ -160,15 +61,21 @@ pub(crate) fn generate_migrate_eslint(mode: Mode) -> Result<()> {
             options: &eslint_to_biome::MigrationOptions,
             results: &mut eslint_to_biome::MigrationResults,
         ) -> bool {
-            match eslint_name {
+            let mapped_rules: &[eslint_to_biome::MappedRule] = match eslint_name {
                 #( #lines )*
                 _ => {
                     results.add(eslint_name, eslint_to_biome::RuleMigrationResult::Unsupported);
                     return false;
                 }
-            }
-            results.add(eslint_name, eslint_to_biome::RuleMigrationResult::Migrated);
-            true
+            };
+            eslint_to_biome::migrate_mapped_rules(
+                rules,
+                eslint_name,
+                rule_severity,
+                options,
+                results,
+                mapped_rules,
+            )
         }
     });
     let file_path =
