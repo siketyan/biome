@@ -204,6 +204,11 @@ where
     Modifier: for<'a> From<&'a Node>,
 {
     let nodes = list.iter().collect::<Vec<Node>>();
+    // Most lists hold at most one modifier, which needs no precedence.
+    if nodes.len() < 2 {
+        return nodes;
+    }
+
     let mut order: SmallVec<[ModifierPosition; 8]> = nodes
         .iter()
         .enumerate()
