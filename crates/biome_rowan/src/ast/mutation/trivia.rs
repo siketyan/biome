@@ -1,7 +1,8 @@
 use std::iter::empty;
 
+use crate::green::{GreenToken, GreenTrivia};
 use crate::syntax::SyntaxTrivia;
-use crate::{Language, SyntaxElement, SyntaxToken, SyntaxTriviaPiece, chain_trivia_pieces};
+use crate::{Language, SyntaxElement, SyntaxToken, SyntaxTriviaPiece, chain_trivia_pieces, cursor};
 
 #[derive(Clone, Copy)]
 pub(super) enum TokenlessSource {
@@ -14,21 +15,110 @@ pub(super) fn copy<L: Language>(
     destination: SyntaxElement<L>,
     tokenless: TokenlessSource,
 ) -> Option<SyntaxElement<L>> {
-    match outer_trivia(source) {
-        Some(source) => rewrite(
-            destination,
-            source.leading.pieces(),
-            source.trailing.pieces(),
+    copy_untyped(&source.clone().into(), destination.into(), tokenless).map(SyntaxElement::from)
+}
+
+/// Implements [copy] on untyped elements.
+///
+/// Copying trivia doesn't depend on the language. Every code fix that
+/// replaces a node goes through it, so it's kept out of the generic function
+/// and never inlined, to be compiled once.
+#[inline(never)]
+fn copy_untyped(
+    source: &cursor::SyntaxElement,
+    destination: cursor::SyntaxElement,
+    tokenless: TokenlessSource,
+) -> Option<cursor::SyntaxElement> {
+    let (leading, trailing) = match source.first_token().zip(source.last_token()) {
+        Some((first_token, last_token)) => (
+            Some(first_token.leading_trivia()),
+            Some(last_token.trailing_trivia()),
         ),
         None => match tokenless {
-            TokenlessSource::PreserveDestination => Some(destination),
-            TokenlessSource::ClearDestination => rewrite(
-                destination,
-                empty::<SyntaxTriviaPiece<L>>(),
-                empty::<SyntaxTriviaPiece<L>>(),
-            ),
+            TokenlessSource::PreserveDestination => return Some(destination),
+            TokenlessSource::ClearDestination => (None, None),
         },
+    };
+    let leading = NewTrivia::Replace(leading.as_ref());
+    let trailing = NewTrivia::Replace(trailing.as_ref());
+
+    match destination {
+        cursor::SyntaxElement::Node(node) => {
+            let Some(first_token) = node.first_token() else {
+                return Some(cursor::SyntaxElement::Node(node));
+            };
+            let last_token = node.last_token()?;
+
+            if first_token == last_token {
+                let new_token = token_with_trivia(&first_token, leading, trailing);
+                let node = node.replace_child(first_token.into(), new_token.into())?;
+                Some(cursor::SyntaxElement::Node(node))
+            } else {
+                let new_first_token = token_with_trivia(&first_token, leading, NewTrivia::Keep);
+                let node = node.replace_child(first_token.into(), new_first_token.into())?;
+                let last_token = node.last_token()?;
+                let new_last_token = token_with_trivia(&last_token, NewTrivia::Keep, trailing);
+                let node = node.replace_child(last_token.into(), new_last_token.into())?;
+                Some(cursor::SyntaxElement::Node(node))
+            }
+        }
+        cursor::SyntaxElement::Token(token) => Some(cursor::SyntaxElement::Token(
+            token_with_trivia(&token, leading, trailing),
+        )),
     }
+}
+
+/// What [token_with_trivia] does with the leading or the trailing trivia of a
+/// token.
+#[derive(Clone, Copy)]
+enum NewTrivia<'a> {
+    /// Keeps the trivia of the token.
+    Keep,
+    /// Replaces the trivia of the token with the given one, or removes it
+    /// when there is none.
+    Replace(Option<&'a cursor::SyntaxTrivia>),
+}
+
+/// Returns a detached copy of `token` with its leading and trailing trivia
+/// changed as `leading` and `trailing` tell.
+fn token_with_trivia(
+    token: &cursor::SyntaxToken,
+    leading: NewTrivia,
+    trailing: NewTrivia,
+) -> cursor::SyntaxToken {
+    let own_leading = token.leading_trivia();
+    let own_trailing = token.trailing_trivia();
+    let leading = match leading {
+        NewTrivia::Keep => Some(&own_leading),
+        NewTrivia::Replace(trivia) => trivia,
+    };
+    let trailing = match trailing {
+        NewTrivia::Keep => Some(&own_trailing),
+        NewTrivia::Replace(trivia) => trivia,
+    };
+
+    let mut text = String::new();
+    let mut green_trivia = |trivia: Option<&cursor::SyntaxTrivia>, is_leading: bool| {
+        if !is_leading {
+            text.push_str(token.text_trimmed());
+        }
+        match trivia {
+            Some(trivia) => {
+                text.push_str(trivia.text());
+                GreenTrivia::new(trivia.pieces().map(|(_, piece)| piece))
+            }
+            None => GreenTrivia::new(empty()),
+        }
+    };
+    let leading = green_trivia(leading, true);
+    let trailing = green_trivia(trailing, false);
+
+    cursor::SyntaxToken::new_detached(GreenToken::with_trivia(
+        token.kind(),
+        &text,
+        leading,
+        trailing,
+    ))
 }
 
 pub(super) fn transfer<L: Language>(
