@@ -1658,44 +1658,6 @@ pub trait Rule: RuleMeta + Sized {
         None
     }
 
-    fn top_level_suppression(
-        ctx: &RuleContext<Self>,
-        suppression_action: &dyn SuppressionAction<Language = RuleLanguage<Self>>,
-    ) -> Option<SuppressAction<RuleLanguage<Self>>>
-    where
-        Self: 'static,
-    {
-        build_top_level_suppression(
-            ctx.root(),
-            <Self::Group as RuleGroup>::Category::CATEGORY,
-            <Self::Group as RuleGroup>::NAME,
-            Self::METADATA.name,
-            suppression_action,
-        )
-    }
-
-    /// Create a code action that allows you to suppress the rule. The function
-    /// returns the node to which the suppression comment is applied.
-    fn inline_suppression(
-        ctx: &RuleContext<Self>,
-        text_range: &TextRange,
-        suppression_action: &dyn SuppressionAction<Language = RuleLanguage<Self>>,
-        suppression_reason: Option<&str>,
-    ) -> Option<SuppressAction<RuleLanguage<Self>>>
-    where
-        Self: 'static,
-    {
-        build_inline_suppression(
-            ctx.root(),
-            text_range,
-            <Self::Group as RuleGroup>::Category::CATEGORY,
-            <Self::Group as RuleGroup>::NAME,
-            Self::METADATA.name,
-            suppression_action,
-            suppression_reason,
-        )
-    }
-
     /// Returns a mutation to apply to the code
     fn transform(
         _ctx: &RuleContext<Self>,

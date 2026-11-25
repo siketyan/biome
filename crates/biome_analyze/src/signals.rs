@@ -637,30 +637,22 @@ where
         } else {
             None
         };
-        let inline_suppression = if filter.is_inline_suppression()
-            && let Some(text_range) = R::text_range(&ctx, &self.state)
-        {
-            R::inline_suppression(
-                &ctx,
-                &text_range,
-                self.suppression_action,
-                self.options.suppression_reason.as_deref(),
-            )
-        } else {
-            None
-        };
-        let top_level_suppression = if filter.is_toplevel_suppression() {
-            R::top_level_suppression(&ctx, self.suppression_action)
+        let text_range = if filter.is_inline_suppression() {
+            R::text_range(&ctx, &self.state)
         } else {
             None
         };
 
         collect_rule_actions(
+            filter,
+            <<R::Group as RuleGroup>::Category as GroupCategory>::CATEGORY,
             (<R::Group as RuleGroup>::NAME, R::METADATA.name),
             configured_fix_kind,
             action,
-            inline_suppression,
-            top_level_suppression,
+            text_range,
+            self.root,
+            self.suppression_action,
+            self.options.suppression_reason.as_deref(),
         )
     }
 
@@ -700,16 +692,45 @@ where
     }
 }
 
-/// Converts the fix and the suppressions of a rule into the actions of its
-/// signal, kept out of the generic method so it is compiled once per language
-/// instead of once per rule.
+/// Builds the actions of the signal of a rule: its fix, followed by the
+/// suppressions that `filter` asks for.
+///
+/// `text_range` is the range of the signal. The inline suppression is only
+/// built when it's known.
+///
+/// It's kept out of the generic method and never inlined, so it's compiled
+/// once per language instead of once per rule.
+#[expect(clippy::too_many_arguments)]
+#[inline(never)]
 fn collect_rule_actions<L: Language>(
+    filter: ActionFilter,
+    category: RuleCategory,
     rule_name: (&'static str, &'static str),
     configured_fix_kind: Option<FixKind>,
     action: Option<RuleAction<L>>,
-    inline_suppression: Option<SuppressAction<L>>,
-    top_level_suppression: Option<SuppressAction<L>>,
+    text_range: Option<TextRange>,
+    root: &L::Root,
+    suppression_action: &dyn SuppressionAction<Language = L>,
+    suppression_reason: Option<&str>,
 ) -> AnalyzerActionIter<L> {
+    let (group_name, name) = rule_name;
+    let inline_suppression = text_range.and_then(|text_range| {
+        build_inline_suppression(
+            root.clone(),
+            &text_range,
+            category,
+            group_name,
+            name,
+            suppression_action,
+            suppression_reason,
+        )
+    });
+    let top_level_suppression = if filter.is_toplevel_suppression() {
+        build_top_level_suppression(root.clone(), category, group_name, name, suppression_action)
+    } else {
+        None
+    };
+
     let configured_applicability = match configured_fix_kind {
         Some(FixKind::Safe) => Some(Applicability::Always),
         Some(FixKind::Unsafe) => Some(Applicability::MaybeIncorrect),
