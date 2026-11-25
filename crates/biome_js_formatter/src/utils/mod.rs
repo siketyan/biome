@@ -34,6 +34,7 @@ use biome_text_size::TextSize;
 pub(crate) use conditional::{AnyJsConditional, ConditionalJsxChain};
 pub(crate) use object_like::JsObjectLike;
 pub(crate) use object_pattern_like::JsObjectPatternLike;
+use smallvec::SmallVec;
 pub(crate) use string_utils::*;
 pub(crate) use typescript::{is_object_like_type, should_hug_type};
 
@@ -196,17 +197,40 @@ impl Format<JsFormatContext> for FormatStatementBody<'_> {
 }
 
 /// This function consumes a list of modifiers and applies a predictable sorting.
+///
+/// Modifiers of the same precedence keep their order.
 pub(crate) fn sort_modifiers_by_precedence<List, Node>(list: &List) -> Vec<Node>
 where
     Node: AstNode<Language = JsLanguage>,
     List: AstNodeList<Language = JsLanguage, Node = Node>,
     Modifier: for<'a> From<&'a Node>,
 {
-    let mut nodes_and_modifiers = list.iter().collect::<Vec<Node>>();
+    let nodes = list.iter().collect::<Vec<Node>>();
+    let precedences: SmallVec<[Modifier; 8]> = nodes.iter().map(Modifier::from).collect();
 
-    nodes_and_modifiers.sort_unstable_by_key(|node| Modifier::from(node));
+    match sorted_modifier_order(&precedences) {
+        Some(order) => order
+            .into_iter()
+            .map(|index| nodes[index].clone())
+            .collect(),
+        None => nodes,
+    }
+}
 
-    nodes_and_modifiers
+/// Returns the indexes of `precedences` in ascending order of precedence, or
+/// [None] if they already are in that order. Equal precedences keep their
+/// order.
+///
+/// It doesn't depend on the type of the modifiers, so the modifier lists
+/// share a single copy of the sorting code.
+fn sorted_modifier_order(precedences: &[Modifier]) -> Option<SmallVec<[usize; 8]>> {
+    if precedences.is_sorted() {
+        return None;
+    }
+
+    let mut order: SmallVec<[usize; 8]> = (0..precedences.len()).collect();
+    order.sort_by_key(|&index| precedences[index]);
+    Some(order)
 }
 
 pub(crate) type FormatStatementSemicolon<'a> = FormatOptionalSemicolon<'a>;
@@ -309,4 +333,38 @@ where
     }
 
     join_with.finish()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::sorted_modifier_order;
+    use biome_js_syntax::Modifier;
+
+    #[test]
+    fn modifiers_in_order_of_precedence_are_left_alone() {
+        assert_eq!(sorted_modifier_order(&[]), None);
+        assert_eq!(sorted_modifier_order(&[Modifier::Static]), None);
+        assert_eq!(
+            sorted_modifier_order(&[
+                Modifier::Decorator,
+                Modifier::Decorator,
+                Modifier::Public,
+                Modifier::Readonly
+            ]),
+            None
+        );
+    }
+
+    #[test]
+    fn modifiers_are_ordered_by_precedence_and_ties_keep_their_order() {
+        let order = sorted_modifier_order(&[
+            Modifier::Readonly,
+            Modifier::Decorator,
+            Modifier::Static,
+            Modifier::Decorator,
+            Modifier::Public,
+        ]);
+
+        assert_eq!(order.as_deref(), Some([1, 3, 4, 2, 0].as_slice()));
+    }
 }
