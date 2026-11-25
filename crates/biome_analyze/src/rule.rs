@@ -90,9 +90,8 @@ impl Default for RuleExecutionContext {
 /// The documentation comments of a rule.
 ///
 /// The text is kept compressed, because the documentation of all rules takes
-/// more than a megabyte and is only read to explain a rule.
-/// [`RuleDocs::text`] and the [`Display`](std::fmt::Display) implementation
-/// decompress it on every call.
+/// more than a megabyte and is rarely read. [`RuleDocs::text`] decompresses
+/// it on every call.
 #[derive(Clone, Copy)]
 pub struct RuleDocs(&'static [u8]);
 
@@ -117,12 +116,6 @@ impl RuleDocs {
 impl std::fmt::Debug for RuleDocs {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Debug::fmt(&self.text(), f)
-    }
-}
-
-impl std::fmt::Display for RuleDocs {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_str(&self.text())
     }
 }
 
@@ -2138,7 +2131,6 @@ mod tests {
             docs.text(),
             " Disallow `debugger`.\n\n ## Examples\n ```js\n const quoted = \"\\d\u{e9}\";\n ```\n"
         );
-        assert_eq!(docs.to_string(), docs.text());
     }
 
     #[test]
