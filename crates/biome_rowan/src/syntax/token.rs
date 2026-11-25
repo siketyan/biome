@@ -1,4 +1,4 @@
-use super::trivia::{trim_leading_trivia_pieces, trim_trailing_trivia_pieces};
+use super::trivia::{debug_trivia, trim_leading_trivia_pieces, trim_trailing_trivia_pieces};
 use crate::green::{GreenToken, GreenTrivia};
 use crate::syntax::SyntaxTrivia;
 use crate::syntax::element::SyntaxElementKey;
@@ -680,18 +680,32 @@ impl<L: Language> SyntaxToken<L> {
 
 impl<L: Language> fmt::Debug for SyntaxToken<L> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "{:?}@{:?} {:?} ",
-            self.kind(),
-            self.text_range(),
-            self.text_trimmed()
-        )?;
-
-        self.leading_trivia().fmt(f)?;
-        write!(f, " ")?;
-        self.trailing_trivia().fmt(f)
+        debug_token(&self.raw, &self.kind(), f)
     }
+}
+
+/// Writes the debug representation of `token`, whose kind is `kind`.
+///
+/// The kind is the only part that depends on the language. Taking it as a
+/// trait object lets all the languages share a single copy of this function,
+/// which is never inlined.
+#[inline(never)]
+pub(super) fn debug_token(
+    token: &cursor::SyntaxToken,
+    kind: &dyn fmt::Debug,
+    f: &mut fmt::Formatter<'_>,
+) -> fmt::Result {
+    write!(
+        f,
+        "{:?}@{:?} {:?} ",
+        kind,
+        token.text_range(),
+        token.text_trimmed()
+    )?;
+
+    debug_trivia(&token.leading_trivia(), f)?;
+    write!(f, " ")?;
+    debug_trivia(&token.trailing_trivia(), f)
 }
 
 impl<L: Language> fmt::Display for SyntaxToken<L> {

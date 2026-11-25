@@ -2,9 +2,10 @@ use crate::green::GreenElement;
 use crate::syntax::SyntaxTrivia;
 use crate::syntax::borrowed_token::{BorrowedTokensIterator, BorrowedTokensWithCommentsIterator};
 use crate::syntax::element::{SyntaxElement, SyntaxElementKey};
+use crate::syntax::token::debug_token;
 use crate::{
-    AstNode, Direction, GreenNode, Language, NodeOrToken, SyntaxKind, SyntaxKindSet, SyntaxList,
-    SyntaxNodeText, SyntaxToken, SyntaxTriviaPiece, TokenAtOffset, WalkEvent, cursor,
+    AstNode, Direction, GreenNode, Language, NodeOrToken, RawSyntaxKind, SyntaxKind, SyntaxKindSet,
+    SyntaxList, SyntaxNodeText, SyntaxToken, SyntaxTriviaPiece, TokenAtOffset, WalkEvent, cursor,
 };
 use biome_text_size::{TextRange, TextSize};
 #[cfg(feature = "serde")]
@@ -1110,38 +1111,75 @@ where
 
 impl<L: Language> fmt::Debug for SyntaxNode<L> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        if f.alternate() {
-            let mut level = 0;
-            for event in self.raw.preorder_slots() {
-                match event {
-                    WalkEvent::Enter(element) => {
-                        for _ in 0..level {
-                            write!(f, "  ")?;
-                        }
-                        match element {
-                            cursor::SyntaxSlot::Node(node) => {
-                                writeln!(f, "{}: {:?}", node.index(), Self::from(node))?
-                            }
-                            cursor::SyntaxSlot::Token(token) => writeln!(
-                                f,
-                                "{}: {:?}",
-                                token.index(),
-                                SyntaxToken::<L>::from(token)
-                            )?,
-                            cursor::SyntaxSlot::Empty { index, .. } => {
-                                writeln!(f, "{index}: (empty)")?
-                            }
-                        }
-                        level += 1;
+        debug_node(
+            &self.raw,
+            |kind, f| write!(f, "{:?}", L::Kind::from_raw(kind)),
+            f,
+        )
+    }
+}
+
+/// Writes the debug representation of a kind of the language of a tree.
+type DebugKind = fn(RawSyntaxKind, &mut fmt::Formatter<'_>) -> fmt::Result;
+
+/// A raw kind that is debug-formatted with a [DebugKind].
+struct RawKindDebug(DebugKind, RawSyntaxKind);
+
+impl fmt::Debug for RawKindDebug {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        (self.0)(self.1, f)
+    }
+}
+
+/// Writes the debug representation of `node`: its kind and range, or the
+/// whole tree below it in the alternate format.
+///
+/// The names of the kinds are the only part that depends on the language.
+/// Taking `debug_kind` as a function pointer lets all the languages share a
+/// single copy of this function, which is never inlined.
+#[inline(never)]
+fn debug_node(
+    node: &cursor::SyntaxNode,
+    debug_kind: DebugKind,
+    f: &mut fmt::Formatter<'_>,
+) -> fmt::Result {
+    if f.alternate() {
+        let mut level = 0;
+        for event in node.preorder_slots() {
+            match event {
+                WalkEvent::Enter(element) => {
+                    for _ in 0..level {
+                        write!(f, "  ")?;
                     }
-                    WalkEvent::Leave(_) => level -= 1,
+                    match element {
+                        cursor::SyntaxSlot::Node(node) => writeln!(
+                            f,
+                            "{}: {:?}@{:?}",
+                            node.index(),
+                            RawKindDebug(debug_kind, node.kind()),
+                            node.text_range()
+                        )?,
+                        cursor::SyntaxSlot::Token(token) => {
+                            write!(f, "{}: ", token.index())?;
+                            debug_token(&token, &RawKindDebug(debug_kind, token.kind()), f)?;
+                            writeln!(f)?
+                        }
+                        cursor::SyntaxSlot::Empty { index, .. } => writeln!(f, "{index}: (empty)")?,
+                    }
+                    level += 1;
                 }
+                WalkEvent::Leave(_) => level -= 1,
             }
-            assert_eq!(level, 0);
-            Ok(())
-        } else {
-            write!(f, "{:?}@{:?}", self.kind(), self.text_range_with_trivia())
         }
+        assert_eq!(level, 0);
+        Ok(())
+    } else {
+        write!(
+            f,
+            "{:?}@{:?}",
+            RawKindDebug(debug_kind, node.kind()),
+            node.text_range()
+        )
     }
 }
 

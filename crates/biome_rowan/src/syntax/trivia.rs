@@ -512,17 +512,31 @@ impl<L: Language> SyntaxTriviaPiece<L> {
 
 impl<L: Language> fmt::Debug for SyntaxTriviaPiece<L> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self.trivia.kind {
-            TriviaPieceKind::Newline => write!(f, "Newline(")?,
-            TriviaPieceKind::Whitespace => write!(f, "Whitespace(")?,
-            TriviaPieceKind::SingleLineComment | TriviaPieceKind::MultiLineComment => {
-                write!(f, "Comments(")?
-            }
-            TriviaPieceKind::Skipped => write!(f, "Skipped(")?,
-        }
-        print_debug_str(self.text(), f)?;
-        write!(f, ")")
+        debug_trivia_piece(self.trivia.kind, self.text(), f)
     }
+}
+
+/// Writes the debug representation of a trivia piece of `kind` that spans
+/// `text`.
+///
+/// It doesn't depend on the language and is never inlined, so all the
+/// languages share a single copy.
+#[inline(never)]
+fn debug_trivia_piece(
+    kind: TriviaPieceKind,
+    text: &str,
+    f: &mut fmt::Formatter<'_>,
+) -> fmt::Result {
+    match kind {
+        TriviaPieceKind::Newline => write!(f, "Newline(")?,
+        TriviaPieceKind::Whitespace => write!(f, "Whitespace(")?,
+        TriviaPieceKind::SingleLineComment | TriviaPieceKind::MultiLineComment => {
+            write!(f, "Comments(")?
+        }
+        TriviaPieceKind::Skipped => write!(f, "Skipped(")?,
+    }
+    print_debug_str(text, f)?;
+    write!(f, ")")
 }
 
 #[derive(Clone, PartialEq, Eq, Hash)]
@@ -663,19 +677,33 @@ fn print_debug_str<S: AsRef<str>>(text: S, f: &mut fmt::Formatter<'_>) -> fmt::R
 
 impl<L: Language> std::fmt::Debug for SyntaxTrivia<L> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "[")?;
-        let mut first_piece = true;
-
-        for piece in self.pieces() {
-            if !first_piece {
-                write!(f, ", ")?;
-            }
-            first_piece = false;
-            write!(f, "{piece:?}")?;
-        }
-
-        write!(f, "]")
+        debug_trivia(&self.raw, f)
     }
+}
+
+/// Writes the debug representation of the pieces of `trivia`.
+///
+/// It doesn't depend on the language and is never inlined, so all the
+/// languages share a single copy.
+#[inline(never)]
+pub(super) fn debug_trivia(trivia: &cursor::SyntaxTrivia, f: &mut Formatter<'_>) -> fmt::Result {
+    write!(f, "[")?;
+    let token = trivia.token();
+    let token_text = token.text();
+    let token_start = token.text_range().start();
+    let mut first_piece = true;
+
+    for (offset, piece) in trivia.pieces() {
+        if !first_piece {
+            write!(f, ", ")?;
+        }
+        first_piece = false;
+        let start = offset - token_start;
+        let end = start + piece.text_len();
+        debug_trivia_piece(piece.kind, &token_text[start.into()..end.into()], f)?;
+    }
+
+    write!(f, "]")
 }
 
 /// Remove leading newlines and whitespaces from `trivia`.
