@@ -915,3 +915,68 @@ where
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::raw_language::{RawLanguage, RawLanguageKind};
+    use crate::{SyntaxToken, TriviaPiece};
+
+    fn token() -> SyntaxToken<RawLanguage> {
+        SyntaxToken::new_detached(
+            RawLanguageKind::LET_TOKEN,
+            "\n\t /*c*/ let // a comment that is longer than the limit",
+            [
+                TriviaPiece::newline(1),
+                TriviaPiece::whitespace(2),
+                TriviaPiece::multi_line_comment(5),
+                TriviaPiece::whitespace(1),
+            ],
+            [
+                TriviaPiece::whitespace(1),
+                TriviaPiece::single_line_comment(42),
+            ],
+        )
+    }
+
+    #[test]
+    fn debug_of_trivia_lists_its_pieces() {
+        let token = token();
+
+        assert_eq!(
+            format!("{:?}", token.leading_trivia()),
+            r#"[Newline("\n"), Whitespace("\t "), Comments("/*c*/"), Whitespace(" ")]"#
+        );
+        assert_eq!(
+            format!("{:?}", token.trailing_trivia()),
+            r#"[Whitespace(" "), Comments("// a comment that is  ...")]"#
+        );
+    }
+
+    #[test]
+    fn debug_of_trivia_piece_matches_its_entry_in_the_trivia() {
+        let token = token();
+        let pieces: Vec<_> = token
+            .leading_trivia()
+            .pieces()
+            .map(|piece| format!("{piece:?}"))
+            .collect();
+
+        assert_eq!(
+            pieces,
+            [
+                r#"Newline("\n")"#,
+                r#"Whitespace("\t ")"#,
+                r#"Comments("/*c*/")"#,
+                r#"Whitespace(" ")"#
+            ]
+        );
+    }
+
+    #[test]
+    fn debug_of_token_prints_kind_range_text_and_trivia() {
+        assert_eq!(
+            format!("{:?}", token()),
+            r#"LET_TOKEN@0..55 "let" [Newline("\n"), Whitespace("\t "), Comments("/*c*/"), Whitespace(" ")] [Whitespace(" "), Comments("// a comment that is  ...")]"#
+        );
+    }
+}
