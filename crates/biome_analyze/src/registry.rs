@@ -89,6 +89,12 @@ impl MetadataRegistry {
 }
 
 impl<L: Language> RegistryVisitor<L> for MetadataRegistry {
+    fn record_group<G: RuleGroup<Language = L>>(&mut self) {
+        for metadata in G::RULES {
+            self.insert_rule(G::NAME, metadata.name);
+        }
+    }
+
     fn record_rule<R>(&mut self)
     where
         R: Rule<Query: Queryable<Language = L, Output: Clone>> + 'static,
@@ -632,7 +638,7 @@ mod tests {
         type Category = TestCategory;
         const NAME: &'static str = "test";
 
-        fn record_rules<V: RegistryVisitor<Self::Language> + ?Sized>(_: &mut V) {}
+        crate::group_rules!();
     }
 
     enum PanicRule {}
@@ -823,5 +829,52 @@ mod tests {
             options: &options,
         });
         assert!(signal_queue.is_empty());
+    }
+
+    enum ListedGroup {}
+
+    impl RuleGroup for ListedGroup {
+        type Language = RawLanguage;
+        type Category = TestCategory;
+        const NAME: &'static str = "listed";
+
+        crate::group_rules!(SnippetRule, PanicRule);
+    }
+
+    #[derive(Default)]
+    struct RecordedRules(Vec<&'static str>);
+
+    impl RegistryVisitor<RawLanguage> for RecordedRules {
+        fn record_rule<R>(&mut self)
+        where
+            R: Rule<Query: Queryable<Language = RawLanguage, Output: Clone>> + 'static,
+        {
+            self.0.push(R::METADATA.name);
+        }
+    }
+
+    #[test]
+    fn group_lists_the_metadata_of_its_rules_in_recording_order() {
+        let mut recorded = RecordedRules::default();
+        ListedGroup::record_rules(&mut recorded);
+
+        let listed: Vec<_> = ListedGroup::RULES
+            .iter()
+            .map(|metadata| metadata.name)
+            .collect();
+
+        assert_eq!(listed, ["snippetRule", "panicRule"]);
+        assert_eq!(recorded.0, listed);
+    }
+
+    #[test]
+    fn metadata_registry_records_the_rules_of_a_group() {
+        let mut registry = MetadataRegistry::default();
+        RegistryVisitor::<RawLanguage>::record_group::<ListedGroup>(&mut registry);
+
+        assert!(registry.find_rule("listed", "snippetRule").is_some());
+        assert!(registry.find_rule("listed", "panicRule").is_some());
+        assert!(registry.find_rule("listed", "otherRule").is_none());
+        assert!(registry.find_rule("test", "panicRule").is_none());
     }
 }

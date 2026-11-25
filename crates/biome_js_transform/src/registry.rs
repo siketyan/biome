@@ -20,10 +20,7 @@ impl RuleGroup for TransformationGroup {
     type Category = TransformationCategory;
     const NAME: &'static str = "transformations";
 
-    fn record_rules<V: RegistryVisitor<Self::Language> + ?Sized>(registry: &mut V) {
-        registry.record_rule::<StripTypes>();
-        registry.record_rule::<TsEnum>();
-    }
+    biome_analyze::group_rules!(StripTypes, TsEnum);
 }
 
 pub fn visit_transformation_registry<V: RegistryVisitor<JsLanguage>>(registry: &mut V) {

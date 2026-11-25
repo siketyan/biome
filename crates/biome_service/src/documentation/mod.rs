@@ -15,7 +15,6 @@ use biome_js_syntax::JsLanguage;
 use biome_json_syntax::JsonLanguage;
 #[cfg(feature = "lang_md")]
 use biome_markdown_syntax::MarkdownLanguage;
-use biome_rowan::Language;
 #[cfg(feature = "lang_yaml")]
 use biome_yaml_syntax::YamlLanguage;
 use std::{collections::BTreeMap, str::FromStr};
@@ -82,96 +81,152 @@ impl RulesVisitor {
         self.rules_metadata.remove(name)
     }
 
-    fn store_rule<R, L>(&mut self)
-    where
-        L: Language,
-        R: Rule<Options: Default, Query: Queryable<Language = L, Output: Clone>> + 'static,
-    {
-        let category = <R::Group as RuleGroup>::Category::CATEGORY;
+    fn store_group<G: RuleGroup>(&mut self) {
+        for metadata in G::RULES {
+            self.store_rule(G::Category::CATEGORY, G::NAME, metadata);
+        }
+    }
+
+    fn store_rule(&mut self, category: RuleCategory, group: &'static str, metadata: &RuleMetadata) {
         if matches!(category, RuleCategory::Lint | RuleCategory::Action) {
             let explain_rule = ExplainRule {
-                metadata: R::METADATA,
-                group: <R::Group as RuleGroup>::NAME,
-                category: <<R::Group as RuleGroup>::Category as GroupCategory>::CATEGORY
-                    .as_suppression_category(),
+                metadata: metadata.clone(),
+                group,
+                category: category.as_suppression_category(),
             };
-            self.rules_metadata.insert(R::METADATA.name, explain_rule);
+            self.rules_metadata.insert(metadata.name, explain_rule);
         }
     }
 }
 
 #[cfg(feature = "lang_js")]
 impl RegistryVisitor<JsLanguage> for RulesVisitor {
+    fn record_group<G: RuleGroup<Language = JsLanguage>>(&mut self) {
+        self.store_group::<G>();
+    }
+
     fn record_rule<R>(&mut self)
     where
         R: Rule<Options: Default, Query: Queryable<Language = JsLanguage, Output: Clone>> + 'static,
     {
-        self.store_rule::<R, JsLanguage>();
+        self.store_rule(
+            <R::Group as RuleGroup>::Category::CATEGORY,
+            <R::Group as RuleGroup>::NAME,
+            &R::METADATA,
+        );
     }
 }
 
 impl RegistryVisitor<JsonLanguage> for RulesVisitor {
+    fn record_group<G: RuleGroup<Language = JsonLanguage>>(&mut self) {
+        self.store_group::<G>();
+    }
+
     fn record_rule<R>(&mut self)
     where
         R: Rule<Options: Default, Query: Queryable<Language = JsonLanguage, Output: Clone>>
             + 'static,
     {
-        self.store_rule::<R, JsonLanguage>();
+        self.store_rule(
+            <R::Group as RuleGroup>::Category::CATEGORY,
+            <R::Group as RuleGroup>::NAME,
+            &R::METADATA,
+        );
     }
 }
 
 #[cfg(feature = "lang_css")]
 impl RegistryVisitor<CssLanguage> for RulesVisitor {
+    fn record_group<G: RuleGroup<Language = CssLanguage>>(&mut self) {
+        self.store_group::<G>();
+    }
+
     fn record_rule<R>(&mut self)
     where
         R: Rule<Options: Default, Query: Queryable<Language = CssLanguage, Output: Clone>>
             + 'static,
     {
-        self.store_rule::<R, CssLanguage>();
+        self.store_rule(
+            <R::Group as RuleGroup>::Category::CATEGORY,
+            <R::Group as RuleGroup>::NAME,
+            &R::METADATA,
+        );
     }
 }
 
 #[cfg(feature = "lang_graphql")]
 impl RegistryVisitor<GraphqlLanguage> for RulesVisitor {
+    fn record_group<G: RuleGroup<Language = GraphqlLanguage>>(&mut self) {
+        self.store_group::<G>();
+    }
+
     fn record_rule<R>(&mut self)
     where
         R: Rule<Options: Default, Query: Queryable<Language = GraphqlLanguage, Output: Clone>>
             + 'static,
     {
-        self.store_rule::<R, GraphqlLanguage>();
+        self.store_rule(
+            <R::Group as RuleGroup>::Category::CATEGORY,
+            <R::Group as RuleGroup>::NAME,
+            &R::METADATA,
+        );
     }
 }
 
 #[cfg(feature = "lang_html")]
 impl RegistryVisitor<HtmlLanguage> for RulesVisitor {
+    fn record_group<G: RuleGroup<Language = HtmlLanguage>>(&mut self) {
+        self.store_group::<G>();
+    }
+
     fn record_rule<R>(&mut self)
     where
         R: Rule<Options: Default, Query: Queryable<Language = HtmlLanguage, Output: Clone>>
             + 'static,
     {
-        self.store_rule::<R, HtmlLanguage>();
+        self.store_rule(
+            <R::Group as RuleGroup>::Category::CATEGORY,
+            <R::Group as RuleGroup>::NAME,
+            &R::METADATA,
+        );
     }
 }
 
 #[cfg(feature = "lang_md")]
 impl RegistryVisitor<MarkdownLanguage> for RulesVisitor {
+    fn record_group<G: RuleGroup<Language = MarkdownLanguage>>(&mut self) {
+        self.store_group::<G>();
+    }
+
     fn record_rule<R>(&mut self)
     where
         R: Rule<Options: Default, Query: Queryable<Language = MarkdownLanguage, Output: Clone>>
             + 'static,
     {
-        self.store_rule::<R, MarkdownLanguage>();
+        self.store_rule(
+            <R::Group as RuleGroup>::Category::CATEGORY,
+            <R::Group as RuleGroup>::NAME,
+            &R::METADATA,
+        );
     }
 }
 
 #[cfg(feature = "lang_yaml")]
 impl RegistryVisitor<YamlLanguage> for RulesVisitor {
+    fn record_group<G: RuleGroup<Language = YamlLanguage>>(&mut self) {
+        self.store_group::<G>();
+    }
+
     fn record_rule<R>(&mut self)
     where
         R: Rule<Options: Default, Query: Queryable<Language = YamlLanguage, Output: Clone>>
             + 'static,
     {
-        self.store_rule::<R, YamlLanguage>();
+        self.store_rule(
+            <R::Group as RuleGroup>::Category::CATEGORY,
+            <R::Group as RuleGroup>::NAME,
+            &R::METADATA,
+        );
     }
 }
 

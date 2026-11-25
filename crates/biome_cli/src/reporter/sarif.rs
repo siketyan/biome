@@ -63,6 +63,12 @@ impl SarifReporterVisitor {
         visitor
     }
 
+    fn store_group<G: RuleGroup>(&mut self) {
+        for metadata in G::RULES {
+            self.store_rule(G::Category::CATEGORY, metadata.name, metadata.docs);
+        }
+    }
+
     fn store_rule(&mut self, category: RuleCategory, rule_name: &'static str, docs: RuleDocs) {
         if matches!(
             category,
@@ -74,6 +80,10 @@ impl SarifReporterVisitor {
 }
 
 impl RegistryVisitor<JsLanguage> for SarifReporterVisitor {
+    fn record_group<G: RuleGroup<Language = JsLanguage>>(&mut self) {
+        self.store_group::<G>();
+    }
+
     fn record_rule<R>(&mut self)
     where
         R: Rule<Options: Default, Query: Queryable<Language = JsLanguage, Output: Clone>> + 'static,
@@ -87,6 +97,10 @@ impl RegistryVisitor<JsLanguage> for SarifReporterVisitor {
 }
 
 impl RegistryVisitor<JsonLanguage> for SarifReporterVisitor {
+    fn record_group<G: RuleGroup<Language = JsonLanguage>>(&mut self) {
+        self.store_group::<G>();
+    }
+
     fn record_rule<R>(&mut self)
     where
         R: Rule<Options: Default, Query: Queryable<Language = JsonLanguage, Output: Clone>>
@@ -101,6 +115,10 @@ impl RegistryVisitor<JsonLanguage> for SarifReporterVisitor {
 }
 
 impl RegistryVisitor<CssLanguage> for SarifReporterVisitor {
+    fn record_group<G: RuleGroup<Language = CssLanguage>>(&mut self) {
+        self.store_group::<G>();
+    }
+
     fn record_rule<R>(&mut self)
     where
         R: Rule<Options: Default, Query: Queryable<Language = CssLanguage, Output: Clone>>
@@ -115,6 +133,10 @@ impl RegistryVisitor<CssLanguage> for SarifReporterVisitor {
 }
 
 impl RegistryVisitor<GraphqlLanguage> for SarifReporterVisitor {
+    fn record_group<G: RuleGroup<Language = GraphqlLanguage>>(&mut self) {
+        self.store_group::<G>();
+    }
+
     fn record_rule<R>(&mut self)
     where
         R: Rule<Options: Default, Query: Queryable<Language = GraphqlLanguage, Output: Clone>>
@@ -129,6 +151,10 @@ impl RegistryVisitor<GraphqlLanguage> for SarifReporterVisitor {
 }
 
 impl RegistryVisitor<HtmlLanguage> for SarifReporterVisitor {
+    fn record_group<G: RuleGroup<Language = HtmlLanguage>>(&mut self) {
+        self.store_group::<G>();
+    }
+
     fn record_rule<R>(&mut self)
     where
         R: Rule<Options: Default, Query: Queryable<Language = HtmlLanguage, Output: Clone>>
@@ -143,6 +169,10 @@ impl RegistryVisitor<HtmlLanguage> for SarifReporterVisitor {
 }
 
 impl RegistryVisitor<MarkdownLanguage> for SarifReporterVisitor {
+    fn record_group<G: RuleGroup<Language = MarkdownLanguage>>(&mut self) {
+        self.store_group::<G>();
+    }
+
     fn record_rule<R>(&mut self)
     where
         R: Rule<Options: Default, Query: Queryable<Language = MarkdownLanguage, Output: Clone>>
@@ -157,6 +187,10 @@ impl RegistryVisitor<MarkdownLanguage> for SarifReporterVisitor {
 }
 
 impl RegistryVisitor<YamlLanguage> for SarifReporterVisitor {
+    fn record_group<G: RuleGroup<Language = YamlLanguage>>(&mut self) {
+        self.store_group::<G>();
+    }
+
     fn record_rule<R>(&mut self)
     where
         R: Rule<Options: Default, Query: Queryable<Language = YamlLanguage, Output: Clone>>

@@ -1350,8 +1350,33 @@ pub trait RuleGroup {
     type Category: GroupCategory;
     /// The name of this group, displayed in the diagnostics emitted by its rules
     const NAME: &'static str;
+    /// The metadata of the rules belonging to this group, in the order in
+    /// which [RuleGroup::record_rules] records them.
+    ///
+    /// A visitor that only reads the metadata of the rules can loop over this
+    /// list in [RegistryVisitor::record_group], instead of being compiled
+    /// once for every rule through [RegistryVisitor::record_rule].
+    const RULES: &'static [&'static RuleMetadata];
     /// Register all the rules belonging to this group into `registry`
     fn record_rules<V: RegistryVisitor<Self::Language> + ?Sized>(registry: &mut V);
+}
+
+/// Implements [RuleGroup::RULES] and [RuleGroup::record_rules] from a single
+/// list of rule types, so the two can't list different rules.
+///
+/// The rules are recorded in the order of the list.
+#[macro_export]
+macro_rules! group_rules {
+    ( $( $rule:ty ),* $(,)? ) => {
+        const RULES: &'static [&'static $crate::RuleMetadata] =
+            &[ $( &<$rule as $crate::RuleMeta>::METADATA, )* ];
+
+        fn record_rules<V: $crate::RegistryVisitor<Self::Language> + ?Sized>(registry: &mut V) {
+            // Uses `registry` in a group that has no rules.
+            let _ = &registry;
+            $( registry.record_rule::<$rule>(); )*
+        }
+    };
 }
 
 /// This macro is used by the codegen script to declare an analyzer rule group,
@@ -1367,9 +1392,7 @@ macro_rules! declare_lint_group {
 
             const NAME: &'static str = $name;
 
-            fn record_rules<V: $crate::RegistryVisitor<Self::Language> + ?Sized>(registry: &mut V) {
-                $( registry.record_rule::<$( $rule )::*>(); )*
-            }
+            $crate::group_rules!( $( $( $rule )::* ),* );
         }
 
         pub(self) use $id as Group;
@@ -1404,9 +1427,7 @@ macro_rules! declare_assist_group {
 
             const NAME: &'static str = $name;
 
-            fn record_rules<V: $crate::RegistryVisitor<Self::Language> + ?Sized>(registry: &mut V) {
-                $( registry.record_rule::<$( $rule )::*>(); )*
-            }
+            $crate::group_rules!( $( $( $rule )::* ),* );
         }
 
         pub(self) use $id as Group;
@@ -1441,9 +1462,7 @@ macro_rules! declare_syntax_group {
 
             const NAME: &'static str = $name;
 
-            fn record_rules<V: $crate::RegistryVisitor<Self::Language> + ?Sized>(registry: &mut V) {
-                $( registry.record_rule::<$( $rule )::*>(); )*
-            }
+            $crate::group_rules!( $( $( $rule )::* ),* );
         }
 
         pub(self) use $id as Group;

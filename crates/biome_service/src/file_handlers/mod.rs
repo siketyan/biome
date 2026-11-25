@@ -1981,7 +1981,9 @@ impl RegistryVisitor<JsLanguage> for LintVisitor<'_, '_> {
     }
 
     fn record_group<G: RuleGroup<Language = JsLanguage>>(&mut self) {
-        G::record_rules(self)
+        for metadata in G::RULES {
+            self.push_rule(&js_metadata, G::NAME, metadata);
+        }
     }
 
     fn record_rule<R>(&mut self)
@@ -1999,7 +2001,9 @@ impl RegistryVisitor<JsonLanguage> for LintVisitor<'_, '_> {
     }
 
     fn record_group<G: RuleGroup<Language = JsonLanguage>>(&mut self) {
-        G::record_rules(self)
+        for metadata in G::RULES {
+            self.push_rule(&json_metadata, G::NAME, metadata);
+        }
     }
 
     fn record_rule<R>(&mut self)
@@ -2020,7 +2024,9 @@ impl RegistryVisitor<CssLanguage> for LintVisitor<'_, '_> {
     }
 
     fn record_group<G: RuleGroup<Language = CssLanguage>>(&mut self) {
-        G::record_rules(self)
+        for metadata in G::RULES {
+            self.push_rule(&css_metadata, G::NAME, metadata);
+        }
     }
 
     fn record_rule<R>(&mut self)
@@ -2041,7 +2047,9 @@ impl RegistryVisitor<GraphqlLanguage> for LintVisitor<'_, '_> {
     }
 
     fn record_group<G: RuleGroup<Language = GraphqlLanguage>>(&mut self) {
-        G::record_rules(self)
+        for metadata in G::RULES {
+            self.push_rule(&graphql_metadata, G::NAME, metadata);
+        }
     }
 
     fn record_rule<R>(&mut self)
@@ -2066,7 +2074,9 @@ impl RegistryVisitor<HtmlLanguage> for LintVisitor<'_, '_> {
     }
 
     fn record_group<G: RuleGroup<Language = HtmlLanguage>>(&mut self) {
-        G::record_rules(self)
+        for metadata in G::RULES {
+            self.push_rule(&biome_html_analyze::METADATA, G::NAME, metadata);
+        }
     }
 
     fn record_rule<R>(&mut self)
@@ -2247,7 +2257,9 @@ impl RegistryVisitor<JsLanguage> for ManifestVisitor<'_> {
     }
 
     fn record_group<G: RuleGroup<Language = JsLanguage>>(&mut self) {
-        G::record_rules(self)
+        for metadata in G::RULES {
+            self.push_rule(&js_metadata, G::NAME, metadata);
+        }
     }
 
     fn record_rule<R>(&mut self)
@@ -2266,7 +2278,9 @@ impl RegistryVisitor<JsonLanguage> for ManifestVisitor<'_> {
     }
 
     fn record_group<G: RuleGroup<Language = JsonLanguage>>(&mut self) {
-        G::record_rules(self)
+        for metadata in G::RULES {
+            self.push_rule(&json_metadata, G::NAME, metadata);
+        }
     }
 
     fn record_rule<R>(&mut self)
@@ -2287,7 +2301,9 @@ impl RegistryVisitor<CssLanguage> for ManifestVisitor<'_> {
     }
 
     fn record_group<G: RuleGroup<Language = CssLanguage>>(&mut self) {
-        G::record_rules(self)
+        for metadata in G::RULES {
+            self.push_rule(&css_metadata, G::NAME, metadata);
+        }
     }
 
     fn record_rule<R>(&mut self)
@@ -2308,7 +2324,9 @@ impl RegistryVisitor<GraphqlLanguage> for ManifestVisitor<'_> {
     }
 
     fn record_group<G: RuleGroup<Language = GraphqlLanguage>>(&mut self) {
-        G::record_rules(self)
+        for metadata in G::RULES {
+            self.push_rule(&graphql_metadata, G::NAME, metadata);
+        }
     }
 
     fn record_rule<R>(&mut self)
@@ -2333,7 +2351,9 @@ impl RegistryVisitor<HtmlLanguage> for ManifestVisitor<'_> {
     }
 
     fn record_group<G: RuleGroup<Language = HtmlLanguage>>(&mut self) {
-        G::record_rules(self)
+        for metadata in G::RULES {
+            self.push_rule(&biome_html_analyze::METADATA, G::NAME, metadata);
+        }
     }
 
     fn record_rule<R>(&mut self)

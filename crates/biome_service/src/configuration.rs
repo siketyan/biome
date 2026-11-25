@@ -48,7 +48,6 @@ use biome_resolver::{
     FsWithResolverProxy, PathInfo, ResolveOptions, is_relative_specifier,
     package_has_exported_subpath, package_specifier_parts, resolve, resolve_package_root,
 };
-use biome_rowan::Language;
 #[cfg(feature = "lang_yaml")]
 use biome_yaml_analyze::METADATA as yaml_lint_metadata;
 #[cfg(feature = "lang_yaml")]
@@ -1753,13 +1752,10 @@ impl<'a> ProjectScanComputer<'a> {
         }
     }
 
-    #[inline]
-    fn check_rule<R, L>(&mut self)
-    where
-        L: Language,
-        R: Rule<Options: Default, Query: Queryable<Language = L, Output: Clone>> + 'static,
-    {
-        self.check_rule_name(<R::Group as RuleGroup>::NAME, &R::METADATA);
+    fn check_group<G: RuleGroup>(&mut self) {
+        for metadata in G::RULES {
+            self.check_rule_name(G::NAME, metadata);
+        }
     }
 
     fn check_rule_name(&mut self, group_name: &'static str, metadata: &RuleMetadata) {
@@ -1789,75 +1785,103 @@ impl<'a> ProjectScanComputer<'a> {
 
 #[cfg(feature = "lang_js")]
 impl RegistryVisitor<JsLanguage> for ProjectScanComputer<'_> {
+    fn record_group<G: RuleGroup<Language = JsLanguage>>(&mut self) {
+        self.check_group::<G>();
+    }
+
     fn record_rule<R>(&mut self)
     where
         R: Rule<Options: Default, Query: Queryable<Language = JsLanguage, Output: Clone>> + 'static,
     {
-        self.check_rule::<R, JsLanguage>();
+        self.check_rule_name(<R::Group as RuleGroup>::NAME, &R::METADATA);
     }
 }
 
 impl RegistryVisitor<JsonLanguage> for ProjectScanComputer<'_> {
+    fn record_group<G: RuleGroup<Language = JsonLanguage>>(&mut self) {
+        self.check_group::<G>();
+    }
+
     fn record_rule<R>(&mut self)
     where
         R: Rule<Options: Default, Query: Queryable<Language = JsonLanguage, Output: Clone>>
             + 'static,
     {
-        self.check_rule::<R, JsonLanguage>();
+        self.check_rule_name(<R::Group as RuleGroup>::NAME, &R::METADATA);
     }
 }
 
 #[cfg(feature = "lang_css")]
 impl RegistryVisitor<CssLanguage> for ProjectScanComputer<'_> {
+    fn record_group<G: RuleGroup<Language = CssLanguage>>(&mut self) {
+        self.check_group::<G>();
+    }
+
     fn record_rule<R>(&mut self)
     where
         R: Rule<Options: Default, Query: Queryable<Language = CssLanguage, Output: Clone>>
             + 'static,
     {
-        self.check_rule::<R, CssLanguage>();
+        self.check_rule_name(<R::Group as RuleGroup>::NAME, &R::METADATA);
     }
 }
 #[cfg(feature = "lang_graphql")]
 impl RegistryVisitor<GraphqlLanguage> for ProjectScanComputer<'_> {
+    fn record_group<G: RuleGroup<Language = GraphqlLanguage>>(&mut self) {
+        self.check_group::<G>();
+    }
+
     fn record_rule<R>(&mut self)
     where
         R: Rule<Options: Default, Query: Queryable<Language = GraphqlLanguage, Output: Clone>>
             + 'static,
     {
-        self.check_rule::<R, GraphqlLanguage>();
+        self.check_rule_name(<R::Group as RuleGroup>::NAME, &R::METADATA);
     }
 }
 
 #[cfg(feature = "lang_html")]
 impl RegistryVisitor<HtmlLanguage> for ProjectScanComputer<'_> {
+    fn record_group<G: RuleGroup<Language = HtmlLanguage>>(&mut self) {
+        self.check_group::<G>();
+    }
+
     fn record_rule<R>(&mut self)
     where
         R: Rule<Options: Default, Query: Queryable<Language = HtmlLanguage, Output: Clone>>
             + 'static,
     {
-        self.check_rule::<R, HtmlLanguage>();
+        self.check_rule_name(<R::Group as RuleGroup>::NAME, &R::METADATA);
     }
 }
 
 #[cfg(feature = "lang_md")]
 impl RegistryVisitor<MarkdownLanguage> for ProjectScanComputer<'_> {
+    fn record_group<G: RuleGroup<Language = MarkdownLanguage>>(&mut self) {
+        self.check_group::<G>();
+    }
+
     fn record_rule<R>(&mut self)
     where
         R: Rule<Options: Default, Query: Queryable<Language = MarkdownLanguage, Output: Clone>>
             + 'static,
     {
-        self.check_rule::<R, MarkdownLanguage>();
+        self.check_rule_name(<R::Group as RuleGroup>::NAME, &R::METADATA);
     }
 }
 
 #[cfg(feature = "lang_yaml")]
 impl RegistryVisitor<YamlLanguage> for ProjectScanComputer<'_> {
+    fn record_group<G: RuleGroup<Language = YamlLanguage>>(&mut self) {
+        self.check_group::<G>();
+    }
+
     fn record_rule<R>(&mut self)
     where
         R: Rule<Options: Default, Query: Queryable<Language = YamlLanguage, Output: Clone>>
             + 'static,
     {
-        self.check_rule::<R, YamlLanguage>();
+        self.check_rule_name(<R::Group as RuleGroup>::NAME, &R::METADATA);
     }
 }
 

@@ -34,25 +34,25 @@ impl RuleGroup for MigrationGroup {
     type Category = MigrationCategory;
     const NAME: &'static str = "migrations";
 
-    fn record_rules<V: RegistryVisitor<Self::Language> + ?Sized>(registry: &mut V) {
+    biome_analyze::group_rules!(
         // Order here is important; rules should be added from the most old, to the most recent
         // v1.5.0
-        registry.record_rule::<Schema>();
+        Schema,
         // v2.0.0
-        registry.record_rule::<RulesAll>();
-        registry.record_rule::<OrganizeImports>();
-        registry.record_rule::<RuleMover>();
-        registry.record_rule::<Includes>();
-        registry.record_rule::<TrailingComma>();
-        registry.record_rule::<UseNamingConventionEnumMemberCase>();
-        registry.record_rule::<NoRestrictedGlobals>();
-        registry.record_rule::<Monorepo>();
-        registry.record_rule::<IgnoreScanner>();
+        RulesAll,
+        OrganizeImports,
+        RuleMover,
+        Includes,
+        TrailingComma,
+        UseNamingConventionEnumMemberCase,
+        NoRestrictedGlobals,
+        Monorepo,
+        IgnoreScanner,
         // v2.5.0
-        registry.record_rule::<Recommended>();
+        Recommended,
         // v2.6.0
-        registry.record_rule::<TailwindOptions>()
-    }
+        TailwindOptions,
+    );
 }
 
 impl GroupCategory for MigrationCategory {
