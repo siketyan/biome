@@ -197,8 +197,6 @@ impl Format<JsFormatContext> for FormatStatementBody<'_> {
 }
 
 /// This function consumes a list of modifiers and applies a predictable sorting.
-///
-/// Modifiers of the same precedence keep their order.
 pub(crate) fn sort_modifiers_by_precedence<List, Node>(list: &List) -> Vec<Node>
 where
     Node: AstNode<Language = JsLanguage>,
@@ -206,31 +204,34 @@ where
     Modifier: for<'a> From<&'a Node>,
 {
     let nodes = list.iter().collect::<Vec<Node>>();
-    let precedences: SmallVec<[Modifier; 8]> = nodes.iter().map(Modifier::from).collect();
+    let mut order: SmallVec<[(Modifier, usize); 8]> = nodes
+        .iter()
+        .enumerate()
+        .map(|(index, node)| (Modifier::from(node), index))
+        .collect();
 
-    match sorted_modifier_order(&precedences) {
-        Some(order) => order
+    if sort_by_precedence(&mut order) {
+        order
             .into_iter()
-            .map(|index| nodes[index].clone())
-            .collect(),
-        None => nodes,
+            .map(|(_, index)| nodes[index].clone())
+            .collect()
+    } else {
+        nodes
     }
 }
 
-/// Returns the indexes of `precedences` in ascending order of precedence, or
-/// [None] if they already are in that order. Equal precedences keep their
-/// order.
+/// Sorts modifiers, given as their precedence and their position, by
+/// precedence. Returns `false` if they already were in that order.
 ///
 /// It doesn't depend on the type of the modifiers, so the modifier lists
 /// share a single copy of the sorting code.
-fn sorted_modifier_order(precedences: &[Modifier]) -> Option<SmallVec<[usize; 8]>> {
-    if precedences.is_sorted() {
-        return None;
+fn sort_by_precedence(modifiers: &mut [(Modifier, usize)]) -> bool {
+    if modifiers.is_sorted_by_key(|&(precedence, _)| precedence) {
+        return false;
     }
 
-    let mut order: SmallVec<[usize; 8]> = (0..precedences.len()).collect();
-    order.sort_by_key(|&index| precedences[index]);
-    Some(order)
+    modifiers.sort_unstable_by_key(|&(precedence, _)| precedence);
+    true
 }
 
 pub(crate) type FormatStatementSemicolon<'a> = FormatOptionalSemicolon<'a>;
@@ -337,34 +338,79 @@ where
 
 #[cfg(test)]
 mod tests {
-    use super::sorted_modifier_order;
-    use biome_js_syntax::Modifier;
+    use super::{sort_by_precedence, sort_modifiers_by_precedence};
+    use biome_js_parser::{JsParserOptions, parse};
+    use biome_js_syntax::{JsPropertyModifierList, Modifier};
+    use biome_languages::JsFileSource;
+    use biome_rowan::{AstNode, AstNodeList};
 
     #[test]
     fn modifiers_in_order_of_precedence_are_left_alone() {
-        assert_eq!(sorted_modifier_order(&[]), None);
-        assert_eq!(sorted_modifier_order(&[Modifier::Static]), None);
-        assert_eq!(
-            sorted_modifier_order(&[
-                Modifier::Decorator,
-                Modifier::Decorator,
-                Modifier::Public,
-                Modifier::Readonly
-            ]),
-            None
-        );
+        assert!(!sort_by_precedence(&mut []));
+        assert!(!sort_by_precedence(&mut [(Modifier::Static, 0)]));
+
+        let mut modifiers = [
+            (Modifier::Decorator, 0),
+            (Modifier::Decorator, 1),
+            (Modifier::Public, 2),
+            (Modifier::Readonly, 3),
+        ];
+        assert!(!sort_by_precedence(&mut modifiers));
+        assert_eq!(modifiers.map(|(_, index)| index), [0, 1, 2, 3]);
     }
 
     #[test]
     fn modifiers_are_ordered_by_precedence_and_ties_keep_their_order() {
-        let order = sorted_modifier_order(&[
-            Modifier::Readonly,
-            Modifier::Decorator,
-            Modifier::Static,
-            Modifier::Decorator,
-            Modifier::Public,
-        ]);
+        let mut modifiers = [
+            (Modifier::Readonly, 0),
+            (Modifier::Decorator, 1),
+            (Modifier::Static, 2),
+            (Modifier::Decorator, 3),
+            (Modifier::Public, 4),
+        ];
 
-        assert_eq!(order.as_deref(), Some([1, 3, 4, 2, 0].as_slice()));
+        assert!(sort_by_precedence(&mut modifiers));
+        assert_eq!(modifiers.map(|(_, index)| index), [1, 3, 4, 2, 0]);
+    }
+
+    /// Sorting the precedences gives the order that sorting the modifier
+    /// nodes themselves gives, also for the long lists that the standard
+    /// library doesn't sort with an insertion sort.
+    #[test]
+    fn modifiers_are_ordered_like_their_nodes_would_be() {
+        const MODIFIERS: [&str; 6] = ["static", "readonly", "public", "override", "@a", "@b()"];
+
+        // A small linear congruential generator keeps the test deterministic.
+        let mut state: u32 = 0x2545_f491;
+        let mut next = move |bound: usize| {
+            state = state.wrapping_mul(1_664_525).wrapping_add(1_013_904_223);
+            (state >> 16) as usize % bound
+        };
+
+        for len in [0, 1, 2, 5, 19, 20, 21, 22, 31, 32, 33, 47, 64, 100, 257] {
+            for _ in 0..8 {
+                let modifiers: Vec<_> =
+                    (0..len).map(|_| MODIFIERS[next(MODIFIERS.len())]).collect();
+                let source = format!("class A {{ {} property = 1; }}", modifiers.join(" "));
+                let root = parse(&source, JsFileSource::ts(), JsParserOptions::default()).syntax();
+                let list = root
+                    .descendants()
+                    .find_map(JsPropertyModifierList::cast)
+                    .unwrap_or_else(|| panic!("no property modifier list in {source}"));
+                assert_eq!(list.len(), len, "{source}");
+
+                let mut expected: Vec<_> = list.iter().collect();
+                expected.sort_unstable_by_key(|node| Modifier::from(node));
+
+                let sorted = sort_modifiers_by_precedence(&list);
+                let text = |nodes: &[biome_js_syntax::AnyJsPropertyModifier]| -> Vec<_> {
+                    nodes
+                        .iter()
+                        .map(|node| node.syntax().text_trimmed_range())
+                        .collect()
+                };
+                assert_eq!(text(&sorted), text(&expected), "{source}");
+            }
+        }
     }
 }
