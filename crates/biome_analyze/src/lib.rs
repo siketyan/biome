@@ -55,7 +55,7 @@ pub use crate::registry::{
 pub use crate::rule::{
     FixKind, GroupCategory, Rule, RuleAction, RuleDiagnostic, RuleDocs, RuleDomain,
     RuleExecutionContext, RuleExecutionScope, RuleGroup, RuleMeta, RuleMetadata, RulePreset,
-    RuleSource, RuleSourceKind, RuleSourceWithKind, SuppressAction,
+    RuleSource, RuleSourceKind, RuleSourceWithKind, SuppressAction, group_rule_metadata,
 };
 pub use crate::services::{
     ExtendedConfigurationProvider, FromServices, ServiceBag, ServicesDiagnostic,

@@ -838,8 +838,34 @@ mod tests {
         type Category = TestCategory;
         const NAME: &'static str = "listed";
 
-        crate::group_rules!(SnippetRule, PanicRule);
+        crate::group_rules!(FirstListedRule, SecondListedRule);
     }
+
+    macro_rules! declare_listed_rule {
+        ($name:ident, $rule_name:literal) => {
+            enum $name {}
+
+            impl RuleMeta for $name {
+                type Group = ListedGroup;
+                const METADATA: RuleMetadata =
+                    RuleMetadata::new("next", $rule_name, TEST_DOCS, "raw");
+            }
+
+            impl Rule for $name {
+                type Query = Ast<RawLanguageRoot>;
+                type State = ();
+                type Signals = Option<Self::State>;
+                type Options = ();
+
+                fn run(_: &RuleContext<Self>) -> Self::Signals {
+                    None
+                }
+            }
+        };
+    }
+
+    declare_listed_rule!(FirstListedRule, "firstListedRule");
+    declare_listed_rule!(SecondListedRule, "secondListedRule");
 
     #[derive(Default)]
     struct RecordedRules(Vec<&'static str>);
@@ -863,7 +889,7 @@ mod tests {
             .map(|metadata| metadata.name)
             .collect();
 
-        assert_eq!(listed, ["snippetRule", "panicRule"]);
+        assert_eq!(listed, ["firstListedRule", "secondListedRule"]);
         assert_eq!(recorded.0, listed);
     }
 
@@ -872,9 +898,14 @@ mod tests {
         let mut registry = MetadataRegistry::default();
         RegistryVisitor::<RawLanguage>::record_group::<ListedGroup>(&mut registry);
 
-        assert!(registry.find_rule("listed", "snippetRule").is_some());
-        assert!(registry.find_rule("listed", "panicRule").is_some());
-        assert!(registry.find_rule("listed", "otherRule").is_none());
-        assert!(registry.find_rule("test", "panicRule").is_none());
+        assert!(registry.find_rule("listed", "firstListedRule").is_some());
+        assert!(registry.find_rule("listed", "secondListedRule").is_some());
+        assert!(registry.find_rule("listed", "panicRule").is_none());
+
+        // Recording the rules one by one registers the same rules.
+        let mut by_rule = MetadataRegistry::default();
+        ListedGroup::record_rules(&mut by_rule);
+        assert!(by_rule.find_rule("listed", "firstListedRule").is_some());
+        assert!(by_rule.find_rule("listed", "secondListedRule").is_some());
     }
 }

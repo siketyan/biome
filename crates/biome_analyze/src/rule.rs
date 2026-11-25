@@ -1348,21 +1348,36 @@ pub trait RuleGroup {
     ///
     /// A visitor that only reads the metadata of the rules can loop over this
     /// list in [RegistryVisitor::record_group], instead of being compiled
-    /// once for every rule through [RegistryVisitor::record_rule].
+    /// once for every rule through [RegistryVisitor::record_rule]. Such a
+    /// visitor reads the name and the category of the group from the group
+    /// itself, so [RuleMeta::Group] of every listed rule must be this group.
     const RULES: &'static [&'static RuleMetadata];
     /// Register all the rules belonging to this group into `registry`
     fn record_rules<V: RegistryVisitor<Self::Language> + ?Sized>(registry: &mut V);
 }
 
+/// Returns the metadata of the rule `R`, which must belong to the group `G`.
+///
+/// [group_rules!](crate::group_rules) builds [RuleGroup::RULES] with it, so a
+/// group that lists a rule of another group doesn't compile.
+pub const fn group_rule_metadata<G, R>() -> &'static RuleMetadata
+where
+    G: RuleGroup,
+    R: RuleMeta<Group = G>,
+{
+    &R::METADATA
+}
+
 /// Implements [RuleGroup::RULES] and [RuleGroup::record_rules] from a single
 /// list of rule types, so the two can't list different rules.
 ///
-/// The rules are recorded in the order of the list.
+/// The rules are recorded in the order of the list, and each of them must
+/// declare the group as its [RuleMeta::Group].
 #[macro_export]
 macro_rules! group_rules {
     ( $( $rule:ty ),* $(,)? ) => {
         const RULES: &'static [&'static $crate::RuleMetadata] =
-            &[ $( &<$rule as $crate::RuleMeta>::METADATA, )* ];
+            &[ $( $crate::group_rule_metadata::<Self, $rule>(), )* ];
 
         fn record_rules<V: $crate::RegistryVisitor<Self::Language> + ?Sized>(registry: &mut V) {
             // Uses `registry` in a group that has no rules.
