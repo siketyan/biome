@@ -1042,9 +1042,11 @@ pub mod support {
     use super::{AstNode, SyntaxNode, SyntaxToken};
 
     use super::{Language, SyntaxError, SyntaxResult};
-    use crate::SyntaxElementChildren;
     use crate::syntax::SyntaxSlot;
+    use crate::{RawSyntaxKind, SyntaxElementChildren, cursor};
+    use std::cell::Cell;
     use std::fmt::{Debug, Formatter};
+    use std::marker::PhantomData;
 
     pub fn node<L: Language, N: AstNode<Language = L>>(
         parent: &SyntaxNode<L>,
@@ -1138,32 +1140,112 @@ pub mod support {
         node: &SyntaxNode<P::Language>,
         f: &mut Formatter<'_>,
     ) -> std::fmt::Result {
+        debug_untyped_node(
+            &cursor::SyntaxNode::from(node.clone()),
+            &UntypedShapes::<P>(PhantomData),
+            f,
+        )
+    }
+
+    /// The parts of [DebugNodeShapes] that [debug_untyped_node] needs, as a
+    /// trait object over untyped nodes.
+    trait DynDebugNodeShapes {
+        fn shapes(&self) -> &'static str;
+
+        fn shape_offset(&self, kind: RawSyntaxKind) -> u32;
+
+        fn with_depth(
+            &self,
+            raw_kind: usize,
+            f: &mut dyn FnMut(&Cell<u8>) -> std::fmt::Result,
+        ) -> std::fmt::Result;
+
+        fn debug_unshaped(
+            &self,
+            node: &cursor::SyntaxNode,
+            f: &mut Formatter<'_>,
+        ) -> std::fmt::Result;
+
+        fn debug_token(
+            &self,
+            token: &cursor::SyntaxToken,
+            f: &mut Formatter<'_>,
+        ) -> std::fmt::Result;
+    }
+
+    struct UntypedShapes<P>(PhantomData<P>);
+
+    impl<P: DebugNodeShapes> DynDebugNodeShapes for UntypedShapes<P> {
+        fn shapes(&self) -> &'static str {
+            P::SHAPES
+        }
+
+        fn shape_offset(&self, kind: RawSyntaxKind) -> u32 {
+            P::shape_offset(crate::SyntaxKind::from_raw(kind))
+        }
+
+        fn with_depth(
+            &self,
+            raw_kind: usize,
+            f: &mut dyn FnMut(&Cell<u8>) -> std::fmt::Result,
+        ) -> std::fmt::Result {
+            P::with_depth(raw_kind, |depth| f(depth))
+        }
+
+        fn debug_unshaped(
+            &self,
+            node: &cursor::SyntaxNode,
+            f: &mut Formatter<'_>,
+        ) -> std::fmt::Result {
+            P::debug_unshaped(&SyntaxNode::from(node.clone()), f)
+        }
+
+        fn debug_token(
+            &self,
+            token: &cursor::SyntaxToken,
+            f: &mut Formatter<'_>,
+        ) -> std::fmt::Result {
+            Debug::fmt(&SyntaxToken::<P::Language>::from(token.clone()), f)
+        }
+    }
+
+    /// Implements [debug_any_node] on untyped nodes.
+    ///
+    /// It reaches the language through a trait object, so it's compiled once
+    /// for all the languages.
+    fn debug_untyped_node(
+        node: &cursor::SyntaxNode,
+        shapes: &dyn DynDebugNodeShapes,
+        f: &mut Formatter<'_>,
+    ) -> std::fmt::Result {
         let kind = node.kind();
-        let offset = P::shape_offset(kind);
-        let Some(shape) = P::SHAPES
+        let offset = shapes.shape_offset(kind);
+        let Some(shape) = shapes
+            .shapes()
             .get(offset as usize..)
             .and_then(|shapes| shapes.lines().next())
             .filter(|_| offset != u32::MAX)
         else {
-            return P::debug_unshaped(node, f);
+            return shapes.debug_unshaped(node, f);
         };
         let (tag, shape) = shape.split_at(1);
         let mut fields = shape.split(',');
         let name = fields.next().unwrap_or_default();
         match tag {
             "n" if fields.clone().next().is_none() => f.debug_struct(name).finish(),
-            "n" => P::with_depth(usize::from(crate::SyntaxKind::to_raw(&kind).0), |depth| {
+            "n" => shapes.with_depth(usize::from(kind.0), &mut |depth| {
                 let current_depth = depth.get();
                 let result = if current_depth < 16 {
                     depth.set(current_depth + 1);
                     let mut debug = f.debug_struct(name);
-                    for (slot_index, field) in fields.enumerate() {
+                    for (slot_index, field) in fields.clone().enumerate() {
                         let is_optional = field.starts_with('?');
                         debug.field(
                             field.trim_start_matches('?'),
-                            &DebugSlot::<P> {
-                                slot: node.slot(slot_index),
+                            &DebugSlot {
+                                slot: node.slots().nth(slot_index),
                                 is_optional,
+                                shapes,
                             },
                         );
                     }
@@ -1178,104 +1260,143 @@ pub mod support {
                 f.write_str(name)?;
                 f.write_str(" ")?;
                 f.debug_list()
-                    .entries(super::AstNodeListIterator::<P::Language, DebugAnyNode<P>> {
-                        inner: node.clone().into_list().iter(),
-                        ph: std::marker::PhantomData,
-                    })
+                    .entries(node.slots().map(|slot| match slot {
+                        cursor::SyntaxSlot::Node(node) => DebugNode { node, shapes },
+                        cursor::SyntaxSlot::Empty { .. } => {
+                            panic!("Node isn't permitted to contain empty slots")
+                        }
+                        cursor::SyntaxSlot::Token(token) => {
+                            panic!("Expected a node but found token `{token:?}` instead.")
+                        }
+                    }))
                     .finish()
             }
             "s" => {
                 f.write_str(name)?;
                 f.write_str(" ")?;
-                f.debug_list()
-                    .entries(super::AstSeparatedListElementsIterator::<
-                        P::Language,
-                        DebugAnyNode<P>,
-                    >::new(&node.clone().into_list()))
-                    .finish()
+                let mut slots = node.slots();
+                let mut list = f.debug_list();
+                while let Some(slot) = slots.next() {
+                    let node = match slot {
+                        cursor::SyntaxSlot::Token(token) => panic!(
+                            "Malformed list, node expected but found token {token:?} instead. You must add missing markers for missing elements."
+                        ),
+                        cursor::SyntaxSlot::Empty { .. } => None,
+                        cursor::SyntaxSlot::Node(node) => Some(node),
+                    };
+                    let separator = match slots.next() {
+                        Some(cursor::SyntaxSlot::Empty { .. }) => Err(()),
+                        Some(cursor::SyntaxSlot::Token(token)) => Ok(Some(token)),
+                        None => Ok(None),
+                        Some(cursor::SyntaxSlot::Node(node)) => panic!(
+                            "Malformed separated list, separator expected but found node {node:?} instead. You must add missing markers for missing separators."
+                        ),
+                    };
+                    list.entry(&DebugSeparatedElement {
+                        node,
+                        separator,
+                        shapes,
+                    });
+                }
+                list.finish()
             }
             _ => f
                 .debug_struct(name)
-                .field("items", &DebugChildren::<P>(node.children_with_tokens()))
+                .field("items", &DebugChildren { node, shapes })
                 .finish(),
         }
     }
 
-    /// A node of any kind, printed by [debug_any_node].
-    struct DebugAnyNode<P: DebugNodeShapes>(SyntaxNode<P::Language>);
-
-    impl<P: DebugNodeShapes> Clone for DebugAnyNode<P> {
-        fn clone(&self) -> Self {
-            Self(self.0.clone())
-        }
+    /// A node of any kind, printed by [debug_untyped_node].
+    struct DebugNode<'a> {
+        node: cursor::SyntaxNode,
+        shapes: &'a dyn DynDebugNodeShapes,
     }
 
-    impl<P: DebugNodeShapes> AstNode for DebugAnyNode<P> {
-        type Language = P::Language;
-
-        // The nodes are only printed, never matched by their kind.
-        const KIND_SET: super::SyntaxKindSet<P::Language> =
-            super::SyntaxKindSet::from_raw(crate::RawSyntaxKind(0));
-
-        fn can_cast(_: <P::Language as Language>::Kind) -> bool {
-            true
-        }
-
-        fn cast(syntax: SyntaxNode<P::Language>) -> Option<Self> {
-            Some(Self(syntax))
-        }
-
-        fn syntax(&self) -> &SyntaxNode<P::Language> {
-            &self.0
-        }
-
-        fn into_syntax(self) -> SyntaxNode<P::Language> {
-            self.0
-        }
-    }
-
-    impl<P: DebugNodeShapes> Debug for DebugAnyNode<P> {
+    impl Debug for DebugNode<'_> {
         fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-            debug_any_node::<P>(&self.0, f)
+            debug_untyped_node(&self.node, self.shapes, f)
         }
     }
 
-    struct DebugSlot<P: DebugNodeShapes> {
-        slot: Option<SyntaxSlot<P::Language>>,
+    struct DebugSlot<'a> {
+        slot: Option<cursor::SyntaxSlot>,
         is_optional: bool,
+        shapes: &'a dyn DynDebugNodeShapes,
     }
 
-    impl<P: DebugNodeShapes> Debug for DebugSlot<P> {
+    impl Debug for DebugSlot<'_> {
         fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
             match &self.slot {
-                Some(SyntaxSlot::Node(node)) => debug_any_node::<P>(node, f),
-                Some(SyntaxSlot::Token(token)) => Debug::fmt(token, f),
-                Some(SyntaxSlot::Empty { .. }) | None if self.is_optional => {
+                Some(cursor::SyntaxSlot::Node(node)) => debug_untyped_node(node, self.shapes, f),
+                Some(cursor::SyntaxSlot::Token(token)) => self.shapes.debug_token(token, f),
+                Some(cursor::SyntaxSlot::Empty { .. }) | None if self.is_optional => {
                     f.write_str("missing (optional)")
                 }
-                Some(SyntaxSlot::Empty { .. }) | None => f.write_str("missing (required)"),
+                Some(cursor::SyntaxSlot::Empty { .. }) | None => f.write_str("missing (required)"),
+            }
+        }
+    }
+
+    /// An element of a separated list, printed like
+    /// [AstSeparatedElement](super::AstSeparatedElement).
+    struct DebugSeparatedElement<'a> {
+        /// The node of the element, or [None] if it's missing.
+        node: Option<cursor::SyntaxNode>,
+        /// The separator that follows the node, if any, or an error if it's
+        /// missing.
+        separator: Result<Option<cursor::SyntaxToken>, ()>,
+        shapes: &'a dyn DynDebugNodeShapes,
+    }
+
+    impl Debug for DebugSeparatedElement<'_> {
+        fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+            match &self.node {
+                Some(node) => debug_untyped_node(node, self.shapes, f)?,
+                None => f.write_str("missing element")?,
+            };
+            match &self.separator {
+                Ok(Some(separator)) => {
+                    f.write_str(",\n")?;
+                    self.shapes.debug_token(separator, f)
+                }
+                Err(()) => f.write_str(",\nmissing separator"),
+                Ok(None) => Ok(()),
             }
         }
     }
 
     /// The children of a bogus node.
-    struct DebugChildren<P: DebugNodeShapes>(SyntaxElementChildren<P::Language>);
+    struct DebugChildren<'a> {
+        node: &'a cursor::SyntaxNode,
+        shapes: &'a dyn DynDebugNodeShapes,
+    }
 
-    impl<P: DebugNodeShapes> Debug for DebugChildren<P> {
+    impl Debug for DebugChildren<'_> {
         fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
             f.debug_list()
-                .entries(self.0.clone().map(DebugElement::<P>))
+                .entries(
+                    self.node
+                        .children_with_tokens()
+                        .map(|element| DebugElement {
+                            element,
+                            shapes: self.shapes,
+                        }),
+                )
                 .finish()
         }
     }
 
-    struct DebugElement<P: DebugNodeShapes>(crate::SyntaxElement<P::Language>);
+    struct DebugElement<'a> {
+        element: cursor::SyntaxElement,
+        shapes: &'a dyn DynDebugNodeShapes,
+    }
 
-    impl<P: DebugNodeShapes> Debug for DebugElement<P> {
+    impl Debug for DebugElement<'_> {
         fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-            match &self.0 {
-                crate::SyntaxElement::Node(node) => debug_any_node::<P>(node, f),
-                crate::SyntaxElement::Token(token) => Debug::fmt(token, f),
+            match &self.element {
+                cursor::SyntaxElement::Node(node) => debug_untyped_node(node, self.shapes, f),
+                cursor::SyntaxElement::Token(token) => self.shapes.debug_token(token, f),
             }
         }
     }
