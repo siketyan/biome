@@ -1265,9 +1265,13 @@ pub mod support {
                         cursor::SyntaxSlot::Empty { .. } => {
                             panic!("Node isn't permitted to contain empty slots")
                         }
-                        cursor::SyntaxSlot::Token(token) => {
-                            panic!("Expected a node but found token `{token:?}` instead.")
-                        }
+                        cursor::SyntaxSlot::Token(token) => panic!(
+                            "Expected a node but found token `{:?}` instead.",
+                            DebugElement {
+                                element: token.into(),
+                                shapes,
+                            }
+                        ),
                     }))
                     .finish()
             }
@@ -1279,7 +1283,11 @@ pub mod support {
                 while let Some(slot) = slots.next() {
                     let node = match slot {
                         cursor::SyntaxSlot::Token(token) => panic!(
-                            "Malformed list, node expected but found token {token:?} instead. You must add missing markers for missing elements."
+                            "Malformed list, node expected but found token {:?} instead. You must add missing markers for missing elements.",
+                            DebugElement {
+                                element: token.into(),
+                                shapes,
+                            }
                         ),
                         cursor::SyntaxSlot::Empty { .. } => None,
                         cursor::SyntaxSlot::Node(node) => Some(node),
@@ -1289,7 +1297,11 @@ pub mod support {
                         Some(cursor::SyntaxSlot::Token(token)) => Ok(Some(token)),
                         None => Ok(None),
                         Some(cursor::SyntaxSlot::Node(node)) => panic!(
-                            "Malformed separated list, separator expected but found node {node:?} instead. You must add missing markers for missing separators."
+                            "Malformed separated list, separator expected but found node {:?} instead. You must add missing markers for missing separators.",
+                            DebugElement {
+                                element: node.into(),
+                                shapes,
+                            }
                         ),
                     };
                     list.entry(&DebugSeparatedElement {

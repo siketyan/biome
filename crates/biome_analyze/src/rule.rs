@@ -1731,8 +1731,9 @@ pub(crate) fn build_top_level_suppression<L: Language>(
     None
 }
 
-/// Shared by [Rule::inline_suppression] and plugin signals, and kept outside
-/// the trait so it is monomorphized once per language instead of once per rule.
+/// Shared by the signals of rules and of plugins. It only depends on the
+/// language, so it is monomorphized once per language instead of once per
+/// rule.
 pub(crate) fn build_inline_suppression<L: Language>(
     root: L::Root,
     text_range: &TextRange,

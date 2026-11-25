@@ -204,33 +204,48 @@ where
     Modifier: for<'a> From<&'a Node>,
 {
     let nodes = list.iter().collect::<Vec<Node>>();
-    let mut order: SmallVec<[(Modifier, usize); 8]> = nodes
+    let mut order: SmallVec<[ModifierPosition; 8]> = nodes
         .iter()
         .enumerate()
-        .map(|(index, node)| (Modifier::from(node), index))
+        .map(|(index, node)| ModifierPosition {
+            precedence: Modifier::from(node),
+            index,
+        })
         .collect();
 
     if sort_by_precedence(&mut order) {
         order
             .into_iter()
-            .map(|(_, index)| nodes[index].clone())
+            .map(|position| nodes[position.index].clone())
             .collect()
     } else {
         nodes
     }
 }
 
-/// Sorts modifiers, given as their precedence and their position, by
-/// precedence. Returns `false` if they already were in that order.
+/// The precedence of a modifier and its position in its list.
+///
+/// The unstable sort of the standard library orders equal elements according
+/// to the size of the elements and to whether they are `Copy`. This type
+/// takes two words and isn't `Copy`, like a modifier node, so sorting the
+/// positions gives the order that sorting the nodes would give.
+#[derive(Debug, Eq, PartialEq)]
+struct ModifierPosition {
+    precedence: Modifier,
+    index: usize,
+}
+
+/// Sorts the positions of modifiers by precedence. Returns `false` if they
+/// already were in that order.
 ///
 /// It doesn't depend on the type of the modifiers, so the modifier lists
 /// share a single copy of the sorting code.
-fn sort_by_precedence(modifiers: &mut [(Modifier, usize)]) -> bool {
-    if modifiers.is_sorted_by_key(|&(precedence, _)| precedence) {
+fn sort_by_precedence(modifiers: &mut [ModifierPosition]) -> bool {
+    if modifiers.is_sorted_by_key(|position| position.precedence) {
         return false;
     }
 
-    modifiers.sort_unstable_by_key(|&(precedence, _)| precedence);
+    modifiers.sort_unstable_by_key(|position| position.precedence);
     true
 }
 
@@ -338,59 +353,94 @@ where
 
 #[cfg(test)]
 mod tests {
-    use super::{sort_by_precedence, sort_modifiers_by_precedence};
+    use super::{ModifierPosition, sort_by_precedence, sort_modifiers_by_precedence};
     use biome_js_parser::{JsParserOptions, parse};
-    use biome_js_syntax::{JsPropertyModifierList, Modifier};
+    use biome_js_syntax::{AnyJsPropertyModifier, JsPropertyModifierList, Modifier};
     use biome_languages::JsFileSource;
-    use biome_rowan::{AstNode, AstNodeList};
+    use biome_rowan::{AstNode, AstNodeList, TextRange};
+
+    fn positions<const N: usize>(precedences: [Modifier; N]) -> [ModifierPosition; N] {
+        let mut index = 0;
+        precedences.map(|precedence| {
+            index += 1;
+            ModifierPosition {
+                precedence,
+                index: index - 1,
+            }
+        })
+    }
+
+    fn indexes<const N: usize>(positions: [ModifierPosition; N]) -> [usize; N] {
+        positions.map(|position| position.index)
+    }
+
+    fn ranges(nodes: &[AnyJsPropertyModifier]) -> Vec<TextRange> {
+        nodes
+            .iter()
+            .map(|node| node.syntax().text_trimmed_range())
+            .collect()
+    }
+
+    /// A small linear congruential generator, to keep the test deterministic.
+    struct Random(u32);
+
+    impl Random {
+        fn below(&mut self, bound: usize) -> usize {
+            self.0 = self.0.wrapping_mul(1_664_525).wrapping_add(1_013_904_223);
+            (self.0 >> 16) as usize % bound
+        }
+    }
+
+    #[test]
+    fn a_modifier_position_has_the_layout_of_a_modifier_node() {
+        assert_eq!(
+            size_of::<ModifierPosition>(),
+            size_of::<AnyJsPropertyModifier>()
+        );
+    }
 
     #[test]
     fn modifiers_in_order_of_precedence_are_left_alone() {
         assert!(!sort_by_precedence(&mut []));
-        assert!(!sort_by_precedence(&mut [(Modifier::Static, 0)]));
+        assert!(!sort_by_precedence(&mut positions([Modifier::Static])));
 
-        let mut modifiers = [
-            (Modifier::Decorator, 0),
-            (Modifier::Decorator, 1),
-            (Modifier::Public, 2),
-            (Modifier::Readonly, 3),
-        ];
+        let mut modifiers = positions([
+            Modifier::Decorator,
+            Modifier::Decorator,
+            Modifier::Public,
+            Modifier::Readonly,
+        ]);
         assert!(!sort_by_precedence(&mut modifiers));
-        assert_eq!(modifiers.map(|(_, index)| index), [0, 1, 2, 3]);
+        assert_eq!(indexes(modifiers), [0, 1, 2, 3]);
     }
 
     #[test]
     fn modifiers_are_ordered_by_precedence_and_ties_keep_their_order() {
-        let mut modifiers = [
-            (Modifier::Readonly, 0),
-            (Modifier::Decorator, 1),
-            (Modifier::Static, 2),
-            (Modifier::Decorator, 3),
-            (Modifier::Public, 4),
-        ];
+        let mut modifiers = positions([
+            Modifier::Readonly,
+            Modifier::Decorator,
+            Modifier::Static,
+            Modifier::Decorator,
+            Modifier::Public,
+        ]);
 
         assert!(sort_by_precedence(&mut modifiers));
-        assert_eq!(modifiers.map(|(_, index)| index), [1, 3, 4, 2, 0]);
+        assert_eq!(indexes(modifiers), [1, 3, 4, 2, 0]);
     }
 
-    /// Sorting the precedences gives the order that sorting the modifier
-    /// nodes themselves gives, also for the long lists that the standard
-    /// library doesn't sort with an insertion sort.
+    /// Sorting the positions gives the order that sorting the modifier nodes
+    /// themselves gives, also for the long lists that the standard library
+    /// doesn't sort with an insertion sort.
     #[test]
     fn modifiers_are_ordered_like_their_nodes_would_be() {
         const MODIFIERS: [&str; 6] = ["static", "readonly", "public", "override", "@a", "@b()"];
 
-        // A small linear congruential generator keeps the test deterministic.
-        let mut state: u32 = 0x2545_f491;
-        let mut next = move |bound: usize| {
-            state = state.wrapping_mul(1_664_525).wrapping_add(1_013_904_223);
-            (state >> 16) as usize % bound
-        };
-
+        let mut random = Random(0x2545_f491);
         for len in [0, 1, 2, 5, 19, 20, 21, 22, 31, 32, 33, 47, 64, 100, 257] {
             for _ in 0..8 {
-                let modifiers: Vec<_> =
-                    (0..len).map(|_| MODIFIERS[next(MODIFIERS.len())]).collect();
+                let modifiers: Vec<_> = (0..len)
+                    .map(|_| MODIFIERS[random.below(MODIFIERS.len())])
+                    .collect();
                 let source = format!("class A {{ {} property = 1; }}", modifiers.join(" "));
                 let root = parse(&source, JsFileSource::ts(), JsParserOptions::default()).syntax();
                 let list = root
@@ -403,13 +453,7 @@ mod tests {
                 expected.sort_unstable_by_key(|node| Modifier::from(node));
 
                 let sorted = sort_modifiers_by_precedence(&list);
-                let text = |nodes: &[biome_js_syntax::AnyJsPropertyModifier]| -> Vec<_> {
-                    nodes
-                        .iter()
-                        .map(|node| node.syntax().text_trimmed_range())
-                        .collect()
-                };
-                assert_eq!(text(&sorted), text(&expected), "{source}");
+                assert_eq!(ranges(&sorted), ranges(&expected), "{source}");
             }
         }
     }

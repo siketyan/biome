@@ -79,6 +79,18 @@ enum NewTrivia<'a> {
     Replace(Option<&'a cursor::SyntaxTrivia>),
 }
 
+/// Appends the text of `trivia` to `text` and returns its pieces. A missing
+/// trivia has no text and no pieces.
+fn push_trivia(text: &mut String, trivia: Option<&cursor::SyntaxTrivia>) -> GreenTrivia {
+    match trivia {
+        Some(trivia) => {
+            text.push_str(trivia.text());
+            GreenTrivia::new(trivia.pieces().map(|(_, piece)| piece))
+        }
+        None => GreenTrivia::new(empty()),
+    }
+}
+
 /// Returns a detached copy of `token` with its leading and trailing trivia
 /// changed as `leading` and `trailing` tell.
 fn token_with_trivia(
@@ -98,20 +110,9 @@ fn token_with_trivia(
     };
 
     let mut text = String::new();
-    let mut green_trivia = |trivia: Option<&cursor::SyntaxTrivia>, is_leading: bool| {
-        if !is_leading {
-            text.push_str(token.text_trimmed());
-        }
-        match trivia {
-            Some(trivia) => {
-                text.push_str(trivia.text());
-                GreenTrivia::new(trivia.pieces().map(|(_, piece)| piece))
-            }
-            None => GreenTrivia::new(empty()),
-        }
-    };
-    let leading = green_trivia(leading, true);
-    let trailing = green_trivia(trailing, false);
+    let leading = push_trivia(&mut text, leading);
+    text.push_str(token.text_trimmed());
+    let trailing = push_trivia(&mut text, trailing);
 
     cursor::SyntaxToken::new_detached(GreenToken::with_trivia(
         token.kind(),

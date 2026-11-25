@@ -1,8 +1,8 @@
 use super::trivia::{self, TokenlessSource};
+#[cfg(debug_assertions)]
+use crate::SyntaxSlot;
 use crate::syntax::SyntaxKind;
-use crate::{
-    AstNode, Language, RawSyntaxKind, SyntaxElement, SyntaxNode, SyntaxSlot, SyntaxToken, cursor,
-};
+use crate::{AstNode, Language, RawSyntaxKind, SyntaxElement, SyntaxNode, SyntaxToken, cursor};
 use biome_text_edit::{TextEdit, TextEditBuilder};
 use biome_text_size::{TextRange, TextSize};
 use std::marker::PhantomData;

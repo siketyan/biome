@@ -696,7 +696,7 @@ where
 /// suppressions that `filter` asks for.
 ///
 /// `text_range` is the range of the signal. The inline suppression is only
-/// built when it's known.
+/// built when it's known and `filter` asks for it.
 ///
 /// It's kept out of the generic method and never inlined, so it's compiled
 /// once per language instead of once per rule.
@@ -714,6 +714,7 @@ fn collect_rule_actions<L: Language>(
     suppression_reason: Option<&str>,
 ) -> AnalyzerActionIter<L> {
     let (group_name, name) = rule_name;
+    let text_range = text_range.filter(|_| filter.is_inline_suppression());
     let inline_suppression = text_range.and_then(|text_range| {
         build_inline_suppression(
             root.clone(),
