@@ -82,6 +82,7 @@ pub fn check_rules() -> anyhow::Result<()> {
             if R::METADATA.domains.contains(&RuleDomain::Tailwind)
                 && !R::METADATA
                     .docs
+                    .text()
                     .lines()
                     .any(|line| line.trim() == "## Recognized class strings")
             {
@@ -351,7 +352,8 @@ fn parse_documentation(
     rule_metadata: RuleMetadata,
     category: RuleCategory,
 ) -> anyhow::Result<()> {
-    let document = parse_rule_document(rule_metadata.docs).into_document();
+    let docs = rule_metadata.docs.text();
+    let document = parse_rule_document(&docs).into_document();
 
     let mut diagnostics_writer = DiagnosticConsoleWriter::default();
 

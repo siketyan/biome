@@ -1,6 +1,7 @@
 use proc_macro::TokenStream;
 
 mod group_macro;
+mod rule_docs;
 mod rule_source_variant_index;
 
 /// Declares an analyzer group by reading rule files from the filesystem.
@@ -27,6 +28,25 @@ mod rule_source_variant_index;
 #[proc_macro]
 pub fn declare_group_from_fs(input: TokenStream) -> TokenStream {
     group_macro::declare_group_from_fs_impl(input)
+}
+
+/// Compresses the documentation of a rule into a byte string literal.
+///
+/// The macro takes the string literals of the `#[doc]` attributes of a rule,
+/// one per line of documentation. It joins them with a line break after each
+/// one, and expands to the DEFLATE stream of that text.
+/// `biome_analyze::RuleDocs` reads the text back.
+///
+/// # Example
+///
+/// ```ignore
+/// use biome_analyze_macros::compress_rule_docs;
+///
+/// const DOCS: &[u8] = compress_rule_docs!(" Disallow the use of `debugger`." "");
+/// ```
+#[proc_macro]
+pub fn compress_rule_docs(input: TokenStream) -> TokenStream {
+    rule_docs::compress_rule_docs_impl(input)
 }
 
 #[proc_macro_derive(RuleSourceVariantIndex)]

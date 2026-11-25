@@ -87,6 +87,52 @@ impl Default for RuleExecutionContext {
     }
 }
 
+/// The documentation comments of a rule.
+///
+/// The text is kept compressed, because the documentation of all rules takes
+/// more than a megabyte and is only read to explain a rule.
+/// [`RuleDocs::text`] and the [`Display`](std::fmt::Display) implementation
+/// decompress it on every call.
+#[derive(Clone, Copy)]
+pub struct RuleDocs(&'static [u8]);
+
+impl RuleDocs {
+    /// Wraps the output of [`compress_rule_docs!`](crate::compress_rule_docs).
+    ///
+    /// Reading the text of any other bytes gives an empty string.
+    pub const fn from_compressed(compressed: &'static [u8]) -> Self {
+        Self(compressed)
+    }
+
+    /// Returns the documentation as Markdown, one line per documentation
+    /// comment of the rule.
+    pub fn text(&self) -> String {
+        miniz_oxide::inflate::decompress_to_vec(self.0)
+            .ok()
+            .and_then(|bytes| String::from_utf8(bytes).ok())
+            .unwrap_or_default()
+    }
+}
+
+impl std::fmt::Debug for RuleDocs {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Debug::fmt(&self.text(), f)
+    }
+}
+
+impl std::fmt::Display for RuleDocs {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(&self.text())
+    }
+}
+
+#[cfg(feature = "serde")]
+impl serde::Serialize for RuleDocs {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        serializer.serialize_str(&self.text())
+    }
+}
+
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize))]
 #[cfg_attr(feature = "serde", serde(rename_all = "camelCase"))]
@@ -99,7 +145,7 @@ pub struct RuleMetadata {
     /// The name of this rule, displayed in the diagnostics it emits
     pub name: &'static str,
     /// The content of the documentation comments for this rule
-    pub docs: &'static str,
+    pub docs: RuleDocs,
     /// The language that the rule applies to.
     pub language: &'static str,
     /// Whether a rule is recommended or not
@@ -1020,7 +1066,7 @@ impl RuleMetadata {
     pub const fn new(
         version: &'static str,
         name: &'static str,
-        docs: &'static str,
+        docs: RuleDocs,
         language: &'static str,
     ) -> Self {
         Self {
@@ -1228,7 +1274,12 @@ macro_rules! declare_rule {
         impl $crate::RuleMeta for $id {
             type Group = super::Group;
             const METADATA: $crate::RuleMetadata =
-                $crate::RuleMetadata::new($version, $name, concat!( $( $doc, "\n", )* ), $language) $( .$key($value) )*;
+                $crate::RuleMetadata::new(
+                    $version,
+                    $name,
+                    $crate::RuleDocs::from_compressed($crate::compress_rule_docs!( $( $doc )* )),
+                    $language,
+                ) $( .$key($value) )*;
         }
     }
 }
@@ -2045,5 +2096,54 @@ impl FromStr for RulePreset {
             "recommended" => Ok(Self::Recommended),
             _ => Err("Invalid rule preset."),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::RuleDocs;
+    use biome_analyze_macros::compress_rule_docs;
+
+    #[test]
+    fn rule_docs_keep_every_line_through_compression() {
+        let docs = RuleDocs::from_compressed(compress_rule_docs!(
+            " Disallow `debugger`."
+            ""
+            " ## Examples"
+            " ```js"
+            " const quoted = \"\\d\u{e9}\";"
+            " ```"
+        ));
+
+        assert_eq!(
+            docs.text(),
+            " Disallow `debugger`.\n\n ## Examples\n ```js\n const quoted = \"\\d\u{e9}\";\n ```\n"
+        );
+        assert_eq!(docs.to_string(), docs.text());
+    }
+
+    #[test]
+    fn rule_docs_without_lines_are_empty() {
+        let docs = RuleDocs::from_compressed(compress_rule_docs!());
+
+        assert_eq!(docs.text(), "");
+    }
+
+    #[test]
+    fn rule_docs_of_bytes_that_are_not_compressed_are_empty() {
+        let docs = RuleDocs::from_compressed(b"Disallow `debugger`.");
+
+        assert_eq!(docs.text(), "");
+    }
+
+    #[cfg(feature = "serde")]
+    #[test]
+    fn rule_docs_serialize_as_their_text() {
+        let docs = RuleDocs::from_compressed(compress_rule_docs!(" Disallow `debugger`."));
+
+        assert_eq!(
+            serde_json::to_string(&docs).unwrap(),
+            r#"" Disallow `debugger`.\n""#
+        );
     }
 }

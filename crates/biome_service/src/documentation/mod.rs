@@ -239,7 +239,8 @@ impl biome_console::fmt::Display for ExplainRule {
         fmt.write_str("\n")?;
         fmt.write_str("\n")?;
 
-        for line in metadata.docs.lines() {
+        let docs = metadata.docs.text();
+        for line in docs.lines() {
             if let Some((_, remainder)) = line.split_once("## ") {
                 fmt.write_markup(markup! {
                     <Emphasis>{remainder.trim_start()}</Emphasis>

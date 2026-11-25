@@ -28,6 +28,8 @@ mod unsupported_rules;
 pub mod utils;
 mod visitor;
 
+// Re-exported for use in the `declare_rule` macro
+pub use biome_analyze_macros::compress_rule_docs;
 // Re-exported for use in the `declare_group` macro
 pub use biome_diagnostics::category_concat;
 
@@ -51,9 +53,9 @@ pub use crate::registry::{
     RuleRegistry, RuleRegistryBuilder, RuleSuppressions,
 };
 pub use crate::rule::{
-    FixKind, GroupCategory, Rule, RuleAction, RuleDiagnostic, RuleDomain, RuleExecutionContext,
-    RuleExecutionScope, RuleGroup, RuleMeta, RuleMetadata, RulePreset, RuleSource, RuleSourceKind,
-    RuleSourceWithKind, SuppressAction,
+    FixKind, GroupCategory, Rule, RuleAction, RuleDiagnostic, RuleDocs, RuleDomain,
+    RuleExecutionContext, RuleExecutionScope, RuleGroup, RuleMeta, RuleMetadata, RulePreset,
+    RuleSource, RuleSourceKind, RuleSourceWithKind, SuppressAction,
 };
 pub use crate::services::{
     ExtendedConfigurationProvider, FromServices, ServiceBag, ServicesDiagnostic,

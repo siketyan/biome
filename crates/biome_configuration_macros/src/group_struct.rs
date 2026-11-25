@@ -29,7 +29,8 @@ pub fn generate_group_struct(
 
     for (index, (rule, metadata)) in rules.iter().enumerate() {
         let summary = {
-            let parsed = parse_rule_summary(metadata.docs);
+            let text = metadata.docs.text();
+            let parsed = parse_rule_summary(&text);
             let mut docs = String::new();
             if let Some(summary) = parsed
                 .summary()

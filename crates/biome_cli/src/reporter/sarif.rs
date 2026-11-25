@@ -1,7 +1,9 @@
 use crate::reporter::{Reporter, ReporterVisitor, ReporterWriter};
 use crate::runner::execution::Execution;
 use crate::{DiagnosticsPayload, TraversalSummary};
-use biome_analyze::{GroupCategory, Queryable, RegistryVisitor, Rule, RuleCategory, RuleGroup};
+use biome_analyze::{
+    GroupCategory, Queryable, RegistryVisitor, Rule, RuleCategory, RuleDocs, RuleGroup,
+};
 use biome_console::markup;
 use biome_css_syntax::CssLanguage;
 use biome_diagnostics::{Error, Location, PrintDescription, Severity, display::SourceFile};
@@ -39,14 +41,15 @@ impl Reporter for SarifReporter<'_> {
     }
 }
 
-pub(crate) struct SarifReporterVisitor<'a> {
-    rule_descriptions: BTreeMap<&'static str, &'a str>,
+pub(crate) struct SarifReporterVisitor {
+    /// The documentation of every rule, by rule name.
+    rule_docs: BTreeMap<&'static str, RuleDocs>,
 }
 
-impl<'a> SarifReporterVisitor<'a> {
+impl SarifReporterVisitor {
     pub fn new() -> Self {
         let mut visitor = Self {
-            rule_descriptions: BTreeMap::new(),
+            rule_docs: BTreeMap::new(),
         };
 
         biome_graphql_analyze::visit_registry(&mut visitor);
@@ -60,18 +63,17 @@ impl<'a> SarifReporterVisitor<'a> {
         visitor
     }
 
-    fn store_rule(&mut self, category: RuleCategory, rule_name: &'static str, docs: &'static str) {
+    fn store_rule(&mut self, category: RuleCategory, rule_name: &'static str, docs: RuleDocs) {
         if matches!(
             category,
             RuleCategory::Syntax | RuleCategory::Lint | RuleCategory::Action
         ) {
-            let first_line = docs.lines().next().unwrap_or_default().trim();
-            self.rule_descriptions.insert(rule_name, first_line);
+            self.rule_docs.insert(rule_name, docs);
         }
     }
 }
 
-impl RegistryVisitor<JsLanguage> for SarifReporterVisitor<'_> {
+impl RegistryVisitor<JsLanguage> for SarifReporterVisitor {
     fn record_rule<R>(&mut self)
     where
         R: Rule<Options: Default, Query: Queryable<Language = JsLanguage, Output: Clone>> + 'static,
@@ -84,7 +86,7 @@ impl RegistryVisitor<JsLanguage> for SarifReporterVisitor<'_> {
     }
 }
 
-impl RegistryVisitor<JsonLanguage> for SarifReporterVisitor<'_> {
+impl RegistryVisitor<JsonLanguage> for SarifReporterVisitor {
     fn record_rule<R>(&mut self)
     where
         R: Rule<Options: Default, Query: Queryable<Language = JsonLanguage, Output: Clone>>
@@ -98,7 +100,7 @@ impl RegistryVisitor<JsonLanguage> for SarifReporterVisitor<'_> {
     }
 }
 
-impl RegistryVisitor<CssLanguage> for SarifReporterVisitor<'_> {
+impl RegistryVisitor<CssLanguage> for SarifReporterVisitor {
     fn record_rule<R>(&mut self)
     where
         R: Rule<Options: Default, Query: Queryable<Language = CssLanguage, Output: Clone>>
@@ -112,7 +114,7 @@ impl RegistryVisitor<CssLanguage> for SarifReporterVisitor<'_> {
     }
 }
 
-impl RegistryVisitor<GraphqlLanguage> for SarifReporterVisitor<'_> {
+impl RegistryVisitor<GraphqlLanguage> for SarifReporterVisitor {
     fn record_rule<R>(&mut self)
     where
         R: Rule<Options: Default, Query: Queryable<Language = GraphqlLanguage, Output: Clone>>
@@ -126,7 +128,7 @@ impl RegistryVisitor<GraphqlLanguage> for SarifReporterVisitor<'_> {
     }
 }
 
-impl RegistryVisitor<HtmlLanguage> for SarifReporterVisitor<'_> {
+impl RegistryVisitor<HtmlLanguage> for SarifReporterVisitor {
     fn record_rule<R>(&mut self)
     where
         R: Rule<Options: Default, Query: Queryable<Language = HtmlLanguage, Output: Clone>>
@@ -140,7 +142,7 @@ impl RegistryVisitor<HtmlLanguage> for SarifReporterVisitor<'_> {
     }
 }
 
-impl RegistryVisitor<MarkdownLanguage> for SarifReporterVisitor<'_> {
+impl RegistryVisitor<MarkdownLanguage> for SarifReporterVisitor {
     fn record_rule<R>(&mut self)
     where
         R: Rule<Options: Default, Query: Queryable<Language = MarkdownLanguage, Output: Clone>>
@@ -154,7 +156,7 @@ impl RegistryVisitor<MarkdownLanguage> for SarifReporterVisitor<'_> {
     }
 }
 
-impl RegistryVisitor<YamlLanguage> for SarifReporterVisitor<'_> {
+impl RegistryVisitor<YamlLanguage> for SarifReporterVisitor {
     fn record_rule<R>(&mut self)
     where
         R: Rule<Options: Default, Query: Queryable<Language = YamlLanguage, Output: Clone>>
@@ -168,7 +170,7 @@ impl RegistryVisitor<YamlLanguage> for SarifReporterVisitor<'_> {
     }
 }
 
-impl ReporterVisitor for SarifReporterVisitor<'_> {
+impl ReporterVisitor for SarifReporterVisitor {
     fn report_summary(
         &mut self,
         _writer: &mut dyn ReporterWriter,
@@ -187,6 +189,23 @@ impl ReporterVisitor for SarifReporterVisitor<'_> {
         verbose: bool,
         working_directory: Option<&Utf8Path>,
     ) -> std::io::Result<()> {
+        // The description of a rule is the first line of its documentation.
+        // Only the rules that are reported have their documentation
+        // decompressed.
+        let mut rule_descriptions = BTreeMap::new();
+        for diagnostic in &payload.diagnostics {
+            let Some(category) = diagnostic.category() else {
+                continue;
+            };
+            let rule_name = category.name().split('/').next_back().unwrap_or_default();
+            if let Some(docs) = self.rule_docs.get(rule_name) {
+                rule_descriptions.entry(rule_name).or_insert_with(|| {
+                    let docs = docs.text();
+                    docs.lines().next().unwrap_or_default().trim().to_string()
+                });
+            }
+        }
+
         let mut sarif_rules: HashSet<_> = HashSet::new();
 
         let sarif_results: Vec<_> = payload
@@ -197,7 +216,7 @@ impl ReporterVisitor for SarifReporterVisitor<'_> {
                     if diagnostic.tags().is_verbose() {
                         if verbose {
                             if let Some(driver_rule) =
-                                to_sarif_driver_rule(diagnostic, &self.rule_descriptions)
+                                to_sarif_driver_rule(diagnostic, &rule_descriptions)
                             {
                                 sarif_rules.insert(driver_rule);
                             }
@@ -207,7 +226,7 @@ impl ReporterVisitor for SarifReporterVisitor<'_> {
                         }
                     } else {
                         if let Some(driver_rule) =
-                            to_sarif_driver_rule(diagnostic, &self.rule_descriptions)
+                            to_sarif_driver_rule(diagnostic, &rule_descriptions)
                         {
                             sarif_rules.insert(driver_rule);
                         }
@@ -278,7 +297,7 @@ fn to_sarif_result<'a>(
 
 fn to_sarif_driver_rule<'a>(
     diagnostic: &'a Error,
-    rule_descriptions: &BTreeMap<&'static str, &'a str>,
+    rule_descriptions: &'a BTreeMap<&'static str, String>,
 ) -> Option<SarifDriverRule<'a>> {
     let category = diagnostic.category()?;
 

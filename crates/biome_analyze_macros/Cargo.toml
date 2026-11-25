@@ -16,6 +16,7 @@ proc-macro = true
 anyhow            = { workspace = true }
 biome_string_case = { workspace = true }
 camino            = { workspace = true }
+miniz_oxide       = { workspace = true }
 prettyplease      = { workspace = true }
 proc-macro2       = { workspace = true }
 quote             = { workspace = true }

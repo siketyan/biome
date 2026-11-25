@@ -601,8 +601,8 @@ impl<L: Language + Default> RegistryRule<L> {
 mod tests {
     use super::*;
     use crate::{
-        AnalysisFilter, AnalyzerOptions, ApplySuppression, Ast, GroupCategory, RuleExecutionScope,
-        RuleMeta, SuppressionAction, context::RuleContext, matcher::Query,
+        AnalysisFilter, AnalyzerOptions, ApplySuppression, Ast, GroupCategory, RuleDocs,
+        RuleExecutionScope, RuleMeta, SuppressionAction, context::RuleContext, matcher::Query,
     };
     use biome_diagnostics::{
         Diagnostic, DiagnosticExt, Error, category, print_diagnostic_to_string,
@@ -622,6 +622,9 @@ mod tests {
         fn record_groups<V: RegistryVisitor<Self::Language> + ?Sized>(_: &mut V) {}
     }
 
+    const TEST_DOCS: RuleDocs =
+        RuleDocs::from_compressed(biome_analyze_macros::compress_rule_docs!("Test rule."));
+
     enum TestGroup {}
 
     impl RuleGroup for TestGroup {
@@ -636,7 +639,7 @@ mod tests {
 
     impl RuleMeta for PanicRule {
         type Group = TestGroup;
-        const METADATA: RuleMetadata = RuleMetadata::new("next", "panicRule", "Test rule.", "raw");
+        const METADATA: RuleMetadata = RuleMetadata::new("next", "panicRule", TEST_DOCS, "raw");
     }
 
     impl Rule for PanicRule {
@@ -657,7 +660,7 @@ mod tests {
             impl RuleMeta for $name {
                 type Group = TestGroup;
                 const METADATA: RuleMetadata =
-                    RuleMetadata::new("next", $rule_name, "Test rule.", "raw");
+                    RuleMetadata::new("next", $rule_name, TEST_DOCS, "raw");
             }
 
             impl Rule for $name {
